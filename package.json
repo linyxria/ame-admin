@@ -1,0 +1,23 @@
+{
+  "name": "ame-admin",
+  "private": true,
+  "type": "module",
+  "workspaces": ["api", "web"],
+  "scripts": {
+    "dev:api": "bun --filter ame-admin-api dev",
+    "dev:web": "bun --filter ame-admin-web dev",
+    "build:web": "bun --filter ame-admin-web build",
+    "typecheck:api": "bun --filter ame-admin-api typecheck",
+    "db:up": "bun --filter ame-admin-api db:up",
+    "db:down": "bun --filter ame-admin-api db:down",
+    "db:setup": "bun --filter ame-admin-api db:setup",
+    "lint": "biome lint api web",
+    "format": "biome format --write api web",
+    "check": "biome check api web",
+    "check:write": "biome check --write api web"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.13"
+  }
+}
