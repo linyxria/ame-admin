@@ -9,7 +9,10 @@ export default defineConfig({
   plugins: [
     react(),
     babel({ presets: [reactCompilerPreset()] }),
-    tanstackRouter({ target: 'react' }),
+    tanstackRouter({
+      target: 'react',
+      generatedRouteTree: './src/route-tree.gen.ts',
+    }),
     tailwindcss(),
   ],
 })

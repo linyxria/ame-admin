@@ -26,7 +26,7 @@ export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
 
 export const auth = createAuth()
 
-export const authPlugin = new Elysia({ name: 'auth' }).mount(auth.handler).macro({
+export const authMacro = new Elysia({ name: 'auth-macro' }).macro({
   auth: {
     async resolve({ status, request: { headers } }) {
       const session = await auth.api.getSession({ headers })
@@ -42,3 +42,5 @@ export const authPlugin = new Elysia({ name: 'auth' }).mount(auth.handler).macro
     },
   },
 })
+
+export const authPlugin = new Elysia({ name: 'auth' }).mount(auth.handler).use(authMacro)

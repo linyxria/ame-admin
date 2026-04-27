@@ -2,6 +2,7 @@ import { cors } from '@elysiajs/cors'
 import { Elysia } from 'elysia'
 import { auth, authPlugin } from './lib/auth'
 import { env } from './lib/env'
+import { systemRoutes } from './routes/system'
 
 const app = new Elysia()
   .use(
@@ -13,6 +14,7 @@ const app = new Elysia()
     }),
   )
   .use(authPlugin)
+  .use(systemRoutes)
   .get('/', () => ({ ok: true, service: 'ame-admin-api' }))
   .get('/health', () => ({ ok: true }))
   .get(

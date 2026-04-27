@@ -1,6 +1,7 @@
 import { createRouter } from '@tanstack/react-router'
 import { authClient } from './lib/auth-client'
-import { routeTree } from './routeTree.gen'
+import { queryClient } from './lib/query-client'
+import { routeTree } from './route-tree.gen'
 
 export const router = createRouter({
   routeTree,
@@ -11,6 +12,7 @@ export const router = createRouter({
       signIn: authClient.signIn,
       signOut: authClient.signOut,
     },
+    queryClient,
   },
 })
 

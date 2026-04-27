@@ -11,7 +11,7 @@
       "api/drizzle.config.ts",
       "api/package.json",
       "web/src/**",
-      "!web/src/routeTree.gen.ts",
+      "!web/src/route-tree.gen.ts",
       "web/vite.config.ts",
       "web/package.json",
       "package.json"
