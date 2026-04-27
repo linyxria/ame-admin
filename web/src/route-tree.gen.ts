@@ -13,6 +13,9 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
+import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
+import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
+import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -33,16 +36,37 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSystemUsersRoute = AdminSystemUsersRouteImport.update({
+  id: '/system/users',
+  path: '/system/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemRolesRoute = AdminSystemRolesRouteImport.update({
+  id: '/system/roles',
+  path: '/system/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemMenusRoute = AdminSystemMenusRouteImport.update({
+  id: '/system/menus',
+  path: '/system/menus',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/system/menus': typeof AdminSystemMenusRoute
+  '/system/roles': typeof AdminSystemRolesRoute
+  '/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/system/menus': typeof AdminSystemMenusRoute
+  '/system/roles': typeof AdminSystemRolesRoute
+  '/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -50,13 +74,36 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/system/menus': typeof AdminSystemMenusRoute
+  '/_admin/system/roles': typeof AdminSystemRolesRoute
+  '/_admin/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/system/menus'
+    | '/system/roles'
+    | '/system/users'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard'
-  id: '__root__' | '/' | '/_admin' | '/login' | '/_admin/dashboard'
+  to:
+    | '/'
+    | '/login'
+    | '/dashboard'
+    | '/system/menus'
+    | '/system/roles'
+    | '/system/users'
+  id:
+    | '__root__'
+    | '/'
+    | '/_admin'
+    | '/login'
+    | '/_admin/dashboard'
+    | '/_admin/system/menus'
+    | '/_admin/system/roles'
+    | '/_admin/system/users'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -95,15 +142,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/system/users': {
+      id: '/_admin/system/users'
+      path: '/system/users'
+      fullPath: '/system/users'
+      preLoaderRoute: typeof AdminSystemUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/roles': {
+      id: '/_admin/system/roles'
+      path: '/system/roles'
+      fullPath: '/system/roles'
+      preLoaderRoute: typeof AdminSystemRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/menus': {
+      id: '/_admin/system/menus'
+      path: '/system/menus'
+      fullPath: '/system/menus'
+      preLoaderRoute: typeof AdminSystemMenusRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminSystemMenusRoute: typeof AdminSystemMenusRoute
+  AdminSystemRolesRoute: typeof AdminSystemRolesRoute
+  AdminSystemUsersRoute: typeof AdminSystemUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminSystemMenusRoute: AdminSystemMenusRoute,
+  AdminSystemRolesRoute: AdminSystemRolesRoute,
+  AdminSystemUsersRoute: AdminSystemUsersRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

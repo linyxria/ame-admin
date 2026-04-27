@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ConfigProvider, theme } from 'antd'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { App as AntdApp, ConfigProvider, theme } from 'antd'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './app.tsx'
+import { queryClient } from './lib/query-client'
 
-const queryClient = new QueryClient()
 const { defaultAlgorithm } = theme
 const root = document.getElementById('root')
 
@@ -47,9 +47,11 @@ createRoot(root).render(
         },
       }}
     >
-      <QueryClientProvider client={queryClient}>
-        <App />
-      </QueryClientProvider>
+      <AntdApp>
+        <QueryClientProvider client={queryClient}>
+          <App />
+        </QueryClientProvider>
+      </AntdApp>
     </ConfigProvider>
   </StrictMode>,
 )
