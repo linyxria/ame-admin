@@ -27,9 +27,11 @@ export type CreateUserInput = Parameters<typeof api.admin.users.post>[0]
 export type UpdateUserInput = Parameters<ReturnType<typeof api.admin.users>['patch']>[0]
 export type RoleInput = Parameters<typeof api.admin.roles.post>[0]
 export type MenuInput = Parameters<typeof api.admin.menus.post>[0]
+export type ProfileInput = Parameters<typeof api.admin.profile.patch>[0]
 
 export const systemApi = {
   overview: () => unwrap(api.admin.overview.get()),
+  updateProfile: (body: ProfileInput) => unwrap(api.admin.profile.patch(body)),
   users: () => unwrap(api.admin.users.get()),
   createUser: (body: CreateUserInput) => unwrap(api.admin.users.post(body)),
   updateUser: (id: string, body: UpdateUserInput) => unwrap(api.admin.users({ id }).patch(body)),

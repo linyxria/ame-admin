@@ -120,8 +120,8 @@ function MenusRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="mb-1.5 text-3xl font-semibold text-slate-900">菜单管理</h1>
-          <p className="text-sm text-slate-600">维护后台导航和角色可授权菜单。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">菜单管理</h1>
+          <p className="ame-page-description text-sm">维护后台导航和角色可授权菜单。</p>
         </div>
         <Space>
           <Button

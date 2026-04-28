@@ -1,22 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  color: #1f2937;
-  background: #f5f7fb;
+  --ame-bg: #f1f5f9;
+  --ame-page-bg: #f5f7fb;
+  --ame-surface: #ffffff;
+  --ame-text: #0f172a;
+  --ame-text-muted: #475569;
+  --ame-text-subtle: #64748b;
+  --ame-border: #e2e8f0;
+  --ame-hover: #f1f5f9;
+  --ame-login-bg:
+    linear-gradient(135deg, rgba(22, 163, 74, 0.12), transparent 34%),
+    linear-gradient(315deg, rgba(37, 99, 235, 0.12), transparent 36%), #f5f7fb;
+
+  color-scheme: light dark;
+  color: var(--ame-text);
+  background: var(--ame-bg);
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  min-width: 320px;
-  min-height: 100vh;
-  margin: 0;
+:root[data-theme="dark"] {
+  --ame-bg: #020617;
+  --ame-page-bg: #020617;
+  --ame-surface: #111827;
+  --ame-text: #f8fafc;
+  --ame-text-muted: #cbd5e1;
+  --ame-text-subtle: #94a3b8;
+  --ame-border: #1e293b;
+  --ame-hover: #1e293b;
+  --ame-login-bg:
+    radial-gradient(circle at 20% 10%, rgba(22, 163, 74, 0.2), transparent 32%),
+    radial-gradient(circle at 82% 84%, rgba(37, 99, 235, 0.22), transparent 34%), #020617;
 }
 
-#root {
-  min-height: 100vh;
+@layer components {
+  .ame-page-title {
+    color: var(--ame-text);
+  }
+
+  .ame-page-description {
+    color: var(--ame-text-muted);
+  }
+
+  .ame-text {
+    color: var(--ame-text);
+  }
+
+  .ame-text-muted {
+    color: var(--ame-text-muted);
+  }
+
+  .ame-text-subtle {
+    color: var(--ame-text-subtle);
+  }
+
+  .ame-border {
+    border-color: var(--ame-border);
+  }
+
+  .ame-surface {
+    background-color: var(--ame-surface);
+  }
+
+  .ame-page-bg {
+    background-color: var(--ame-bg);
+  }
+
+  .ame-hover-surface:hover {
+    background-color: var(--ame-hover);
+  }
 }

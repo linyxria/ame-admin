@@ -16,6 +16,10 @@ import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
 import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
 import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
 import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
+import { Route as AdminDemosTableRouteImport } from './routes/_admin.demos.table'
+import { Route as AdminDemosFormRouteImport } from './routes/_admin.demos.form'
+import { Route as AdminDemosChartsRouteImport } from './routes/_admin.demos.charts'
+import { Route as AdminAccountSettingsRouteImport } from './routes/_admin.account.settings'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -51,11 +55,35 @@ const AdminSystemMenusRoute = AdminSystemMenusRouteImport.update({
   path: '/system/menus',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminDemosTableRoute = AdminDemosTableRouteImport.update({
+  id: '/demos/table',
+  path: '/demos/table',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDemosFormRoute = AdminDemosFormRouteImport.update({
+  id: '/demos/form',
+  path: '/demos/form',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDemosChartsRoute = AdminDemosChartsRouteImport.update({
+  id: '/demos/charts',
+  path: '/demos/charts',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAccountSettingsRoute = AdminAccountSettingsRouteImport.update({
+  id: '/account/settings',
+  path: '/account/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/account/settings': typeof AdminAccountSettingsRoute
+  '/demos/charts': typeof AdminDemosChartsRoute
+  '/demos/form': typeof AdminDemosFormRoute
+  '/demos/table': typeof AdminDemosTableRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
   '/system/users': typeof AdminSystemUsersRoute
@@ -64,6 +92,10 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/account/settings': typeof AdminAccountSettingsRoute
+  '/demos/charts': typeof AdminDemosChartsRoute
+  '/demos/form': typeof AdminDemosFormRoute
+  '/demos/table': typeof AdminDemosTableRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
   '/system/users': typeof AdminSystemUsersRoute
@@ -74,6 +106,10 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/account/settings': typeof AdminAccountSettingsRoute
+  '/_admin/demos/charts': typeof AdminDemosChartsRoute
+  '/_admin/demos/form': typeof AdminDemosFormRoute
+  '/_admin/demos/table': typeof AdminDemosTableRoute
   '/_admin/system/menus': typeof AdminSystemMenusRoute
   '/_admin/system/roles': typeof AdminSystemRolesRoute
   '/_admin/system/users': typeof AdminSystemUsersRoute
@@ -84,6 +120,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/account/settings'
+    | '/demos/charts'
+    | '/demos/form'
+    | '/demos/table'
     | '/system/menus'
     | '/system/roles'
     | '/system/users'
@@ -92,6 +132,10 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/account/settings'
+    | '/demos/charts'
+    | '/demos/form'
+    | '/demos/table'
     | '/system/menus'
     | '/system/roles'
     | '/system/users'
@@ -101,6 +145,10 @@ export interface FileRouteTypes {
     | '/_admin'
     | '/login'
     | '/_admin/dashboard'
+    | '/_admin/account/settings'
+    | '/_admin/demos/charts'
+    | '/_admin/demos/form'
+    | '/_admin/demos/table'
     | '/_admin/system/menus'
     | '/_admin/system/roles'
     | '/_admin/system/users'
@@ -163,11 +211,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSystemMenusRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/demos/table': {
+      id: '/_admin/demos/table'
+      path: '/demos/table'
+      fullPath: '/demos/table'
+      preLoaderRoute: typeof AdminDemosTableRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/demos/form': {
+      id: '/_admin/demos/form'
+      path: '/demos/form'
+      fullPath: '/demos/form'
+      preLoaderRoute: typeof AdminDemosFormRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/demos/charts': {
+      id: '/_admin/demos/charts'
+      path: '/demos/charts'
+      fullPath: '/demos/charts'
+      preLoaderRoute: typeof AdminDemosChartsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/account/settings': {
+      id: '/_admin/account/settings'
+      path: '/account/settings'
+      fullPath: '/account/settings'
+      preLoaderRoute: typeof AdminAccountSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminAccountSettingsRoute: typeof AdminAccountSettingsRoute
+  AdminDemosChartsRoute: typeof AdminDemosChartsRoute
+  AdminDemosFormRoute: typeof AdminDemosFormRoute
+  AdminDemosTableRoute: typeof AdminDemosTableRoute
   AdminSystemMenusRoute: typeof AdminSystemMenusRoute
   AdminSystemRolesRoute: typeof AdminSystemRolesRoute
   AdminSystemUsersRoute: typeof AdminSystemUsersRoute
@@ -175,6 +255,10 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminAccountSettingsRoute: AdminAccountSettingsRoute,
+  AdminDemosChartsRoute: AdminDemosChartsRoute,
+  AdminDemosFormRoute: AdminDemosFormRoute,
+  AdminDemosTableRoute: AdminDemosTableRoute,
   AdminSystemMenusRoute: AdminSystemMenusRoute,
   AdminSystemRolesRoute: AdminSystemRolesRoute,
   AdminSystemUsersRoute: AdminSystemUsersRoute,
