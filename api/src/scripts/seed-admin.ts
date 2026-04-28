@@ -50,6 +50,41 @@ const defaultMenus = [
     sort: 30,
     builtIn: true,
   },
+  {
+    id: 'menu_demos',
+    title: '示例',
+    path: '/demos',
+    icon: 'demo',
+    sort: 20,
+    builtIn: true,
+  },
+  {
+    id: 'menu_demo_charts',
+    parentId: 'menu_demos',
+    title: '图表示例',
+    path: '/demos/charts',
+    icon: 'chart',
+    sort: 10,
+    builtIn: true,
+  },
+  {
+    id: 'menu_demo_table',
+    parentId: 'menu_demos',
+    title: '表格示例',
+    path: '/demos/table',
+    icon: 'table',
+    sort: 20,
+    builtIn: true,
+  },
+  {
+    id: 'menu_demo_form',
+    parentId: 'menu_demos',
+    title: '表单示例',
+    path: '/demos/form',
+    icon: 'form',
+    sort: 30,
+    builtIn: true,
+  },
 ]
 
 if (password.length < 8) {

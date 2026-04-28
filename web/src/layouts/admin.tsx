@@ -1,25 +1,54 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, Outlet, useLocation, useRouteContext, useRouter } from '@tanstack/react-router'
 import type { MenuProps } from 'antd'
-import { Menu as AntMenu, Avatar, Button, Dropdown, Layout, Space, Typography } from 'antd'
 import {
+  Menu as AntMenu,
+  Avatar,
+  Breadcrumb,
+  Button,
+  Drawer,
+  Dropdown,
+  Layout,
+  Space,
+  Switch,
+  Typography,
+} from 'antd'
+import {
+  Check,
   ChevronDown,
+  ClipboardList,
+  FileText,
   Gauge,
+  Languages,
   LogOut,
   Menu as MenuIcon,
+  Moon,
+  Palette,
   Settings,
   Shield,
+  Sun,
+  Table2,
   User,
   Users,
 } from 'lucide-react'
+import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { GlobalSearch } from '../components/global-search'
+import { Notifications } from '../components/notifications'
+import { type Locale, locales } from '../i18n'
 import { systemApi, systemQueryKeys } from '../lib/system-api'
+import { useThemeSettings } from '../lib/theme'
 
 const { Header, Sider, Content } = Layout
 
 const iconMap = {
   dashboard: <Gauge size={16} />,
+  chart: <Gauge size={16} />,
+  demo: <ClipboardList size={16} />,
+  form: <FileText size={16} />,
   menu: <MenuIcon size={16} />,
   settings: <Settings size={16} />,
+  table: <Table2 size={16} />,
   team: <Shield size={16} />,
   user: <Users size={16} />,
 }
@@ -28,6 +57,10 @@ export function AdminLayout() {
   const router = useRouter()
   const location = useLocation()
   const { user, auth } = useRouteContext({ from: '/_admin' })
+  const { i18n, t } = useTranslation()
+  const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : 'zh-CN'
+  const { compact, mode, primaryColor, setCompact, setMode, setPrimaryColor } = useThemeSettings()
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const menusQuery = useQuery({
     queryKey: systemQueryKeys.myMenus,
     queryFn: systemApi.myMenus,
@@ -54,8 +87,8 @@ export function AdminLayout() {
       disabled: true,
       label: (
         <div className="min-w-48 py-1">
-          <div className="font-medium text-slate-900">{user.name}</div>
-          <div className="mt-0.5 text-xs text-slate-500">{user.email}</div>
+          <div className="ame-text font-medium">{user.name}</div>
+          <div className="ame-text-subtle mt-0.5 text-xs">{user.email}</div>
         </div>
       ),
     },
@@ -63,10 +96,30 @@ export function AdminLayout() {
       type: 'divider',
     },
     {
+      key: 'user-settings',
+      icon: <User size={16} />,
+      label: <Link to="/account/settings">{t('userSettings')}</Link>,
+    },
+    {
       key: 'sign-out',
       icon: <LogOut size={16} />,
-      label: '退出登录',
+      label: t('signOut'),
       onClick: signOut,
+    },
+  ]
+
+  const languageMenuItems: MenuProps['items'] = [
+    {
+      key: 'zh-CN',
+      icon: locale === 'zh-CN' ? <Check size={16} /> : <span className="w-4" />,
+      label: '简体中文',
+      onClick: () => void i18n.changeLanguage('zh-CN'),
+    },
+    {
+      key: 'en-US',
+      icon: locale === 'en-US' ? <Check size={16} /> : <span className="w-4" />,
+      label: 'English',
+      onClick: () => void i18n.changeLanguage('en-US'),
     },
   ]
 
@@ -99,23 +152,82 @@ export function AdminLayout() {
     )
     .map((item) => item.path)
 
+  const menuById = new Map(menus.map((item) => [item.id, item]))
+  const activeMenu = menus
+    .filter(
+      (item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`),
+    )
+    .sort((first, second) => second.path.length - first.path.length)[0]
+  const menuBreadcrumbItems = activeMenu
+    ? [activeMenu]
+        .concat(
+          Array.from({ length: menus.length }).reduce<typeof menus>((parents, _item) => {
+            const previous = parents.at(-1) ?? activeMenu
+            const parent = previous.parentId ? menuById.get(previous.parentId) : undefined
+
+            return parent ? parents.concat(parent) : parents
+          }, []),
+        )
+        .reverse()
+        .map((item, index, items) => ({
+          title:
+            index !== items.length - 1 && !menus.some((child) => child.parentId === item.id) ? (
+              <Link to={item.path} className="ame-text-muted">
+                {item.title}
+              </Link>
+            ) : (
+              item.title
+            ),
+        }))
+    : undefined
+  const fallbackBreadcrumbItems =
+    location.pathname === '/account/settings'
+      ? [
+          {
+            title: (
+              <Link to="/dashboard" className="ame-text-muted">
+                {t('dashboard')}
+              </Link>
+            ),
+          },
+          { title: t('userSettings') },
+        ]
+      : [{ title: t('dashboard') }]
+  const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems
+
   return (
-    <Layout className="min-h-screen max-[760px]:min-w-215">
-      <Sider className="min-h-screen border-r border-slate-200" width={224} theme="light">
-        <div className="flex h-16 items-center border-b border-slate-200 px-5 text-base font-bold text-slate-900">
-          AME 管理后台
+    <Layout className="h-screen overflow-hidden max-[760px]:min-w-215">
+      <Sider className="ame-border h-screen overflow-hidden border-r" width={224} theme={mode}>
+        <div className="ame-border ame-text flex h-16 items-center border-b px-5 text-base font-bold">
+          {t('appName')}
         </div>
-        <AntMenu
-          theme="light"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          defaultOpenKeys={defaultOpenKeys}
-          className="border-e-0 px-2 pt-3"
-          items={menuItems}
-        />
+        <div className="h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden">
+          <AntMenu
+            theme={mode}
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            defaultOpenKeys={defaultOpenKeys}
+            className="border-e-0 px-2 pt-3"
+            items={menuItems}
+          />
+        </div>
       </Sider>
-      <Layout>
-        <Header className="flex items-center justify-end border-b border-slate-200">
+      <Layout className="min-h-0">
+        <Header className="ame-border flex shrink-0 items-center justify-end gap-2 border-b">
+          <GlobalSearch menus={menus} />
+          <Notifications />
+          <Button
+            type="text"
+            icon={mode === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
+            onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+          />
+          <Dropdown
+            menu={{ items: languageMenuItems, selectedKeys: [locale] }}
+            placement="bottomRight"
+          >
+            <Button type="text" icon={<Languages size={18} />} />
+          </Dropdown>
+          <Button type="text" icon={<Settings size={18} />} onClick={() => setSettingsOpen(true)} />
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
             <Button type="link" className="h-11 px-2">
               <Space size={10}>
@@ -124,14 +236,43 @@ export function AdminLayout() {
                   <Typography.Text strong className="max-w-40 truncate">
                     {user.name}
                   </Typography.Text>
-                  <span className="max-w-40 truncate text-xs text-slate-500">{user.email}</span>
+                  <span className="ame-text-subtle max-w-40 truncate text-xs">{user.email}</span>
                 </span>
-                <ChevronDown size={14} className="text-slate-400" />
+                <ChevronDown size={14} className="ame-text-subtle" />
               </Space>
             </Button>
           </Dropdown>
+          <Drawer
+            title={t('appearance')}
+            open={settingsOpen}
+            onClose={() => setSettingsOpen(false)}
+          >
+            <div className="flex flex-col gap-5">
+              <div className="flex items-center justify-between gap-4">
+                <Space size={10}>
+                  <Palette size={18} />
+                  <Typography.Text>{t('primaryColor')}</Typography.Text>
+                </Space>
+                <input
+                  aria-label={t('primaryColor')}
+                  type="color"
+                  value={primaryColor}
+                  onChange={(event) => setPrimaryColor(event.target.value)}
+                  className="ame-border h-8 w-11 cursor-pointer rounded border bg-transparent p-0.5"
+                />
+              </div>
+              <div className="flex items-center justify-between gap-4">
+                <Space size={10}>
+                  <Settings size={18} />
+                  <Typography.Text>{t('compactMode')}</Typography.Text>
+                </Space>
+                <Switch checked={compact} onChange={setCompact} />
+              </div>
+            </div>
+          </Drawer>
         </Header>
-        <Content className="bg-slate-100 p-6">
+        <Content className="ame-page-bg min-h-0 overflow-auto p-6">
+          <Breadcrumb items={breadcrumbItems} style={{ marginBottom: 16 }} />
           <Outlet />
         </Content>
       </Layout>

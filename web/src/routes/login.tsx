@@ -60,20 +60,20 @@ function LoginRoute() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[linear-gradient(135deg,rgba(22,163,74,0.12),transparent_34%),linear-gradient(315deg,rgba(37,99,235,0.12),transparent_36%),#f5f7fb] p-8 max-[760px]:p-5">
+    <main className="grid min-h-screen place-items-center bg-[image:var(--ame-login-bg)] p-8 max-[760px]:p-5">
       <section className="grid w-full max-w-240 grid-cols-[minmax(0,1fr)_420px] items-center gap-10 max-[760px]:grid-cols-1 max-[760px]:gap-6">
         <div>
-          <h1 className="mb-4 text-[46px] leading-[1.05] font-semibold text-slate-900 max-[760px]:text-4xl">
+          <h1 className="ame-page-title mb-4 text-[46px] leading-[1.05] font-semibold max-[760px]:text-4xl">
             AME Admin
           </h1>
-          <p className="max-w-105 text-[17px] text-slate-600">
+          <p className="ame-page-description max-w-105 text-[17px]">
             登录后可以管理 AME 的运营数据、用户和内部工作流。
           </p>
         </div>
 
         <Card className="w-full rounded-lg shadow-[0_18px_45px_rgba(15,23,42,0.12)] [&_.ant-card-body]:grid [&_.ant-card-body]:gap-5 [&_.ant-card-body]:p-7 max-[760px]:[&_.ant-card-body]:p-5.5">
           <div>
-            <h2 className="mb-1 text-2xl font-semibold text-slate-900">管理员登录</h2>
+            <h2 className="ame-page-title mb-1 text-2xl font-semibold">管理员登录</h2>
             <Typography.Text type="secondary">
               本地默认账号：admin@example.com / admin123456
             </Typography.Text>

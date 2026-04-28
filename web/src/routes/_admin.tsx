@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AdminLayout } from '../layouts/admin'
 import { systemApi, systemQueryKeys } from '../lib/system-api'
 
-const publicAdminPaths = new Set(['/dashboard'])
+const publicAdminPaths = new Set(['/dashboard', '/account/settings'])
 
 export const Route = createFileRoute('/_admin')({
   component: AdminLayout,
@@ -22,7 +22,9 @@ export const Route = createFileRoute('/_admin')({
         queryKey: systemQueryKeys.myMenus,
         queryFn: systemApi.myMenus,
       })
-      const canAccess = (menus ?? []).some((menu) => menu.path === location.pathname)
+      const canAccess = (menus ?? []).some(
+        (menu) => menu.path === location.pathname || location.pathname.startsWith(`${menu.path}/`),
+      )
 
       if (!canAccess) {
         throw redirect({

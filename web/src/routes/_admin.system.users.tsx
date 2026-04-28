@@ -121,8 +121,8 @@ function UsersRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="mb-1.5 text-3xl font-semibold text-slate-900">用户管理</h1>
-          <p className="text-sm text-slate-600">维护后台账号和用户角色。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">用户管理</h1>
+          <p className="ame-page-description text-sm">维护后台账号和用户角色。</p>
         </div>
         <Space>
           <Button
@@ -159,7 +159,7 @@ function UsersRoute() {
               value.length > 0 ? (
                 value.map((role) => <Tag key={role.id}>{role.name}</Tag>)
               ) : (
-                <span className="text-slate-400">未分配</span>
+                <span className="ame-text-subtle">未分配</span>
               ),
           },
           {

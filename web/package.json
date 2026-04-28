@@ -19,10 +19,12 @@
     "antd": "^6.3.6",
     "better-auth": "^1.6.9",
     "dayjs": "^1.11.20",
+    "i18next": "^26.0.8",
     "lucide-react": "^1.11.0",
     "nuqs": "^2.8.9",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-i18next": "^17.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.29.0",

@@ -9,6 +9,11 @@ const id = () => crypto.randomUUID()
 const optionalText = t.Optional(t.String())
 const optionalNullableText = t.Optional(t.Union([t.String(), t.Null()]))
 
+const profileBody = t.Object({
+  name: t.String({ minLength: 1 }),
+  image: optionalNullableText,
+})
+
 const roleBody = t.Object({
   name: t.String({ minLength: 1 }),
   code: t.String({ minLength: 1 }),
@@ -104,6 +109,28 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
       }
     },
     { auth: true },
+  )
+  .patch(
+    '/profile',
+    async ({ body, user: currentUser }) => {
+      const [updated] = await db
+        .update(user)
+        .set({
+          name: body.name,
+          image: body.image ?? null,
+          updatedAt: new Date(),
+        })
+        .where(eq(user.id, currentUser.id))
+        .returning({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        })
+
+      return updated
+    },
+    { auth: true, body: profileBody },
   )
   .get(
     '/users',

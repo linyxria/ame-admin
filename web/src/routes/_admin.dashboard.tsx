@@ -18,8 +18,8 @@ function DashboardRoute() {
   return (
     <Space orientation="vertical" size="large" className="w-full">
       <div>
-        <h1 className="mb-1.5 text-4xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-base text-slate-700">管理后台基础骨架已经就绪。</p>
+        <h1 className="ame-page-title mb-1.5 text-4xl font-semibold">Dashboard</h1>
+        <p className="ame-page-description text-base">管理后台基础骨架已经就绪。</p>
       </div>
 
       <Row gutter={[16, 16]}>
