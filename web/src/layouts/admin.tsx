@@ -1,6 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, Outlet, useLocation, useRouteContext, useRouter } from '@tanstack/react-router'
-import type { MenuProps } from 'antd'
+import { useQuery } from "@tanstack/react-query"
+import { Link, Outlet, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
+import type { MenuProps } from "antd"
 import {
   Menu as AntMenu,
   Avatar,
@@ -12,7 +12,7 @@ import {
   Space,
   Switch,
   Typography,
-} from 'antd'
+} from "antd"
 import {
   Check,
   ChevronDown,
@@ -30,14 +30,14 @@ import {
   Table2,
   User,
   Users,
-} from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import { GlobalSearch } from '../components/global-search'
-import { Notifications } from '../components/notifications'
-import { type Locale, locales } from '../i18n'
-import { systemApi, systemQueryKeys } from '../lib/system-api'
-import { useThemeSettings } from '../lib/theme'
+} from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { GlobalSearch } from "../components/global-search"
+import { Notifications } from "../components/notifications"
+import { type Locale, locales } from "../i18n"
+import { systemApi, systemQueryKeys } from "../lib/system-api"
+import { useThemeSettings } from "../lib/theme"
 
 const { Header, Sider, Content } = Layout
 
@@ -56,9 +56,9 @@ const iconMap = {
 export function AdminLayout() {
   const router = useRouter()
   const location = useLocation()
-  const { user, auth } = useRouteContext({ from: '/_admin' })
+  const { user, auth } = useRouteContext({ from: "/_admin" })
   const { i18n, t } = useTranslation()
-  const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : 'zh-CN'
+  const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : "zh-CN"
   const { compact, mode, primaryColor, setCompact, setMode, setPrimaryColor } = useThemeSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
   const menusQuery = useQuery({
@@ -72,7 +72,7 @@ export function AdminLayout() {
       fetchOptions: {
         onSuccess: () => {
           void router.navigate({
-            to: '/login',
+            to: "/login",
             search: { redirect: location.href },
             replace: true,
           })
@@ -81,9 +81,9 @@ export function AdminLayout() {
     })
   }
 
-  const userMenuItems: MenuProps['items'] = [
+  const userMenuItems: MenuProps["items"] = [
     {
-      key: 'profile',
+      key: "profile",
       disabled: true,
       label: (
         <div className="min-w-48 py-1">
@@ -93,37 +93,37 @@ export function AdminLayout() {
       ),
     },
     {
-      type: 'divider',
+      type: "divider",
     },
     {
-      key: 'user-settings',
+      key: "user-settings",
       icon: <User size={16} />,
-      label: <Link to="/account/settings">{t('userSettings')}</Link>,
+      label: <Link to="/account/settings">{t("userSettings")}</Link>,
     },
     {
-      key: 'sign-out',
+      key: "sign-out",
       icon: <LogOut size={16} />,
-      label: t('signOut'),
+      label: t("signOut"),
       onClick: signOut,
     },
   ]
 
-  const languageMenuItems: MenuProps['items'] = [
+  const languageMenuItems: MenuProps["items"] = [
     {
-      key: 'zh-CN',
-      icon: locale === 'zh-CN' ? <Check size={16} /> : <span className="w-4" />,
-      label: '简体中文',
-      onClick: () => void i18n.changeLanguage('zh-CN'),
+      key: "zh-CN",
+      icon: locale === "zh-CN" ? <Check size={16} /> : <span className="w-4" />,
+      label: "简体中文",
+      onClick: () => void i18n.changeLanguage("zh-CN"),
     },
     {
-      key: 'en-US',
-      icon: locale === 'en-US' ? <Check size={16} /> : <span className="w-4" />,
-      label: 'English',
-      onClick: () => void i18n.changeLanguage('en-US'),
+      key: "en-US",
+      icon: locale === "en-US" ? <Check size={16} /> : <span className="w-4" />,
+      label: "English",
+      onClick: () => void i18n.changeLanguage("en-US"),
     },
   ]
 
-  const menuItems: MenuProps['items'] = menus
+  const menuItems: MenuProps["items"] = menus
     .filter((item) => !item.parentId || !menus.some((parent) => parent.id === item.parentId))
     .map((item) => {
       const children = menus.filter((child) => child.parentId === item.id)
@@ -181,25 +181,25 @@ export function AdminLayout() {
         }))
     : undefined
   const fallbackBreadcrumbItems =
-    location.pathname === '/account/settings'
+    location.pathname === "/account/settings"
       ? [
           {
             title: (
               <Link to="/dashboard" className="ame-text-muted">
-                {t('dashboard')}
+                {t("dashboard")}
               </Link>
             ),
           },
-          { title: t('userSettings') },
+          { title: t("userSettings") },
         ]
-      : [{ title: t('dashboard') }]
+      : [{ title: t("dashboard") }]
   const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems
 
   return (
     <Layout className="h-screen overflow-hidden max-[760px]:min-w-215">
       <Sider className="ame-border h-screen overflow-hidden border-r" width={224} theme={mode}>
         <div className="ame-border ame-text flex h-16 items-center border-b px-5 text-base font-bold">
-          {t('appName')}
+          {t("appName")}
         </div>
         <div className="h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden">
           <AntMenu
@@ -218,8 +218,8 @@ export function AdminLayout() {
           <Notifications />
           <Button
             type="text"
-            icon={mode === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
-            onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+            icon={mode === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+            onClick={() => setMode(mode === "dark" ? "light" : "dark")}
           />
           <Dropdown
             menu={{ items: languageMenuItems, selectedKeys: [locale] }}
@@ -243,7 +243,7 @@ export function AdminLayout() {
             </Button>
           </Dropdown>
           <Drawer
-            title={t('appearance')}
+            title={t("appearance")}
             open={settingsOpen}
             onClose={() => setSettingsOpen(false)}
           >
@@ -251,10 +251,10 @@ export function AdminLayout() {
               <div className="flex items-center justify-between gap-4">
                 <Space size={10}>
                   <Palette size={18} />
-                  <Typography.Text>{t('primaryColor')}</Typography.Text>
+                  <Typography.Text>{t("primaryColor")}</Typography.Text>
                 </Space>
                 <input
-                  aria-label={t('primaryColor')}
+                  aria-label={t("primaryColor")}
                   type="color"
                   value={primaryColor}
                   onChange={(event) => setPrimaryColor(event.target.value)}
@@ -264,7 +264,7 @@ export function AdminLayout() {
               <div className="flex items-center justify-between gap-4">
                 <Space size={10}>
                   <Settings size={18} />
-                  <Typography.Text>{t('compactMode')}</Typography.Text>
+                  <Typography.Text>{t("compactMode")}</Typography.Text>
                 </Space>
                 <Switch checked={compact} onChange={setCompact} />
               </div>

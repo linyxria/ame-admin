@@ -1,18 +1,18 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Card, Col, Progress, Row, Space, Statistic, Table, Tag } from 'antd'
+import { createFileRoute } from "@tanstack/react-router"
+import { Card, Col, Progress, Row, Space, Statistic, Table, Tag } from "antd"
 
-export const Route = createFileRoute('/_admin/demos/charts')({
+export const Route = createFileRoute("/_admin/demos/charts")({
   component: ChartsDemoRoute,
 })
 
 const bars = [
-  { label: 'Mon', value: 42 },
-  { label: 'Tue', value: 68 },
-  { label: 'Wed', value: 55 },
-  { label: 'Thu', value: 82 },
-  { label: 'Fri', value: 73 },
-  { label: 'Sat', value: 34 },
-  { label: 'Sun', value: 49 },
+  { label: "Mon", value: 42 },
+  { label: "Tue", value: 68 },
+  { label: "Wed", value: 55 },
+  { label: "Thu", value: 82 },
+  { label: "Fri", value: 73 },
+  { label: "Sat", value: 34 },
+  { label: "Sun", value: 49 },
 ]
 
 function ChartsDemoRoute() {
@@ -70,14 +70,14 @@ function ChartsDemoRoute() {
           rowKey="channel"
           pagination={false}
           dataSource={[
-            { channel: 'Organic', visits: 4821, status: '稳定' },
-            { channel: 'Referral', visits: 3188, status: '增长' },
-            { channel: 'Campaign', visits: 2419, status: '观察' },
+            { channel: "Organic", visits: 4821, status: "稳定" },
+            { channel: "Referral", visits: 3188, status: "增长" },
+            { channel: "Campaign", visits: 2419, status: "观察" },
           ]}
           columns={[
-            { title: '渠道', dataIndex: 'channel' },
-            { title: '访问量', dataIndex: 'visits' },
-            { title: '状态', dataIndex: 'status', render: (value) => <Tag>{value}</Tag> },
+            { title: "渠道", dataIndex: "channel" },
+            { title: "访问量", dataIndex: "visits" },
+            { title: "状态", dataIndex: "status", render: (value) => <Tag>{value}</Tag> },
           ]}
         />
       </Card>

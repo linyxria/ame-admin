@@ -1,17 +1,17 @@
-import { createFileRoute, useNavigate, useRouteContext } from '@tanstack/react-router'
-import { Alert, Button, Card, Checkbox, Form, Input, Typography } from 'antd'
-import { useState } from 'react'
+import { createFileRoute, useNavigate, useRouteContext } from "@tanstack/react-router"
+import { Alert, Button, Card, Checkbox, Form, Input, Typography } from "antd"
+import { useState } from "react"
 
 interface LoginSearch {
   redirect?: string
 }
 
-const redirectTo = (redirect: string | undefined) => redirect ?? '/'
+const redirectTo = (redirect: string | undefined) => redirect ?? "/"
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute("/login")({
   component: LoginRoute,
   validateSearch: (search): LoginSearch => ({
-    redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+    redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
   // TODO 这里不确定做重定向合不合适, 先注释掉可以在登录页面少一次 getSession 的调用
   // beforeLoad: async ({ context, search }) => {
@@ -33,7 +33,7 @@ type AuthFormValues = {
 }
 
 function LoginRoute() {
-  const { auth } = useRouteContext({ from: '/login' })
+  const { auth } = useRouteContext({ from: "/login" })
   const navigate = useNavigate()
   const { redirect } = Route.useSearch()
   const [error, setError] = useState<string>()
@@ -52,7 +52,7 @@ function LoginRoute() {
     setSubmitting(false)
 
     if (result.error) {
-      setError(result.error.message ?? '登录失败，请检查邮箱和密码')
+      setError(result.error.message ?? "登录失败，请检查邮箱和密码")
       return
     }
 
@@ -86,8 +86,8 @@ function LoginRoute() {
               name="email"
               label="邮箱"
               rules={[
-                { required: true, message: '请输入邮箱' },
-                { type: 'email', message: '请输入有效邮箱' },
+                { required: true, message: "请输入邮箱" },
+                { type: "email", message: "请输入有效邮箱" },
               ]}
             >
               <Input autoComplete="email" placeholder="admin@example.com" size="large" />
@@ -97,8 +97,8 @@ function LoginRoute() {
               name="password"
               label="密码"
               rules={[
-                { required: true, message: '请输入密码' },
-                { min: 8, message: '密码至少 8 位' },
+                { required: true, message: "请输入密码" },
+                { min: 8, message: "密码至少 8 位" },
               ]}
             >
               <Input.Password autoComplete="current-password" size="large" />

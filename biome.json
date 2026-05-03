@@ -33,7 +33,6 @@
   },
   "javascript": {
     "formatter": {
-      "quoteStyle": "single",
       "semicolons": "asNeeded",
       "trailingCommas": "all"
     }

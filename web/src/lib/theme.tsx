@@ -1,6 +1,6 @@
-import { createContext, type ReactNode, useContext, useLayoutEffect, useState } from 'react'
+import { createContext, type ReactNode, useContext, useLayoutEffect, useState } from "react"
 
-export type ThemeMode = 'light' | 'dark'
+export type ThemeMode = "light" | "dark"
 
 type ThemeSettings = {
   mode: ThemeMode
@@ -15,15 +15,15 @@ type ThemeContextValue = ThemeSettings & {
 }
 
 const defaultTheme: ThemeSettings = {
-  mode: 'light',
-  primaryColor: '#2563eb',
+  mode: "light",
+  primaryColor: "#2563eb",
   compact: false,
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 const readTheme = (): ThemeSettings => {
-  const saved = localStorage.getItem('ame-theme')
+  const saved = localStorage.getItem("ame-theme")
 
   if (!saved) {
     return defaultTheme
@@ -44,7 +44,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [settings.mode])
 
   const update = (nextSettings: ThemeSettings) => {
-    localStorage.setItem('ame-theme', JSON.stringify(nextSettings))
+    localStorage.setItem("ame-theme", JSON.stringify(nextSettings))
     setSettings(nextSettings)
   }
 
@@ -66,7 +66,7 @@ export function useThemeSettings() {
   const context = useContext(ThemeContext)
 
   if (!context) {
-    throw new Error('useThemeSettings must be used within ThemeProvider')
+    throw new Error("useThemeSettings must be used within ThemeProvider")
   }
 
   return context

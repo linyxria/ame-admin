@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import {
   App,
   Button,
@@ -14,12 +14,12 @@ import {
   Table,
   Tag,
   Tooltip,
-} from 'antd'
-import { Pencil, Plus, RotateCw, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { type Menu, systemApi, systemQueryKeys } from '../lib/system-api'
+} from "antd"
+import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { type Menu, systemApi, systemQueryKeys } from "../lib/system-api"
 
-export const Route = createFileRoute('/_admin/system/menus')({
+export const Route = createFileRoute("/_admin/system/menus")({
   component: MenusRoute,
 })
 
@@ -78,7 +78,7 @@ function MenusRoute() {
             sort: menu.sort,
             visible: menu.visible,
           }
-        : { parentId: null, title: '', path: '', icon: null, sort: 0, visible: true },
+        : { parentId: null, title: "", path: "", icon: null, sort: 0, visible: true },
     )
     setOpen(true)
   }
@@ -100,19 +100,19 @@ function MenusRoute() {
       } else {
         await createMenu.mutateAsync(body)
       }
-      message.success('保存成功')
+      message.success("保存成功")
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '保存失败')
+      message.error(error instanceof Error ? error.message : "保存失败")
     }
   }
 
   const remove = async (id: string) => {
     try {
       await deleteMenu.mutateAsync(id)
-      message.success('删除成功')
+      message.success("删除成功")
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '删除失败')
+      message.error(error instanceof Error ? error.message : "删除失败")
     }
   }
 
@@ -141,20 +141,20 @@ function MenusRoute() {
         loading={menusQuery.isLoading}
         dataSource={menusQuery.data ?? []}
         columns={[
-          { title: '菜单名称', dataIndex: 'title' },
-          { title: '路由', dataIndex: 'path', render: (path) => <Tag>{path}</Tag> },
-          { title: '图标', dataIndex: 'icon', render: (value) => value || '-' },
-          { title: '排序', dataIndex: 'sort', width: 90 },
+          { title: "菜单名称", dataIndex: "title" },
+          { title: "路由", dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
+          { title: "图标", dataIndex: "icon", render: (value) => value || "-" },
+          { title: "排序", dataIndex: "sort", width: 90 },
           {
-            title: '可见',
-            dataIndex: 'visible',
+            title: "可见",
+            dataIndex: "visible",
             width: 100,
             render: (visible) => (
-              <Tag color={visible ? 'green' : 'default'}>{visible ? '显示' : '隐藏'}</Tag>
+              <Tag color={visible ? "green" : "default"}>{visible ? "显示" : "隐藏"}</Tag>
             ),
           },
           {
-            title: '操作',
+            title: "操作",
             width: 150,
             render: (_, record) => (
               <Space>
@@ -165,7 +165,7 @@ function MenusRoute() {
                     onClick={() => showModal(record)}
                   />
                 </Tooltip>
-                <Tooltip title={record.builtIn ? '核心菜单不允许删除' : '删除'}>
+                <Tooltip title={record.builtIn ? "核心菜单不允许删除" : "删除"}>
                   <Popconfirm
                     title="确认删除这个菜单？"
                     onConfirm={() => remove(record.id)}
@@ -186,7 +186,7 @@ function MenusRoute() {
       />
 
       <Modal
-        title={editing ? '编辑菜单' : '新建菜单'}
+        title={editing ? "编辑菜单" : "新建菜单"}
         open={open}
         onOk={submit}
         onCancel={() => setOpen(false)}
@@ -205,14 +205,14 @@ function MenusRoute() {
           <Form.Item
             name="title"
             label="菜单名称"
-            rules={[{ required: true, message: '请输入菜单名称' }]}
+            rules={[{ required: true, message: "请输入菜单名称" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="path"
             label="路由地址"
-            rules={[{ required: true, message: '请输入路由地址' }]}
+            rules={[{ required: true, message: "请输入路由地址" }]}
           >
             <Input placeholder="/system/users" />
           </Form.Item>
@@ -220,11 +220,11 @@ function MenusRoute() {
             <Select
               allowClear
               options={[
-                { label: 'dashboard', value: 'dashboard' },
-                { label: 'settings', value: 'settings' },
-                { label: 'user', value: 'user' },
-                { label: 'team', value: 'team' },
-                { label: 'menu', value: 'menu' },
+                { label: "dashboard", value: "dashboard" },
+                { label: "settings", value: "settings" },
+                { label: "user", value: "user" },
+                { label: "team", value: "team" },
+                { label: "menu", value: "menu" },
               ]}
             />
           </Form.Item>

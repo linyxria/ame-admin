@@ -1,9 +1,9 @@
-import { betterAuth } from 'better-auth'
-import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { Elysia } from 'elysia'
-import { db } from '../db'
-import { schema } from '../db/schema'
-import { env } from './env'
+import { betterAuth } from "better-auth"
+import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { Elysia } from "elysia"
+import { db } from "../db"
+import { schema } from "../db/schema"
+import { env } from "./env"
 
 type CreateAuthOptions = {
   disableSignUp?: boolean
@@ -15,7 +15,7 @@ export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.CORS_ORIGIN],
     database: drizzleAdapter(db, {
-      provider: 'pg',
+      provider: "pg",
       schema,
     }),
     emailAndPassword: {
@@ -26,13 +26,13 @@ export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
 
 export const auth = createAuth()
 
-export const authMacro = new Elysia({ name: 'auth-macro' }).macro({
+export const authMacro = new Elysia({ name: "auth-macro" }).macro({
   auth: {
     async resolve({ status, request: { headers } }) {
       const session = await auth.api.getSession({ headers })
 
       if (!session) {
-        return status(401, { message: 'Unauthorized' })
+        return status(401, { message: "Unauthorized" })
       }
 
       return {
@@ -43,4 +43,4 @@ export const authMacro = new Elysia({ name: 'auth-macro' }).macro({
   },
 })
 
-export const authPlugin = new Elysia({ name: 'auth' }).mount(auth.handler).use(authMacro)
+export const authPlugin = new Elysia({ name: "auth" }).mount(auth.handler).use(authMacro)

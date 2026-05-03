@@ -1,8 +1,8 @@
-import { and, asc, count, eq, inArray } from 'drizzle-orm'
-import { Elysia, t } from 'elysia'
-import { db } from '../db'
-import { menu, role, roleMenu, user, userRole } from '../db/schema'
-import { auth, authMacro, createAuth } from '../lib/auth'
+import { and, asc, count, eq, inArray } from "drizzle-orm"
+import { Elysia, t } from "elysia"
+import { db } from "../db"
+import { menu, role, roleMenu, user, userRole } from "../db/schema"
+import { auth, authMacro, createAuth } from "../lib/auth"
 
 const id = () => crypto.randomUUID()
 
@@ -59,7 +59,7 @@ const canAccessMenu = async (userId: string, path: string) => {
   return Boolean(allowed)
 }
 
-const systemPermissionMacro = new Elysia({ name: 'system-permission' }).macro({
+const systemPermissionMacro = new Elysia({ name: "system-permission" }).macro({
   menu: (paths: string | string[]) => ({
     async beforeHandle({ headers, status }) {
       const session = await auth.api.getSession({
@@ -69,7 +69,7 @@ const systemPermissionMacro = new Elysia({ name: 'system-permission' }).macro({
       })
 
       if (!session) {
-        return status(401, { message: 'Unauthorized' })
+        return status(401, { message: "Unauthorized" })
       }
 
       const candidates = Array.isArray(paths) ? paths : [paths]
@@ -79,22 +79,22 @@ const systemPermissionMacro = new Elysia({ name: 'system-permission' }).macro({
             return true
           }
 
-          throw new Error('Menu not allowed')
+          throw new Error("Menu not allowed")
         }),
       ).catch(() => false)
 
       if (!allowed) {
-        return status(403, { message: 'Forbidden' })
+        return status(403, { message: "Forbidden" })
       }
     },
   }),
 })
 
-export const systemRoutes = new Elysia({ prefix: '/admin' })
+export const systemRoutes = new Elysia({ prefix: "/admin" })
   .use(authMacro)
   .use(systemPermissionMacro)
   .get(
-    '/overview',
+    "/overview",
     async () => {
       const [users, roles, menus] = await Promise.all([
         db.select({ value: count() }).from(user),
@@ -111,7 +111,7 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
     { auth: true },
   )
   .patch(
-    '/profile',
+    "/profile",
     async ({ body, user: currentUser }) => {
       const [updated] = await db
         .update(user)
@@ -133,7 +133,7 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
     { auth: true, body: profileBody },
   )
   .get(
-    '/users',
+    "/users",
     async () => {
       const rows = await db
         .select({
@@ -177,10 +177,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         ({ roleId: _roleId, roleName: _roleName, roleCode: _roleCode, ...item }) => item,
       )
     },
-    { auth: true, menu: '/system/users' },
+    { auth: true, menu: "/system/users" },
   )
   .post(
-    '/users',
+    "/users",
     async ({ body }) => {
       const auth = createAuth({ disableSignUp: false })
 
@@ -207,17 +207,17 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
     },
     {
       auth: true,
-      menu: '/system/users',
+      menu: "/system/users",
       body: t.Object({
         name: t.String({ minLength: 1 }),
-        email: t.String({ format: 'email' }),
+        email: t.String({ format: "email" }),
         password: t.String({ minLength: 8 }),
         roleIds: t.Optional(t.Array(t.String())),
       }),
     },
   )
   .patch(
-    '/users/:id',
+    "/users/:id",
     async ({ body, params }) => {
       const values: Partial<typeof user.$inferInsert> = {
         updatedAt: new Date(),
@@ -243,17 +243,17 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
       auth: true,
       body: t.Object({
         name: optionalText,
-        email: t.Optional(t.String({ format: 'email' })),
+        email: t.Optional(t.String({ format: "email" })),
         roleIds: t.Optional(t.Array(t.String())),
       }),
-      menu: '/system/users',
+      menu: "/system/users",
     },
   )
   .delete(
-    '/users/:id',
+    "/users/:id",
     async ({ params, user: currentUser, status }) => {
       if (params.id === currentUser.id) {
-        return status(400, { message: '不能删除当前登录用户' })
+        return status(400, { message: "不能删除当前登录用户" })
       }
 
       const [targetUser] = await db
@@ -263,16 +263,16 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         .limit(1)
 
       if (targetUser?.builtIn) {
-        return status(400, { message: '内置系统管理员不允许删除' })
+        return status(400, { message: "内置系统管理员不允许删除" })
       }
 
       await db.delete(user).where(eq(user.id, params.id))
       return { ok: true }
     },
-    { auth: true, menu: '/system/users' },
+    { auth: true, menu: "/system/users" },
   )
   .get(
-    '/roles',
+    "/roles",
     async () => {
       const roles = await db.select().from(role).orderBy(asc(role.createdAt))
       const mappings = await db.select().from(roleMenu)
@@ -284,10 +284,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
           .map((mapping) => mapping.menuId),
       }))
     },
-    { auth: true, menu: ['/system/roles', '/system/users'] },
+    { auth: true, menu: ["/system/roles", "/system/users"] },
   )
   .post(
-    '/roles',
+    "/roles",
     async ({ body }) => {
       const roleId = id()
 
@@ -302,10 +302,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
 
       return { ok: true, id: roleId }
     },
-    { auth: true, menu: '/system/roles', body: roleBody },
+    { auth: true, menu: "/system/roles", body: roleBody },
   )
   .patch(
-    '/roles/:id',
+    "/roles/:id",
     async ({ body, params }) => {
       await db
         .update(role)
@@ -322,10 +322,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
 
       return { ok: true }
     },
-    { auth: true, menu: '/system/roles', body: roleBody },
+    { auth: true, menu: "/system/roles", body: roleBody },
   )
   .delete(
-    '/roles/:id',
+    "/roles/:id",
     async ({ params, status }) => {
       const [targetRole] = await db
         .select({ builtIn: role.builtIn })
@@ -334,7 +334,7 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         .limit(1)
 
       if (targetRole?.builtIn) {
-        return status(400, { message: '内置超级管理员角色不允许删除' })
+        return status(400, { message: "内置超级管理员角色不允许删除" })
       }
 
       const [used] = await db
@@ -343,23 +343,23 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         .where(eq(userRole.roleId, params.id))
 
       if ((used?.value ?? 0) > 0) {
-        return status(400, { message: '角色已分配给用户，无法删除' })
+        return status(400, { message: "角色已分配给用户，无法删除" })
       }
 
       await db.delete(role).where(eq(role.id, params.id))
       return { ok: true }
     },
-    { auth: true, menu: '/system/roles' },
+    { auth: true, menu: "/system/roles" },
   )
   .get(
-    '/menus',
+    "/menus",
     async () => {
       return db.select().from(menu).orderBy(asc(menu.sort), asc(menu.createdAt))
     },
-    { auth: true, menu: ['/system/menus', '/system/roles'] },
+    { auth: true, menu: ["/system/menus", "/system/roles"] },
   )
   .get(
-    '/my-menus',
+    "/my-menus",
     async ({ user: currentUser }) => {
       const roleIds = await db
         .select({ roleId: userRole.roleId })
@@ -401,7 +401,7 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
     { auth: true },
   )
   .post(
-    '/menus',
+    "/menus",
     async ({ body }) => {
       const menuId = id()
 
@@ -417,10 +417,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
 
       return { ok: true, id: menuId }
     },
-    { auth: true, menu: '/system/menus', body: menuBody },
+    { auth: true, menu: "/system/menus", body: menuBody },
   )
   .patch(
-    '/menus/:id',
+    "/menus/:id",
     async ({ body, params }) => {
       await db
         .update(menu)
@@ -437,10 +437,10 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
 
       return { ok: true }
     },
-    { auth: true, menu: '/system/menus', body: menuBody },
+    { auth: true, menu: "/system/menus", body: menuBody },
   )
   .delete(
-    '/menus/:id',
+    "/menus/:id",
     async ({ params, status }) => {
       const [targetMenu] = await db
         .select({ builtIn: menu.builtIn })
@@ -449,7 +449,7 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         .limit(1)
 
       if (targetMenu?.builtIn) {
-        return status(400, { message: '核心系统菜单不允许删除' })
+        return status(400, { message: "核心系统菜单不允许删除" })
       }
 
       const [children] = await db
@@ -458,11 +458,11 @@ export const systemRoutes = new Elysia({ prefix: '/admin' })
         .where(eq(menu.parentId, params.id))
 
       if ((children?.value ?? 0) > 0) {
-        return status(400, { message: '请先删除子菜单' })
+        return status(400, { message: "请先删除子菜单" })
       }
 
       await db.delete(menu).where(eq(menu.id, params.id))
       return { ok: true }
     },
-    { auth: true, menu: '/system/menus' },
+    { auth: true, menu: "/system/menus" },
   )

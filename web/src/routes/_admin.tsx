@@ -1,17 +1,17 @@
-import { createFileRoute, redirect } from '@tanstack/react-router'
-import { AdminLayout } from '../layouts/admin'
-import { systemApi, systemQueryKeys } from '../lib/system-api'
+import { createFileRoute, redirect } from "@tanstack/react-router"
+import { AdminLayout } from "../layouts/admin"
+import { systemApi, systemQueryKeys } from "../lib/system-api"
 
-const publicAdminPaths = new Set(['/dashboard', '/account/settings'])
+const publicAdminPaths = new Set(["/dashboard", "/account/settings"])
 
-export const Route = createFileRoute('/_admin')({
+export const Route = createFileRoute("/_admin")({
   component: AdminLayout,
   beforeLoad: async ({ context, location }) => {
     const { data } = await context.auth.getSession()
 
     if (!data) {
       throw redirect({
-        to: '/login',
+        to: "/login",
         search: { redirect: location.href },
         replace: true,
       })
@@ -28,7 +28,7 @@ export const Route = createFileRoute('/_admin')({
 
       if (!canAccess) {
         throw redirect({
-          to: '/dashboard',
+          to: "/dashboard",
           replace: true,
         })
       }

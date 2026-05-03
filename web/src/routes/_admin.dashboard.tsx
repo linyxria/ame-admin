@@ -1,14 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
-import { createFileRoute, useRouteContext } from '@tanstack/react-router'
-import { Card, Col, Row, Space, Statistic } from 'antd'
-import { systemApi, systemQueryKeys } from '../lib/system-api'
+import { useQuery } from "@tanstack/react-query"
+import { createFileRoute, useRouteContext } from "@tanstack/react-router"
+import { Card, Col, Row, Space, Statistic } from "antd"
+import { systemApi, systemQueryKeys } from "../lib/system-api"
 
-export const Route = createFileRoute('/_admin/dashboard')({
+export const Route = createFileRoute("/_admin/dashboard")({
   component: DashboardRoute,
 })
 
 function DashboardRoute() {
-  const { session, user } = useRouteContext({ from: '/_admin/dashboard' })
+  const { session, user } = useRouteContext({ from: "/_admin/dashboard" })
   const overviewQuery = useQuery({
     queryKey: systemQueryKeys.overview,
     queryFn: systemApi.overview,
@@ -40,7 +40,7 @@ function DashboardRoute() {
         </Col>
       </Row>
 
-      <Card title={`当前用户 · ${session ? '已登录' : '加载中'}`}>
+      <Card title={`当前用户 · ${session ? "已登录" : "加载中"}`}>
         <pre className="m-0 min-h-40 overflow-auto rounded-md bg-slate-900 p-4 text-[13px] leading-relaxed text-emerald-100">
           {JSON.stringify(user, null, 2)}
         </pre>

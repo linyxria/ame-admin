@@ -1,11 +1,11 @@
-import { createRouter } from '@tanstack/react-router'
-import { authClient } from './lib/auth-client'
-import { queryClient } from './lib/query-client'
-import { routeTree } from './route-tree.gen'
+import { createRouter } from "@tanstack/react-router"
+import { authClient } from "./lib/auth-client"
+import { queryClient } from "./lib/query-client"
+import { routeTree } from "./route-tree.gen"
 
 export const router = createRouter({
   routeTree,
-  defaultPreload: 'intent',
+  defaultPreload: "intent",
   context: {
     auth: {
       getSession: authClient.getSession,
@@ -16,7 +16,7 @@ export const router = createRouter({
   },
 })
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router
   }

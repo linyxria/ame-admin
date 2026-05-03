@@ -1,94 +1,94 @@
-import { eq } from 'drizzle-orm'
-import { db, pool } from '../db'
-import { menu, role, roleMenu, user, userRole } from '../db/schema'
-import { createAuth } from '../lib/auth'
+import { eq } from "drizzle-orm"
+import { db, pool } from "../db"
+import { menu, role, roleMenu, user, userRole } from "../db/schema"
+import { createAuth } from "../lib/auth"
 
-const email = process.env.ADMIN_EMAIL ?? 'admin@example.com'
-const password = process.env.ADMIN_PASSWORD ?? 'admin123456'
-const name = process.env.ADMIN_NAME ?? '系统管理员'
-const adminRoleId = 'role_admin'
+const email = process.env.ADMIN_EMAIL ?? "admin@example.com"
+const password = process.env.ADMIN_PASSWORD ?? "admin123456"
+const name = process.env.ADMIN_NAME ?? "系统管理员"
+const adminRoleId = "role_admin"
 const defaultMenus = [
   {
-    id: 'menu_system',
-    title: '系统设置',
-    path: '/system',
-    icon: 'settings',
+    id: "menu_system",
+    title: "系统设置",
+    path: "/system",
+    icon: "settings",
     sort: 10,
     builtIn: true,
   },
   {
-    id: 'menu_dashboard',
-    title: '控制台',
-    path: '/dashboard',
-    icon: 'dashboard',
+    id: "menu_dashboard",
+    title: "控制台",
+    path: "/dashboard",
+    icon: "dashboard",
     sort: 0,
   },
   {
-    id: 'menu_system_users',
-    parentId: 'menu_system',
-    title: '用户管理',
-    path: '/system/users',
-    icon: 'user',
+    id: "menu_system_users",
+    parentId: "menu_system",
+    title: "用户管理",
+    path: "/system/users",
+    icon: "user",
     sort: 10,
     builtIn: true,
   },
   {
-    id: 'menu_system_roles',
-    parentId: 'menu_system',
-    title: '角色管理',
-    path: '/system/roles',
-    icon: 'team',
+    id: "menu_system_roles",
+    parentId: "menu_system",
+    title: "角色管理",
+    path: "/system/roles",
+    icon: "team",
     sort: 20,
     builtIn: true,
   },
   {
-    id: 'menu_system_menus',
-    parentId: 'menu_system',
-    title: '菜单管理',
-    path: '/system/menus',
-    icon: 'menu',
+    id: "menu_system_menus",
+    parentId: "menu_system",
+    title: "菜单管理",
+    path: "/system/menus",
+    icon: "menu",
     sort: 30,
     builtIn: true,
   },
   {
-    id: 'menu_demos',
-    title: '示例',
-    path: '/demos',
-    icon: 'demo',
+    id: "menu_demos",
+    title: "示例",
+    path: "/demos",
+    icon: "demo",
     sort: 20,
     builtIn: true,
   },
   {
-    id: 'menu_demo_charts',
-    parentId: 'menu_demos',
-    title: '图表示例',
-    path: '/demos/charts',
-    icon: 'chart',
+    id: "menu_demo_charts",
+    parentId: "menu_demos",
+    title: "图表示例",
+    path: "/demos/charts",
+    icon: "chart",
     sort: 10,
     builtIn: true,
   },
   {
-    id: 'menu_demo_table',
-    parentId: 'menu_demos',
-    title: '表格示例',
-    path: '/demos/table',
-    icon: 'table',
+    id: "menu_demo_table",
+    parentId: "menu_demos",
+    title: "表格示例",
+    path: "/demos/table",
+    icon: "table",
     sort: 20,
     builtIn: true,
   },
   {
-    id: 'menu_demo_form',
-    parentId: 'menu_demos',
-    title: '表单示例',
-    path: '/demos/form',
-    icon: 'form',
+    id: "menu_demo_form",
+    parentId: "menu_demos",
+    title: "表单示例",
+    path: "/demos/form",
+    icon: "form",
     sort: 30,
     builtIn: true,
   },
 ]
 
 if (password.length < 8) {
-  throw new Error('ADMIN_PASSWORD must be at least 8 characters.')
+  throw new Error("ADMIN_PASSWORD must be at least 8 characters.")
 }
 
 const existing = await db
@@ -101,17 +101,17 @@ await db
   .insert(role)
   .values({
     id: adminRoleId,
-    name: '超级管理员',
-    code: 'admin',
-    description: '内置最高权限角色',
+    name: "超级管理员",
+    code: "admin",
+    description: "内置最高权限角色",
     builtIn: true,
   })
   .onConflictDoUpdate({
     target: role.id,
     set: {
-      name: '超级管理员',
-      code: 'admin',
-      description: '内置最高权限角色',
+      name: "超级管理员",
+      code: "admin",
+      description: "内置最高权限角色",
       enabled: true,
       builtIn: true,
       updatedAt: new Date(),

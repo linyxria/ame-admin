@@ -1,5 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import {
   App,
   Button,
@@ -13,12 +13,12 @@ import {
   Tag,
   Tooltip,
   TreeSelect,
-} from 'antd'
-import { Pencil, Plus, RotateCw, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { type Role, systemApi, systemQueryKeys } from '../lib/system-api'
+} from "antd"
+import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { type Role, systemApi, systemQueryKeys } from "../lib/system-api"
 
-export const Route = createFileRoute('/_admin/system/roles')({
+export const Route = createFileRoute("/_admin/system/roles")({
   component: RolesRoute,
 })
 
@@ -97,7 +97,7 @@ function RolesRoute() {
             enabled: role.enabled,
             menuIds: role.menuIds,
           }
-        : { name: '', code: '', description: '', enabled: true, menuIds: [] },
+        : { name: "", code: "", description: "", enabled: true, menuIds: [] },
     )
     setOpen(true)
   }
@@ -118,19 +118,19 @@ function RolesRoute() {
       } else {
         await createRole.mutateAsync(body)
       }
-      message.success('保存成功')
+      message.success("保存成功")
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '保存失败')
+      message.error(error instanceof Error ? error.message : "保存失败")
     }
   }
 
   const remove = async (id: string) => {
     try {
       await deleteRole.mutateAsync(id)
-      message.success('删除成功')
+      message.success("删除成功")
     } catch (error) {
-      message.error(error instanceof Error ? error.message : '删除失败')
+      message.error(error instanceof Error ? error.message : "删除失败")
     }
   }
 
@@ -159,19 +159,19 @@ function RolesRoute() {
         loading={rolesQuery.isLoading || menusQuery.isLoading}
         dataSource={rolesQuery.data ?? []}
         columns={[
-          { title: '角色名称', dataIndex: 'name' },
-          { title: '标识', dataIndex: 'code', render: (code) => <Tag>{code}</Tag> },
-          { title: '说明', dataIndex: 'description', render: (value) => value || '-' },
+          { title: "角色名称", dataIndex: "name" },
+          { title: "标识", dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
+          { title: "说明", dataIndex: "description", render: (value) => value || "-" },
           {
-            title: '状态',
-            dataIndex: 'enabled',
+            title: "状态",
+            dataIndex: "enabled",
             render: (enabled) => (
-              <Tag color={enabled ? 'green' : 'default'}>{enabled ? '启用' : '停用'}</Tag>
+              <Tag color={enabled ? "green" : "default"}>{enabled ? "启用" : "停用"}</Tag>
             ),
           },
-          { title: '菜单数', dataIndex: 'menuIds', render: (value: string[]) => value.length },
+          { title: "菜单数", dataIndex: "menuIds", render: (value: string[]) => value.length },
           {
-            title: '操作',
+            title: "操作",
             width: 150,
             render: (_, record) => (
               <Space>
@@ -182,7 +182,7 @@ function RolesRoute() {
                     onClick={() => showModal(record)}
                   />
                 </Tooltip>
-                <Tooltip title={record.builtIn ? '内置超级管理员角色不允许删除' : '删除'}>
+                <Tooltip title={record.builtIn ? "内置超级管理员角色不允许删除" : "删除"}>
                   <Popconfirm
                     title="确认删除这个角色？"
                     onConfirm={() => remove(record.id)}
@@ -203,7 +203,7 @@ function RolesRoute() {
       />
 
       <Modal
-        title={editing ? '编辑角色' : '新建角色'}
+        title={editing ? "编辑角色" : "新建角色"}
         open={open}
         onOk={submit}
         onCancel={() => setOpen(false)}
@@ -214,14 +214,14 @@ function RolesRoute() {
           <Form.Item
             name="name"
             label="角色名称"
-            rules={[{ required: true, message: '请输入角色名称' }]}
+            rules={[{ required: true, message: "请输入角色名称" }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="code"
             label="角色标识"
-            rules={[{ required: true, message: '请输入角色标识' }]}
+            rules={[{ required: true, message: "请输入角色标识" }]}
           >
             <Input />
           </Form.Item>

@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Button, Card, DatePicker, Form, Input, Select, Space, Switch, Upload } from 'antd'
+import { createFileRoute } from "@tanstack/react-router"
+import { Button, Card, DatePicker, Form, Input, Select, Space, Switch, Upload } from "antd"
 
-export const Route = createFileRoute('/_admin/demos/form')({
+export const Route = createFileRoute("/_admin/demos/form")({
   component: FormDemoRoute,
 })
 
@@ -20,9 +20,9 @@ function FormDemoRoute() {
           <Form.Item label="类型" name="type">
             <Select
               options={[
-                { label: '公告', value: 'notice' },
-                { label: '活动', value: 'campaign' },
-                { label: '文档', value: 'doc' },
+                { label: "公告", value: "notice" },
+                { label: "活动", value: "campaign" },
+                { label: "文档", value: "doc" },
               ]}
             />
           </Form.Item>

@@ -1,7 +1,7 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { Button, Card, Input, Space, Table, Tag } from 'antd'
+import { createFileRoute } from "@tanstack/react-router"
+import { Button, Card, Input, Space, Table, Tag } from "antd"
 
-export const Route = createFileRoute('/_admin/demos/table')({
+export const Route = createFileRoute("/_admin/demos/table")({
   component: TableDemoRoute,
 })
 
@@ -27,25 +27,25 @@ function TableDemoRoute() {
           rowKey="id"
           rowSelection={{}}
           dataSource={[
-            { id: 1, name: '权限中心重构', owner: 'Lucy', status: 'running', progress: '72%' },
-            { id: 2, name: '通知中心设计', owner: 'Ning', status: 'review', progress: '48%' },
-            { id: 3, name: '组件库升级', owner: 'Zheng', status: 'done', progress: '100%' },
+            { id: 1, name: "权限中心重构", owner: "Lucy", status: "running", progress: "72%" },
+            { id: 2, name: "通知中心设计", owner: "Ning", status: "review", progress: "48%" },
+            { id: 3, name: "组件库升级", owner: "Zheng", status: "done", progress: "100%" },
           ]}
           columns={[
-            { title: '项目', dataIndex: 'name' },
-            { title: '负责人', dataIndex: 'owner' },
+            { title: "项目", dataIndex: "name" },
+            { title: "负责人", dataIndex: "owner" },
             {
-              title: '状态',
-              dataIndex: 'status',
+              title: "状态",
+              dataIndex: "status",
               filters: [
-                { text: '运行中', value: 'running' },
-                { text: '评审中', value: 'review' },
-                { text: '已完成', value: 'done' },
+                { text: "运行中", value: "running" },
+                { text: "评审中", value: "review" },
+                { text: "已完成", value: "done" },
               ],
-              render: (value) => <Tag color={value === 'done' ? 'green' : 'blue'}>{value}</Tag>,
+              render: (value) => <Tag color={value === "done" ? "green" : "blue"}>{value}</Tag>,
             },
-            { title: '进度', dataIndex: 'progress' },
-            { title: '操作', fixed: 'right', render: () => <Button type="link">详情</Button> },
+            { title: "进度", dataIndex: "progress" },
+            { title: "操作", fixed: "right", render: () => <Button type="link">详情</Button> },
           ]}
         />
       </Card>

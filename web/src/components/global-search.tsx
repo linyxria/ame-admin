@@ -1,13 +1,13 @@
-import { Button, Empty, Input, Modal } from 'antd'
-import { Search } from 'lucide-react'
-import { useState } from 'react'
-import { useTranslation } from 'react-i18next'
-import type { Menu } from '../lib/system-api'
+import { Button, Empty, Input, Modal } from "antd"
+import { Search } from "lucide-react"
+import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import type { Menu } from "../lib/system-api"
 
 export function GlobalSearch({ menus }: { menus: Menu[] }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
-  const [keyword, setKeyword] = useState('')
+  const [keyword, setKeyword] = useState("")
   const results = menus.filter((menu) =>
     `${menu.title} ${menu.path}`.toLowerCase().includes(keyword.toLowerCase()),
   )
@@ -15,10 +15,10 @@ export function GlobalSearch({ menus }: { menus: Menu[] }) {
   return (
     <>
       <Button type="text" icon={<Search size={18} />} onClick={() => setOpen(true)}>
-        <span className="hidden md:inline">{t('search')}</span>
+        <span className="hidden md:inline">{t("search")}</span>
       </Button>
       <Modal
-        title={t('globalSearch')}
+        title={t("globalSearch")}
         open={open}
         onCancel={() => setOpen(false)}
         footer={null}
@@ -29,7 +29,7 @@ export function GlobalSearch({ menus }: { menus: Menu[] }) {
           prefix={<Search size={16} />}
           value={keyword}
           onChange={(event) => setKeyword(event.target.value)}
-          placeholder={t('globalSearch')}
+          placeholder={t("globalSearch")}
         />
         <div className="mt-4 max-h-80 overflow-auto">
           {results.length ? (

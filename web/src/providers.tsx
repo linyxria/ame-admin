@@ -1,15 +1,15 @@
-import { QueryClientProvider } from '@tanstack/react-query'
-import { App as AntdApp, ConfigProvider, theme } from 'antd'
-import type { ReactNode } from 'react'
-import App from './app.tsx'
-import { queryClient } from './lib/query-client'
-import { ThemeProvider, useThemeSettings } from './lib/theme'
+import { QueryClientProvider } from "@tanstack/react-query"
+import { App as AntdApp, ConfigProvider, theme } from "antd"
+import type { ReactNode } from "react"
+import App from "./app.tsx"
+import { queryClient } from "./lib/query-client"
+import { ThemeProvider, useThemeSettings } from "./lib/theme"
 
 const { defaultAlgorithm, darkAlgorithm, compactAlgorithm } = theme
 
 function AntdProvider({ children }: { children: ReactNode }) {
   const { compact, mode, primaryColor } = useThemeSettings()
-  const isDarkMode = mode === 'dark'
+  const isDarkMode = mode === "dark"
   const algorithms = [isDarkMode ? darkAlgorithm : defaultAlgorithm]
 
   if (compact) {
@@ -25,8 +25,8 @@ function AntdProvider({ children }: { children: ReactNode }) {
         },
         components: {
           Layout: {
-            headerPadding: '0 16px',
-            ...(isDarkMode ? {} : { headerBg: '#fff' }),
+            headerPadding: "0 16px",
+            ...(isDarkMode ? {} : { headerBg: "#fff" }),
           },
         },
       }}
