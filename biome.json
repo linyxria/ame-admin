@@ -6,16 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": [
-      "api/src/**",
-      "api/drizzle.config.ts",
-      "api/package.json",
-      "web/src/**",
-      "!web/src/route-tree.gen.ts",
-      "web/vite.config.ts",
-      "web/package.json",
-      "package.json"
-    ],
+    "includes": ["**/*.{js,jsx,ts,tsx,json}", "!web/src/route-tree.gen.ts"],
     "ignoreUnknown": true
   },
   "formatter": {

@@ -7,12 +7,13 @@ import { defineConfig } from "vite"
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
     tanstackRouter({
       target: "react",
       generatedRouteTree: "./src/route-tree.gen.ts",
+      autoCodeSplitting: true,
     }),
+    react(),
+    babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
 })
