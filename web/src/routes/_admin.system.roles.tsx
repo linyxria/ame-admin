@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import {
   App,
   Button,
+  Checkbox,
   Form,
   Input,
   Modal,
@@ -28,7 +29,15 @@ type RoleForm = {
   description?: string
   enabled: boolean
   menuIds: string[]
+  permissions: { menuId: string; actions: string[] }[]
 }
+
+const actionOptions = [
+  { label: "查看", value: "view" },
+  { label: "新增", value: "create" },
+  { label: "编辑", value: "update" },
+  { label: "删除", value: "delete" },
+]
 
 function RolesRoute() {
   const [form] = Form.useForm<RoleForm>()
@@ -36,6 +45,7 @@ function RolesRoute() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<Role | null>(null)
   const [open, setOpen] = useState(false)
+  const selectedMenuIds = Form.useWatch("menuIds", form) ?? []
 
   const rolesQuery = useQuery({
     queryKey: systemQueryKeys.roles,
@@ -45,6 +55,15 @@ function RolesRoute() {
     queryKey: systemQueryKeys.menus,
     queryFn: systemApi.menus,
   })
+  const permissionsQuery = useQuery({
+    queryKey: systemQueryKeys.myPermissions,
+    queryFn: systemApi.myPermissions,
+  })
+  const roleActions =
+    permissionsQuery.data?.find((item) => item.path === "/system/roles")?.actions ?? []
+  const canCreate = roleActions.includes("create")
+  const canUpdate = roleActions.includes("update")
+  const canDelete = roleActions.includes("delete")
 
   const refresh = async () => {
     await Promise.all([
@@ -96,8 +115,9 @@ function RolesRoute() {
             description: role.description ?? undefined,
             enabled: role.enabled,
             menuIds: role.menuIds,
+            permissions: role.permissions,
           }
-        : { name: "", code: "", description: "", enabled: true, menuIds: [] },
+        : { name: "", code: "", description: "", enabled: true, menuIds: [], permissions: [] },
     )
     setOpen(true)
   }
@@ -110,6 +130,11 @@ function RolesRoute() {
       description: values.description ?? null,
       enabled: values.enabled,
       menuIds: values.menuIds ?? [],
+      permissions: (values.menuIds ?? []).map((menuId) => ({
+        menuId,
+        actions: values.permissions?.find((permission) => permission.menuId === menuId)
+          ?.actions ?? ["view"],
+      })),
     }
 
     try {
@@ -148,7 +173,12 @@ function RolesRoute() {
               void refresh()
             }}
           />
-          <Button type="primary" icon={<Plus size={16} />} onClick={() => showModal()}>
+          <Button
+            type="primary"
+            disabled={!canCreate}
+            icon={<Plus size={16} />}
+            onClick={() => showModal()}
+          >
             新建角色
           </Button>
         </Space>
@@ -178,6 +208,7 @@ function RolesRoute() {
                 <Tooltip title="编辑">
                   <Button
                     type="text"
+                    disabled={!canUpdate}
                     icon={<Pencil size={16} />}
                     onClick={() => showModal(record)}
                   />
@@ -186,12 +217,12 @@ function RolesRoute() {
                   <Popconfirm
                     title="确认删除这个角色？"
                     onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn}
+                    disabled={record.builtIn || !canDelete}
                   >
                     <Button
                       type="text"
                       danger
-                      disabled={record.builtIn}
+                      disabled={record.builtIn || !canDelete}
                       icon={<Trash2 size={16} />}
                     />
                   </Popconfirm>
@@ -210,7 +241,11 @@ function RolesRoute() {
         destroyOnHidden
         forceRender
       >
-        <Form form={form} layout="vertical" initialValues={{ enabled: true, menuIds: [] }}>
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={{ enabled: true, menuIds: [], permissions: [] }}
+        >
           <Form.Item
             name="name"
             label="角色名称"
@@ -238,6 +273,46 @@ function RolesRoute() {
               showCheckedStrategy={TreeSelect.SHOW_PARENT}
               treeData={menuTree}
             />
+          </Form.Item>
+          <Form.Item label="动作权限" shouldUpdate>
+            {() => (
+              <Space orientation="vertical" className="w-full">
+                {selectedMenuIds.length ? (
+                  selectedMenuIds.map((menuId) => {
+                    const menu = menusQuery.data?.find((item) => item.id === menuId)
+                    const permissions = form.getFieldValue("permissions") ?? []
+                    const current = permissions.find(
+                      (permission: RoleForm["permissions"][number]) => permission.menuId === menuId,
+                    )
+
+                    return (
+                      <div
+                        key={menuId}
+                        className="ame-border flex items-center justify-between gap-4 rounded-md border px-3 py-2"
+                      >
+                        <span className="ame-text min-w-32">{menu?.title ?? menuId}</span>
+                        <Checkbox.Group
+                          options={actionOptions}
+                          value={current?.actions ?? ["view"]}
+                          onChange={(actions) => {
+                            const next = permissions.filter(
+                              (permission: RoleForm["permissions"][number]) =>
+                                permission.menuId !== menuId,
+                            )
+                            form.setFieldValue("permissions", [
+                              ...next,
+                              { menuId, actions: actions.map(String) },
+                            ])
+                          }}
+                        />
+                      </div>
+                    )
+                  })
+                ) : (
+                  <span className="ame-text-subtle">先选择菜单后配置动作权限。</span>
+                )}
+              </Space>
+            )}
           </Form.Item>
         </Form>
       </Modal>

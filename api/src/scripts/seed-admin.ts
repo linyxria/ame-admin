@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
-import { db, pool } from "../db"
-import { menu, role, roleMenu, user, userRole } from "../db/schema"
-import { createAuth } from "../lib/auth"
+import { db, pool } from "@/db"
+import { menu, notification, role, roleMenu, systemSetting, user, userRole } from "@/db/schema"
+import { createAuth } from "@/lib/auth"
 
 const email = process.env.ADMIN_EMAIL ?? "admin@example.com"
 const password = process.env.ADMIN_PASSWORD ?? "admin123456"
@@ -48,6 +48,32 @@ const defaultMenus = [
     path: "/system/menus",
     icon: "menu",
     sort: 30,
+    builtIn: true,
+  },
+  {
+    id: "menu_system_audit_logs",
+    parentId: "menu_system",
+    title: "审计日志",
+    path: "/system/audit-logs",
+    icon: "audit",
+    sort: 40,
+    builtIn: true,
+  },
+  {
+    id: "menu_system_settings",
+    parentId: "menu_system",
+    title: "系统设置",
+    path: "/system/settings",
+    icon: "settings",
+    sort: 50,
+    builtIn: true,
+  },
+  {
+    id: "menu_notifications",
+    title: "通知中心",
+    path: "/notifications",
+    icon: "bell",
+    sort: 15,
     builtIn: true,
   },
   {
@@ -139,7 +165,39 @@ for (const item of defaultMenus) {
 
 await db
   .insert(roleMenu)
-  .values(defaultMenus.map((item) => ({ roleId: adminRoleId, menuId: item.id })))
+  .values(
+    defaultMenus.map((item) => ({
+      roleId: adminRoleId,
+      menuId: item.id,
+      actions: "view,create,update,delete",
+    })),
+  )
+  .onConflictDoNothing()
+
+await db
+  .insert(systemSetting)
+  .values([
+    {
+      key: "siteName",
+      value: "AME 管理后台",
+      description: "显示在侧边栏和浏览器标题中的站点名称",
+    },
+    {
+      key: "defaultLanguage",
+      value: "zh-CN",
+      description: "新会话默认语言",
+    },
+    {
+      key: "passwordMinLength",
+      value: "8",
+      description: "后台账号密码最小长度",
+    },
+    {
+      key: "allowPublicSignUp",
+      value: "false",
+      description: "是否允许公开注册",
+    },
+  ])
   .onConflictDoNothing()
 
 if (existing[0]) {
@@ -174,6 +232,16 @@ if (created) {
   await db
     .insert(userRole)
     .values({ userId: created.id, roleId: adminRoleId })
+    .onConflictDoNothing()
+  await db
+    .insert(notification)
+    .values({
+      id: crypto.randomUUID(),
+      userId: created.id,
+      type: "notice",
+      title: "系统初始化完成",
+      description: "默认管理员、系统菜单和基础设置已经创建。",
+    })
     .onConflictDoNothing()
 }
 

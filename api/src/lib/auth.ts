@@ -1,8 +1,9 @@
 import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
+import { eq } from "drizzle-orm"
 import { Elysia } from "elysia"
-import { db } from "../db"
-import { schema } from "../db/schema"
+import { db } from "@/db"
+import { schema, user } from "@/db/schema"
 import { env } from "./env"
 
 type CreateAuthOptions = {
@@ -33,6 +34,16 @@ export const authMacro = new Elysia({ name: "auth-macro" }).macro({
 
       if (!session) {
         return status(401, { message: "Unauthorized" })
+      }
+
+      const [currentUser] = await db
+        .select({ enabled: user.enabled })
+        .from(user)
+        .where(eq(user.id, session.user.id))
+        .limit(1)
+
+      if (!currentUser?.enabled) {
+        return status(403, { message: "账号已停用" })
       }
 
       return {

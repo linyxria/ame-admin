@@ -14,6 +14,7 @@ import {
   Typography,
 } from "antd"
 import {
+  Bell,
   Check,
   ChevronDown,
   ClipboardList,
@@ -24,6 +25,7 @@ import {
   Menu as MenuIcon,
   Moon,
   Palette,
+  ScrollText,
   Settings,
   Shield,
   Sun,
@@ -42,6 +44,8 @@ import { useThemeSettings } from "../lib/theme"
 const { Header, Sider, Content } = Layout
 
 const iconMap = {
+  audit: <ScrollText size={16} />,
+  bell: <Bell size={16} />,
   dashboard: <Gauge size={16} />,
   chart: <Gauge size={16} />,
   demo: <ClipboardList size={16} />,
@@ -65,7 +69,13 @@ export function AdminLayout() {
     queryKey: systemQueryKeys.myMenus,
     queryFn: systemApi.myMenus,
   })
+  const settingsQuery = useQuery({
+    queryKey: systemQueryKeys.settings,
+    queryFn: systemApi.settings,
+  })
   const menus = menusQuery.data ?? []
+  const siteName =
+    settingsQuery.data?.find((item) => item.key === "siteName")?.value || t("appName")
 
   const signOut = async () => {
     await auth.signOut({
@@ -199,7 +209,7 @@ export function AdminLayout() {
     <Layout className="h-screen overflow-hidden max-[760px]:min-w-215">
       <Sider className="ame-border h-screen overflow-hidden border-r" width={224} theme={mode}>
         <div className="ame-border ame-text flex h-16 items-center border-b px-5 text-base font-bold">
-          {t("appName")}
+          {siteName}
         </div>
         <div className="h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden">
           <AntMenu

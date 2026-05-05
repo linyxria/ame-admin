@@ -10,11 +10,12 @@ import {
   Popconfirm,
   Select,
   Space,
+  Switch,
   Table,
   Tag,
   Tooltip,
 } from "antd"
-import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
+import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { type SystemUser, systemApi, systemQueryKeys } from "../lib/system-api"
 
@@ -35,6 +36,9 @@ function UsersRoute() {
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<SystemUser | null>(null)
   const [open, setOpen] = useState(false)
+  const [keyword, setKeyword] = useState("")
+  const [resetting, setResetting] = useState<SystemUser | null>(null)
+  const [password, setPassword] = useState("")
 
   const usersQuery = useQuery({
     queryKey: systemQueryKeys.users,
@@ -44,6 +48,20 @@ function UsersRoute() {
     queryKey: systemQueryKeys.roles,
     queryFn: systemApi.roles,
   })
+  const permissionsQuery = useQuery({
+    queryKey: systemQueryKeys.myPermissions,
+    queryFn: systemApi.myPermissions,
+  })
+  const userActions =
+    permissionsQuery.data?.find((item) => item.path === "/system/users")?.actions ?? []
+  const canCreate = userActions.includes("create")
+  const canUpdate = userActions.includes("update")
+  const canDelete = userActions.includes("delete")
+  const users = (usersQuery.data ?? []).filter((item) =>
+    `${item.name} ${item.email} ${item.roles.map((role) => role.name).join(" ")}`
+      .toLowerCase()
+      .includes(keyword.toLowerCase()),
+  )
 
   const refresh = async () => {
     await Promise.all([
@@ -63,6 +81,15 @@ function UsersRoute() {
   })
   const deleteUser = useMutation({
     mutationFn: systemApi.deleteUser,
+    onSuccess: refresh,
+  })
+  const resetPassword = useMutation({
+    mutationFn: ({ id, nextPassword }: { id: string; nextPassword: string }) =>
+      systemApi.resetUserPassword(id, nextPassword),
+    onSuccess: refresh,
+  })
+  const revokeSessions = useMutation({
+    mutationFn: systemApi.revokeUserSessions,
     onSuccess: refresh,
   })
 
@@ -131,7 +158,12 @@ function UsersRoute() {
               void refresh()
             }}
           />
-          <Button type="primary" icon={<Plus size={16} />} onClick={() => showModal()}>
+          <Button
+            type="primary"
+            disabled={!canCreate}
+            icon={<Plus size={16} />}
+            onClick={() => showModal()}
+          >
             新建用户
           </Button>
         </Space>
@@ -140,7 +172,17 @@ function UsersRoute() {
       <Table<SystemUser>
         rowKey="id"
         loading={usersQuery.isLoading || rolesQuery.isLoading}
-        dataSource={usersQuery.data ?? []}
+        dataSource={users}
+        pagination={{ showSizeChanger: true }}
+        title={() => (
+          <Input.Search
+            allowClear
+            className="max-w-sm"
+            placeholder="搜索姓名、邮箱或角色"
+            value={keyword}
+            onChange={(event) => setKeyword(event.target.value)}
+          />
+        )}
         columns={[
           {
             title: "用户",
@@ -163,6 +205,26 @@ function UsersRoute() {
               ),
           },
           {
+            title: "状态",
+            dataIndex: "enabled",
+            width: 110,
+            render: (enabled, record) => (
+              <Switch
+                size="small"
+                checked={enabled}
+                disabled={record.builtIn || !canUpdate}
+                checkedChildren="启用"
+                unCheckedChildren="停用"
+                onChange={(checked) =>
+                  updateUser.mutate({
+                    id: record.id,
+                    body: { enabled: checked },
+                  })
+                }
+              />
+            ),
+          },
+          {
             title: "邮箱验证",
             dataIndex: "emailVerified",
             width: 110,
@@ -178,20 +240,41 @@ function UsersRoute() {
                 <Tooltip title="编辑">
                   <Button
                     type="text"
+                    disabled={!canUpdate}
                     icon={<Pencil size={16} />}
                     onClick={() => showModal(record)}
                   />
+                </Tooltip>
+                <Tooltip title="重置密码">
+                  <Button
+                    type="text"
+                    disabled={!canUpdate}
+                    icon={<KeyRound size={16} />}
+                    onClick={() => {
+                      setResetting(record)
+                      setPassword("")
+                    }}
+                  />
+                </Tooltip>
+                <Tooltip title="强制重新登录">
+                  <Popconfirm
+                    title="确认让这个用户的所有会话失效？"
+                    onConfirm={() => revokeSessions.mutate(record.id)}
+                    disabled={!canUpdate}
+                  >
+                    <Button type="text" disabled={!canUpdate} icon={<LogOut size={16} />} />
+                  </Popconfirm>
                 </Tooltip>
                 <Tooltip title={record.builtIn ? "内置系统管理员不允许删除" : "删除"}>
                   <Popconfirm
                     title="确认删除这个用户？"
                     onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn}
+                    disabled={record.builtIn || !canDelete}
                   >
                     <Button
                       type="text"
                       danger
-                      disabled={record.builtIn}
+                      disabled={record.builtIn || !canDelete}
                       icon={<Trash2 size={16} />}
                     />
                   </Popconfirm>
@@ -240,6 +323,35 @@ function UsersRoute() {
             />
           </Form.Item>
         </Form>
+      </Modal>
+      <Modal
+        title={`重置密码 · ${resetting?.name ?? ""}`}
+        open={Boolean(resetting)}
+        okButtonProps={{ loading: resetPassword.isPending }}
+        onCancel={() => setResetting(null)}
+        onOk={async () => {
+          if (!resetting) {
+            return
+          }
+          if (password.length < 8) {
+            message.error("密码至少 8 位")
+            return
+          }
+          try {
+            await resetPassword.mutateAsync({ id: resetting.id, nextPassword: password })
+            message.success("密码已重置")
+            setResetting(null)
+          } catch (error) {
+            message.error(error instanceof Error ? error.message : "重置失败")
+          }
+        }}
+      >
+        <Input.Password
+          value={password}
+          minLength={8}
+          placeholder="输入新的临时密码"
+          onChange={(event) => setPassword(event.target.value)}
+        />
       </Modal>
     </Space>
   )

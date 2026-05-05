@@ -43,6 +43,15 @@ function MenusRoute() {
     queryKey: systemQueryKeys.menus,
     queryFn: systemApi.menus,
   })
+  const permissionsQuery = useQuery({
+    queryKey: systemQueryKeys.myPermissions,
+    queryFn: systemApi.myPermissions,
+  })
+  const menuActions =
+    permissionsQuery.data?.find((item) => item.path === "/system/menus")?.actions ?? []
+  const canCreate = menuActions.includes("create")
+  const canUpdate = menuActions.includes("update")
+  const canDelete = menuActions.includes("delete")
 
   const refresh = async () => {
     await Promise.all([
@@ -130,7 +139,12 @@ function MenusRoute() {
               void refresh()
             }}
           />
-          <Button type="primary" icon={<Plus size={16} />} onClick={() => showModal()}>
+          <Button
+            type="primary"
+            disabled={!canCreate}
+            icon={<Plus size={16} />}
+            onClick={() => showModal()}
+          >
             新建菜单
           </Button>
         </Space>
@@ -161,6 +175,7 @@ function MenusRoute() {
                 <Tooltip title="编辑">
                   <Button
                     type="text"
+                    disabled={!canUpdate}
                     icon={<Pencil size={16} />}
                     onClick={() => showModal(record)}
                   />
@@ -169,12 +184,12 @@ function MenusRoute() {
                   <Popconfirm
                     title="确认删除这个菜单？"
                     onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn}
+                    disabled={record.builtIn || !canDelete}
                   >
                     <Button
                       type="text"
                       danger
-                      disabled={record.builtIn}
+                      disabled={record.builtIn || !canDelete}
                       icon={<Trash2 size={16} />}
                     />
                   </Popconfirm>
@@ -225,6 +240,8 @@ function MenusRoute() {
                 { label: "user", value: "user" },
                 { label: "team", value: "team" },
                 { label: "menu", value: "menu" },
+                { label: "audit", value: "audit" },
+                { label: "bell", value: "bell" },
               ]}
             />
           </Form.Item>

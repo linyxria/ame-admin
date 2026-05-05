@@ -12,10 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminNotificationsRouteImport } from './routes/_admin.notifications'
 import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
 import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
+import { Route as AdminSystemSettingsRouteImport } from './routes/_admin.system.settings'
 import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
 import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
+import { Route as AdminSystemAuditLogsRouteImport } from './routes/_admin.system.audit-logs'
 import { Route as AdminDemosTableRouteImport } from './routes/_admin.demos.table'
 import { Route as AdminDemosFormRouteImport } from './routes/_admin.demos.form'
 import { Route as AdminDemosChartsRouteImport } from './routes/_admin.demos.charts'
@@ -35,6 +38,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -45,6 +53,11 @@ const AdminSystemUsersRoute = AdminSystemUsersRouteImport.update({
   path: '/system/users',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSystemSettingsRoute = AdminSystemSettingsRouteImport.update({
+  id: '/system/settings',
+  path: '/system/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSystemRolesRoute = AdminSystemRolesRouteImport.update({
   id: '/system/roles',
   path: '/system/roles',
@@ -53,6 +66,11 @@ const AdminSystemRolesRoute = AdminSystemRolesRouteImport.update({
 const AdminSystemMenusRoute = AdminSystemMenusRouteImport.update({
   id: '/system/menus',
   path: '/system/menus',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemAuditLogsRoute = AdminSystemAuditLogsRouteImport.update({
+  id: '/system/audit-logs',
+  path: '/system/audit-logs',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDemosTableRoute = AdminDemosTableRouteImport.update({
@@ -80,24 +98,30 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
   '/demos/charts': typeof AdminDemosChartsRoute
   '/demos/form': typeof AdminDemosFormRoute
   '/demos/table': typeof AdminDemosTableRoute
+  '/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
+  '/system/settings': typeof AdminSystemSettingsRoute
   '/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
   '/demos/charts': typeof AdminDemosChartsRoute
   '/demos/form': typeof AdminDemosFormRoute
   '/demos/table': typeof AdminDemosTableRoute
+  '/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
+  '/system/settings': typeof AdminSystemSettingsRoute
   '/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRoutesById {
@@ -106,12 +130,15 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/notifications': typeof AdminNotificationsRoute
   '/_admin/account/settings': typeof AdminAccountSettingsRoute
   '/_admin/demos/charts': typeof AdminDemosChartsRoute
   '/_admin/demos/form': typeof AdminDemosFormRoute
   '/_admin/demos/table': typeof AdminDemosTableRoute
+  '/_admin/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/_admin/system/menus': typeof AdminSystemMenusRoute
   '/_admin/system/roles': typeof AdminSystemRolesRoute
+  '/_admin/system/settings': typeof AdminSystemSettingsRoute
   '/_admin/system/users': typeof AdminSystemUsersRoute
 }
 export interface FileRouteTypes {
@@ -120,24 +147,30 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/notifications'
     | '/account/settings'
     | '/demos/charts'
     | '/demos/form'
     | '/demos/table'
+    | '/system/audit-logs'
     | '/system/menus'
     | '/system/roles'
+    | '/system/settings'
     | '/system/users'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
     | '/dashboard'
+    | '/notifications'
     | '/account/settings'
     | '/demos/charts'
     | '/demos/form'
     | '/demos/table'
+    | '/system/audit-logs'
     | '/system/menus'
     | '/system/roles'
+    | '/system/settings'
     | '/system/users'
   id:
     | '__root__'
@@ -145,12 +178,15 @@ export interface FileRouteTypes {
     | '/_admin'
     | '/login'
     | '/_admin/dashboard'
+    | '/_admin/notifications'
     | '/_admin/account/settings'
     | '/_admin/demos/charts'
     | '/_admin/demos/form'
     | '/_admin/demos/table'
+    | '/_admin/system/audit-logs'
     | '/_admin/system/menus'
     | '/_admin/system/roles'
+    | '/_admin/system/settings'
     | '/_admin/system/users'
   fileRoutesById: FileRoutesById
 }
@@ -183,6 +219,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_admin/notifications': {
+      id: '/_admin/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/dashboard': {
       id: '/_admin/dashboard'
       path: '/dashboard'
@@ -197,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSystemUsersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/system/settings': {
+      id: '/_admin/system/settings'
+      path: '/system/settings'
+      fullPath: '/system/settings'
+      preLoaderRoute: typeof AdminSystemSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/system/roles': {
       id: '/_admin/system/roles'
       path: '/system/roles'
@@ -209,6 +259,13 @@ declare module '@tanstack/react-router' {
       path: '/system/menus'
       fullPath: '/system/menus'
       preLoaderRoute: typeof AdminSystemMenusRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/audit-logs': {
+      id: '/_admin/system/audit-logs'
+      path: '/system/audit-logs'
+      fullPath: '/system/audit-logs'
+      preLoaderRoute: typeof AdminSystemAuditLogsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/demos/table': {
@@ -244,23 +301,29 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminAccountSettingsRoute: typeof AdminAccountSettingsRoute
   AdminDemosChartsRoute: typeof AdminDemosChartsRoute
   AdminDemosFormRoute: typeof AdminDemosFormRoute
   AdminDemosTableRoute: typeof AdminDemosTableRoute
+  AdminSystemAuditLogsRoute: typeof AdminSystemAuditLogsRoute
   AdminSystemMenusRoute: typeof AdminSystemMenusRoute
   AdminSystemRolesRoute: typeof AdminSystemRolesRoute
+  AdminSystemSettingsRoute: typeof AdminSystemSettingsRoute
   AdminSystemUsersRoute: typeof AdminSystemUsersRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminNotificationsRoute: AdminNotificationsRoute,
   AdminAccountSettingsRoute: AdminAccountSettingsRoute,
   AdminDemosChartsRoute: AdminDemosChartsRoute,
   AdminDemosFormRoute: AdminDemosFormRoute,
   AdminDemosTableRoute: AdminDemosTableRoute,
+  AdminSystemAuditLogsRoute: AdminSystemAuditLogsRoute,
   AdminSystemMenusRoute: AdminSystemMenusRoute,
   AdminSystemRolesRoute: AdminSystemRolesRoute,
+  AdminSystemSettingsRoute: AdminSystemSettingsRoute,
   AdminSystemUsersRoute: AdminSystemUsersRoute,
 }
 

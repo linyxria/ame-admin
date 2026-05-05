@@ -14,6 +14,7 @@ export const user = pgTable("user", {
   name: text("name").notNull(),
   email: text("email").notNull().unique(),
   emailVerified: boolean("emailVerified").notNull().default(false),
+  enabled: boolean("enabled").notNull().default(true),
   builtIn: boolean("builtIn").notNull().default(false),
   image: text("image"),
   createdAt: timestamp("createdAt").notNull().defaultNow(),
@@ -34,9 +35,7 @@ export const session = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
   },
-  (table) => ({
-    userIdIdx: index("session_userId_idx").on(table.userId),
-  }),
+  (table) => [index("session_userId_idx").on(table.userId)],
 )
 
 export const account = pgTable(
@@ -58,9 +57,7 @@ export const account = pgTable(
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
-  (table) => ({
-    userIdIdx: index("account_userId_idx").on(table.userId),
-  }),
+  (table) => [index("account_userId_idx").on(table.userId)],
 )
 
 export const verification = pgTable(
@@ -73,9 +70,7 @@ export const verification = pgTable(
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
-  (table) => ({
-    identifierIdx: index("verification_identifier_idx").on(table.identifier),
-  }),
+  (table) => [index("verification_identifier_idx").on(table.identifier)],
 )
 
 export const role = pgTable(
@@ -90,9 +85,7 @@ export const role = pgTable(
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
-  (table) => ({
-    codeIdx: uniqueIndex("role_code_idx").on(table.code),
-  }),
+  (table) => [uniqueIndex("role_code_idx").on(table.code)],
 )
 
 export const menu = pgTable(
@@ -109,10 +102,10 @@ export const menu = pgTable(
     createdAt: timestamp("createdAt").notNull().defaultNow(),
     updatedAt: timestamp("updatedAt").notNull().defaultNow(),
   },
-  (table) => ({
-    parentIdIdx: index("menu_parentId_idx").on(table.parentId),
-    pathIdx: uniqueIndex("menu_path_idx").on(table.path),
-  }),
+  (table) => [
+    index("menu_parentId_idx").on(table.parentId),
+    uniqueIndex("menu_path_idx").on(table.path),
+  ],
 )
 
 export const userRole = pgTable(
@@ -126,11 +119,11 @@ export const userRole = pgTable(
       .references(() => role.id, { onDelete: "cascade" }),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.userId, table.roleId] }),
-    userIdIdx: index("user_role_userId_idx").on(table.userId),
-    roleIdIdx: index("user_role_roleId_idx").on(table.roleId),
-  }),
+  (table) => [
+    primaryKey({ columns: [table.userId, table.roleId] }),
+    index("user_role_userId_idx").on(table.userId),
+    index("user_role_roleId_idx").on(table.roleId),
+  ],
 )
 
 export const roleMenu = pgTable(
@@ -142,14 +135,60 @@ export const roleMenu = pgTable(
     menuId: text("menuId")
       .notNull()
       .references(() => menu.id, { onDelete: "cascade" }),
+    actions: text("actions").notNull().default("view"),
     createdAt: timestamp("createdAt").notNull().defaultNow(),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.roleId, table.menuId] }),
-    roleIdIdx: index("role_menu_roleId_idx").on(table.roleId),
-    menuIdIdx: index("role_menu_menuId_idx").on(table.menuId),
-  }),
+  (table) => [
+    primaryKey({ columns: [table.roleId, table.menuId] }),
+    index("role_menu_roleId_idx").on(table.roleId),
+    index("role_menu_menuId_idx").on(table.menuId),
+  ],
 )
+
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: text("id").primaryKey(),
+    actorId: text("actorId").references(() => user.id, { onDelete: "set null" }),
+    actorName: text("actorName"),
+    actorEmail: text("actorEmail"),
+    action: text("action").notNull(),
+    resource: text("resource").notNull(),
+    resourceId: text("resourceId"),
+    summary: text("summary").notNull(),
+    detail: text("detail"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("audit_log_actorId_idx").on(table.actorId),
+    index("audit_log_resource_idx").on(table.resource),
+    index("audit_log_createdAt_idx").on(table.createdAt),
+  ],
+)
+
+export const notification = pgTable(
+  "notification",
+  {
+    id: text("id").primaryKey(),
+    userId: text("userId").references(() => user.id, { onDelete: "cascade" }),
+    type: text("type").notNull().default("notice"),
+    title: text("title").notNull(),
+    description: text("description"),
+    readAt: timestamp("readAt"),
+    createdAt: timestamp("createdAt").notNull().defaultNow(),
+  },
+  (table) => [
+    index("notification_userId_idx").on(table.userId),
+    index("notification_createdAt_idx").on(table.createdAt),
+  ],
+)
+
+export const systemSetting = pgTable("system_setting", {
+  key: text("key").primaryKey(),
+  value: text("value").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updatedAt").notNull().defaultNow(),
+})
 
 export const schema = {
   user,
@@ -160,4 +199,7 @@ export const schema = {
   menu,
   userRole,
   roleMenu,
+  auditLog,
+  notification,
+  systemSetting,
 }

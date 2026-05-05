@@ -1,8 +1,8 @@
 import { cors } from "@elysiajs/cors"
 import { Elysia } from "elysia"
-import { auth, authPlugin } from "./lib/auth"
+import { authPlugin } from "./lib/auth"
 import { env } from "./lib/env"
-import { systemRoutes } from "./routes/system"
+import { systemRoutes } from "./modules/system"
 
 const app = new Elysia()
   .use(
@@ -30,4 +30,3 @@ const app = new Elysia()
 console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`)
 
 export type App = typeof app
-export { auth }

@@ -1,0 +1,119 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
+import { App, Button, Card, Form, Input, Select, Space, Switch } from "antd"
+import { type SettingsInput, systemApi, systemQueryKeys } from "../lib/system-api"
+
+export const Route = createFileRoute("/_admin/system/settings")({
+  component: SystemSettingsRoute,
+})
+
+type SettingsForm = {
+  siteName: string
+  defaultLanguage: string
+  passwordMinLength: number
+  allowPublicSignUp: boolean
+}
+
+const getSetting = (items: Awaited<ReturnType<typeof systemApi.settings>> | null, key: string) =>
+  items?.find((item) => item.key === key)?.value
+
+function SystemSettingsRoute() {
+  const [form] = Form.useForm<SettingsForm>()
+  const { message } = App.useApp()
+  const queryClient = useQueryClient()
+  const settingsQuery = useQuery({
+    queryKey: systemQueryKeys.settings,
+    queryFn: systemApi.settings,
+  })
+  const permissionsQuery = useQuery({
+    queryKey: systemQueryKeys.myPermissions,
+    queryFn: systemApi.myPermissions,
+  })
+  const canUpdate =
+    permissionsQuery.data
+      ?.find((item) => item.path === "/system/settings")
+      ?.actions.includes("update") ?? false
+  const updateSettings = useMutation({
+    mutationFn: systemApi.updateSettings,
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: systemQueryKeys.settings })
+      message.success("保存成功")
+    },
+  })
+  const settings = settingsQuery.data ?? []
+  const initialValues = {
+    siteName: getSetting(settings, "siteName") ?? "AME 管理后台",
+    defaultLanguage: getSetting(settings, "defaultLanguage") ?? "zh-CN",
+    passwordMinLength: Number(getSetting(settings, "passwordMinLength") ?? 8),
+    allowPublicSignUp: getSetting(settings, "allowPublicSignUp") === "true",
+  }
+
+  const submit = async () => {
+    const values = await form.validateFields()
+    const body: SettingsInput = {
+      items: [
+        { key: "siteName", value: values.siteName, description: "站点名称" },
+        { key: "defaultLanguage", value: values.defaultLanguage, description: "默认语言" },
+        {
+          key: "passwordMinLength",
+          value: String(values.passwordMinLength),
+          description: "密码最小长度",
+        },
+        {
+          key: "allowPublicSignUp",
+          value: String(values.allowPublicSignUp),
+          description: "是否允许公开注册",
+        },
+      ],
+    }
+    await updateSettings.mutateAsync(body)
+  }
+
+  return (
+    <Space orientation="vertical" size="large" className="w-full">
+      <div>
+        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">系统设置</h1>
+        <p className="ame-page-description text-sm">维护后台基础配置。</p>
+      </div>
+
+      <Card loading={settingsQuery.isLoading}>
+        <Form
+          form={form}
+          layout="vertical"
+          className="max-w-2xl"
+          initialValues={initialValues}
+          key={settings.map((item) => `${item.key}:${item.value}`).join("|")}
+        >
+          <Form.Item name="siteName" label="站点名称" rules={[{ required: true }]}>
+            <Input disabled={!canUpdate} />
+          </Form.Item>
+          <Form.Item name="defaultLanguage" label="默认语言" rules={[{ required: true }]}>
+            <Select
+              disabled={!canUpdate}
+              options={[
+                { label: "简体中文", value: "zh-CN" },
+                { label: "English", value: "en-US" },
+              ]}
+            />
+          </Form.Item>
+          <Form.Item name="passwordMinLength" label="密码最小长度" rules={[{ required: true }]}>
+            <Input type="number" min={8} disabled={!canUpdate} />
+          </Form.Item>
+          <Form.Item name="allowPublicSignUp" label="公开注册" valuePropName="checked">
+            <Switch disabled={!canUpdate} checkedChildren="允许" unCheckedChildren="禁止" />
+          </Form.Item>
+          <Form.Item>
+            <Button
+              type="primary"
+              disabled={!canUpdate}
+              loading={updateSettings.isPending}
+              onClick={submit}
+            >
+              保存
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
+    </Space>
+  )
+}
