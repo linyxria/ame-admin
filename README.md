@@ -1,28 +1,106 @@
 # AME Admin
 
-这是一个包含 `api` 和 `web` 的管理后台项目。
+AME Admin is a full-stack admin dashboard starter built with Bun workspaces. It pairs an Elysia API with a React/Vite web app, using PostgreSQL for persistence and end-to-end typed API calls through Eden Treaty.
 
-## 工作区
+## Stack
 
-项目使用 Bun workspace 管理两个子项目：
+- Runtime and package manager: Bun
+- API: Elysia, Better Auth, Drizzle ORM, PostgreSQL
+- Web: React, Vite, TanStack Router, TanStack Query, Ant Design, Tailwind CSS
+- API client: Eden Treaty, typed from the server `App` export
+- Code quality: Biome for linting and formatting
+
+## Workspace
 
 ```text
-api  - Elysia 后端
-web  - React 前端
+api  - Elysia backend, database schema, migrations, and seed scripts
+web  - React admin UI
 ```
 
-依赖锁文件统一使用根目录的 `bun.lock`，子项目下不再维护单独的 lockfile。
+The repository uses a single root `bun.lock`. Dependency installation and common commands should be run from the repository root unless you are working on a workspace-specific task.
 
-根目录可以直接代理常用命令：
+## Quick Start
+
+Install dependencies:
+
+```bash
+bun install
+```
+
+Create the API environment file:
+
+```bash
+cp api/.env.example api/.env
+```
+
+Start PostgreSQL and initialize the database:
+
+```bash
+bun run db:up
+bun run db:setup
+```
+
+Start the API and web app in separate terminals:
+
+```bash
+bun run dev:api
+```
+
+```bash
+bun run dev:web
+```
+
+Default local services:
+
+- API: `http://localhost:3000`
+- Web: `http://localhost:5173`
+- PostgreSQL: `localhost:5432`
+
+Default local administrator:
+
+```text
+Email: admin@example.com
+Password: admin123456
+```
+
+Change these values in `api/.env` before seeding if you want different local credentials.
+
+## Environment
+
+The API environment is defined in `api/.env.example`.
+
+Key variables:
+
+- `PORT`: API server port
+- `DATABASE_URL`: PostgreSQL connection string
+- `BETTER_AUTH_URL`: public API origin used by Better Auth
+- `BETTER_AUTH_SECRET`: secret used by Better Auth
+- `CORS_ORIGIN`: allowed web app origin
+- `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_NAME`: seed administrator account
+
+The web app uses `http://localhost:3000` as the default API URL. To override it, create `web/.env.local`:
+
+```bash
+VITE_API_URL=http://localhost:3000
+```
+
+## Common Commands
+
+Run backend and frontend development servers:
 
 ```bash
 bun run dev:api
 bun run dev:web
+```
+
+Build and type-check:
+
+```bash
 bun run build:web
 bun run typecheck:api
 ```
 
-数据库命令也可以在根目录执行：
+Manage the local database:
 
 ```bash
 bun run db:up
@@ -30,18 +108,7 @@ bun run db:setup
 bun run db:down
 ```
 
-如果要直接运行某个 workspace 的脚本，也可以使用 Bun filter：
-
-```bash
-bun --filter ame-admin-api dev
-bun --filter ame-admin-web build
-```
-
-## 代码检查与格式化
-
-项目使用 Biome 统一管理 `api` 和 `web` 的 lint 与 format，不再使用 ESLint。
-
-在仓库根目录执行：
+Run Biome checks:
 
 ```bash
 bun run check
@@ -49,20 +116,73 @@ bun run lint
 bun run format
 ```
 
-自动格式化并应用安全修复：
+Apply safe formatting and lint fixes:
 
 ```bash
 bun run check:write
 ```
 
-也可以在子项目目录执行同样的代理脚本：
+You can also run workspace scripts directly:
 
 ```bash
-cd api
-bun run check
-
-cd ../web
-bun run check
+bun --filter @ame-admin/api dev
+bun --filter @ame-admin/web build
 ```
 
-Biome 配置位于 `biome.json`。当前主要检查源码、Vite 配置、Drizzle 配置和 package.json；`tsconfig*.json` 暂不交给 Biome 格式化，避免破坏 TypeScript 模板里的注释排版。
+## Database
+
+Local development uses Docker Compose from the API workspace. The compose project is named `ame-admin`, the database container is `db`, and the persistent volume is `ame-admin_db`.
+
+Useful API workspace commands:
+
+```bash
+bun --filter @ame-admin/api db:logs
+bun --filter @ame-admin/api db:generate
+bun --filter @ame-admin/api db:migrate
+bun --filter @ame-admin/api db:seed
+bun --filter @ame-admin/api db:studio
+```
+
+The default `DATABASE_URL` already matches the Docker database:
+
+```text
+postgres://postgres:postgres@localhost:5432/ame_admin
+```
+
+## Application Areas
+
+The current admin UI includes:
+
+- Authentication and protected admin routes
+- Dashboard overview
+- User, role, menu, settings, and audit log management
+- Notifications
+- Account settings
+- Localization and theme support
+- Demo chart, form, and table pages
+
+## API Typing
+
+The backend exports the Elysia app type:
+
+```ts
+export type App = typeof app
+```
+
+The frontend keeps the shared typed client in `web/src/lib/api.ts`:
+
+```ts
+export const api = treaty<App>(API_URL, {
+  fetch: {
+    credentials: "include",
+  },
+})
+```
+
+Use this client with TanStack Query for server state. Avoid adding duplicate response types or ad hoc fetch wrappers when Eden can infer the API shape.
+
+## Code Quality
+
+Biome is configured at the repository root in `biome.json` and covers both workspaces. The generated TanStack Router route tree lives at `web/src/route-tree.gen.ts` and should not be edited by hand.
+
+React Compiler is enabled in the web app. Avoid adding `memo`, `useMemo`, or `useCallback` solely for render optimization; only use manual memoization when a semantic identity requirement or measured performance issue calls for it.

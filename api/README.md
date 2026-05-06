@@ -1,94 +1,155 @@
 # AME Admin API
 
-基于 Elysia、Better Auth、PostgreSQL 和 Drizzle 的后台 API。
+The API workspace contains the Elysia backend, Better Auth integration, Drizzle schema, database migrations, and seed scripts for AME Admin.
 
-Docker Compose 使用 `ame-admin` 作为项目名，数据库容器名为 `db`，持久化数据卷名为 `ame-admin_db`。
+## Stack
 
-## 数据库
+- Elysia for the HTTP API
+- Better Auth for email/password authentication and session handling
+- PostgreSQL for persistence
+- Drizzle ORM and Drizzle Kit for schema and migrations
+- Bun for development, scripts, and runtime
 
-本地开发建议使用 Docker Compose。这样 PostgreSQL 不会污染系统环境，也更容易在不同机器上复现。
+## Setup
 
-启动 PostgreSQL：
+Install dependencies from the repository root:
+
+```bash
+bun install
+```
+
+Create the local API environment file:
+
+```bash
+cp api/.env.example api/.env
+```
+
+The default database URL in `api/.env.example` matches the local Docker database:
+
+```text
+DATABASE_URL=postgres://postgres:postgres@localhost:5432/ame_admin
+```
+
+## Database
+
+Local development uses Docker Compose so PostgreSQL stays isolated and easy to reproduce across machines.
+
+Start PostgreSQL:
 
 ```bash
 bun run db:up
 ```
 
-创建本地环境变量文件：
-
-```bash
-cp .env.example .env
-```
-
-默认 `.env.example` 已经匹配 Docker 数据库：
-
-```bash
-DATABASE_URL=postgres://postgres:postgres@localhost:5432/ame_admin
-```
-
-执行迁移并创建默认管理员：
+Run migrations and seed the default administrator:
 
 ```bash
 bun run db:setup
 ```
 
-也可以分开执行：
+Or run the steps separately:
 
 ```bash
 bun run db:migrate
 bun run db:seed
 ```
 
-默认本地管理员账号：
+Default local administrator:
 
-```bash
-admin@example.com
-admin123456
+```text
+Email: admin@example.com
+Password: admin123456
 ```
 
-可选数据库工具：
+Update `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in `api/.env` before seeding if you want different credentials.
+
+Useful database commands:
 
 ```bash
+bun run db:generate
+bun run db:migrate
+bun run db:seed
 bun run db:studio
 bun run db:logs
-```
-
-停止 PostgreSQL：
-
-```bash
 bun run db:down
 ```
 
-PostgreSQL 18 的官方 Docker 镜像使用按大版本区分的数据目录。本项目把数据卷挂载到 `/var/lib/postgresql`，这是官方镜像对 18+ 推荐的布局。
+Docker Compose uses `ame-admin` as the project name, `db` as the container name, and `ame-admin_db` as the persistent volume. The PostgreSQL 18 image stores data under `/var/lib/postgresql`, which is the layout used by this project.
 
-## 开发
+## Development
 
-启动 API：
+Start the API server:
 
 ```bash
 bun run dev
 ```
 
-健康检查：
+The default server URL is:
+
+```text
+http://localhost:3000
+```
+
+Health check:
 
 ```bash
 curl http://localhost:3000/health
 ```
 
-未登录访问受保护路由：
+Protected routes should reject unauthenticated requests:
 
 ```bash
 curl -i http://localhost:3000/me
 ```
 
-在没有有效 Better Auth session cookie 时，应返回 `401 Unauthorized`。
+Without a valid Better Auth session cookie, the response should be `401 Unauthorized`.
 
-## 认证接口
+## Authentication
 
-Better Auth 已挂载到 Elysia。当前开启邮箱密码登录，常用接口包括：
+Better Auth is mounted on the Elysia app and currently uses email/password login. Common auth endpoints include:
 
 - `POST /sign-in/email`
 - `POST /sign-out`
 - `GET /get-session`
 
-公开注册已默认禁用。默认管理员请通过 `bun run db:seed` 创建。
+Public registration is disabled by default. Use the seed script to create the initial administrator account.
+
+## API Modules
+
+System administration functionality is split into modules under `src/modules/system`:
+
+- Users
+- Roles and RBAC
+- Menus
+- Settings
+- Notifications
+- Audit logs
+- Profile
+- Overview
+
+Keep route handlers, models, services, migrations, and seed data aligned when changing a domain model.
+
+## Type Export
+
+The Elysia app is assembled in `src/app.ts` and exported for Eden Treaty typing:
+
+```ts
+export type App = typeof app
+```
+
+The web workspace imports this type to build its typed API client. Keep this export stable when refactoring the API entrypoint.
+
+## Quality Checks
+
+Run API type checking:
+
+```bash
+bun run typecheck
+```
+
+Run repository-wide Biome checks from this workspace:
+
+```bash
+bun run check
+bun run lint
+bun run format
+```

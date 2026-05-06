@@ -1,30 +1,59 @@
 # AME Admin Web
 
-基于 React、Vite、TanStack Router、TanStack Query、Ant Design 和 Tailwind CSS 的后台前端。
+The web workspace contains the React admin UI for AME Admin. It uses TanStack Router for file-based routing, TanStack Query for server state, Ant Design for application components, and Eden Treaty for type-safe calls to the Elysia API.
 
-## 开发
+## Stack
 
-安装依赖后启动前端：
+- React and Vite
+- TanStack Router
+- TanStack Query
+- Eden Treaty
+- Better Auth React client
+- Ant Design
+- Tailwind CSS
+- React Compiler
+
+## Setup
+
+Install dependencies from the repository root:
+
+```bash
+bun install
+```
+
+Start the API first, including the local database setup described in `../api/README.md`.
+
+Then start the web development server:
 
 ```bash
 bun run dev
 ```
 
-默认会访问本地 API：
+The default web URL is:
 
-```bash
+```text
+http://localhost:5173
+```
+
+## Environment
+
+By default, the web app talks to the local API at:
+
+```text
 http://localhost:3000
 ```
 
-如需修改 API 地址，可以创建 `.env.local`：
+To point the web app at a different API, create `web/.env.local`:
 
 ```bash
 VITE_API_URL=http://localhost:3000
 ```
 
-## 登录
+The API must allow this origin through `CORS_ORIGIN`, and auth requests require credentials to be included for cookie-based sessions.
 
-先启动并初始化后端数据库：
+## Login
+
+Start and seed the backend first:
 
 ```bash
 cd ../api
@@ -33,39 +62,91 @@ bun run db:setup
 bun run dev
 ```
 
-然后启动前端：
+Start the frontend in a second terminal:
 
 ```bash
 cd ../web
 bun run dev
 ```
 
-默认本地管理员账号：
+Default local administrator:
 
-```bash
-admin@example.com
-admin123456
+```text
+Email: admin@example.com
+Password: admin123456
 ```
 
-## 路由与接口
+## Routing
 
-路由使用 TanStack Router：
+Routes are defined with TanStack Router in `src/routes`.
 
-- `/login`：管理员登录
-- `/dashboard`：受保护的控制台
+Important routes:
 
-业务 API 使用 Elysia Eden Treaty，并从后端导入 `App` 类型获得端到端类型安全。
+- `/login`
+- `/dashboard`
+- `/notifications`
+- `/account/settings`
+- `/system/users`
+- `/system/roles`
+- `/system/menus`
+- `/system/settings`
+- `/system/audit-logs`
+- `/demos/charts`
+- `/demos/form`
+- `/demos/table`
 
-认证请求使用 Better Auth React client。跨域 cookie 场景已设置 `credentials: 'include'`。
+The generated route tree is `src/route-tree.gen.ts`. Do not edit it manually; update route files or router plugin configuration instead.
 
-## 样式
+## API Access
 
-页面布局和自定义样式使用 Tailwind CSS 工具类。
+Business API calls should use the shared Eden Treaty client in `src/lib/api.ts`:
 
-没有引入 `antd/dist/reset.css`。Ant Design 的组件样式由组件库运行时注入；如果后续需要额外的全局 reset，再按 Ant Design 文档处理 `@layer` 顺序。
+```ts
+export const api = treaty<App>(API_URL, {
+  fetch: {
+    credentials: "include",
+  },
+})
+```
 
-## 构建
+Use TanStack Query for server state: queries, mutations, loading states, errors, and invalidation. Keep local React state for form drafts, modal visibility, and purely local UI state.
+
+Authentication uses the Better Auth React client. Business API calls use Eden Treaty and inherit API types from the backend `App` export.
+
+## Styling
+
+The UI combines Ant Design components with Tailwind CSS utility classes.
+
+Ant Design component styles are injected by the library runtime. The app does not currently import `antd/dist/reset.css`; if a global reset becomes necessary later, handle CSS layer ordering deliberately.
+
+## React Notes
+
+React Compiler is enabled. Avoid adding `memo`, `useMemo`, or `useCallback` only for render optimization. Use manual memoization when referential identity is semantically required by an external API or when profiling proves a real performance issue.
+
+## Commands
+
+Start development:
+
+```bash
+bun run dev
+```
+
+Build for production:
 
 ```bash
 bun run build
+```
+
+Preview the production build:
+
+```bash
+bun run preview
+```
+
+Run repository-wide Biome checks from this workspace:
+
+```bash
+bun run check
+bun run lint
+bun run format
 ```

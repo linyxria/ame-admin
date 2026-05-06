@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**/*.{js,jsx,ts,tsx,json}", "!web/src/route-tree.gen.ts"],
+    "includes": ["**/*.{js,jsx,ts,tsx,json}", "!api/drizzle", "!web/src/route-tree.gen.ts"],
     "ignoreUnknown": true
   },
   "formatter": {
