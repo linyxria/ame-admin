@@ -1,6 +1,6 @@
-# AME Admin API
+# AME Admin Server
 
-The API workspace contains the Elysia backend, Better Auth integration, Drizzle schema, database migrations, and seed scripts for AME Admin.
+The server workspace contains the Elysia backend, Better Auth integration, Drizzle schema, database migrations, and seed scripts for AME Admin.
 
 ## Stack
 
@@ -18,13 +18,13 @@ Install dependencies from the repository root:
 bun install
 ```
 
-Create the local API environment file:
+Create the local server environment file:
 
 ```bash
-cp api/.env.example api/.env
+cp server/.env.example server/.env
 ```
 
-The default database URL in `api/.env.example` matches the local Docker database:
+The default database URL in `server/.env.example` matches the local Docker database:
 
 ```text
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/ame_admin
@@ -60,7 +60,7 @@ Email: admin@example.com
 Password: admin123456
 ```
 
-Update `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in `api/.env` before seeding if you want different credentials.
+Update `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in `server/.env` before seeding if you want different credentials.
 
 Useful database commands:
 

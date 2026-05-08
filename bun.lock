@@ -7,8 +7,8 @@
         "@biomejs/biome": "^2.4.13",
       },
     },
-    "api": {
-      "name": "@ame-admin/api",
+    "server": {
+      "name": "@ame-admin/server",
       "version": "1.0.50",
       "dependencies": {
         "@elysiajs/cors": "^1.4.2",
@@ -62,7 +62,7 @@
     },
   },
   "packages": {
-    "@ame-admin/api": ["@ame-admin/api@workspace:api"],
+    "@ame-admin/server": ["@ame-admin/server@workspace:server"],
 
     "@ame-admin/web": ["@ame-admin/web@workspace:web"],
 

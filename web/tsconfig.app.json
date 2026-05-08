@@ -10,7 +10,7 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {
-      "@ame-admin/api": ["../api/src/app"],
+      "@ame-admin/server": ["../server/src/app"],
       "@/*": ["./src/*"]
     },
     "strict": true,
@@ -27,5 +27,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "references": [{ "path": "../api" }]
+  "references": [{ "path": "../server" }]
 }

@@ -21,7 +21,7 @@ Install dependencies from the repository root:
 bun install
 ```
 
-Start the API first, including the local database setup described in `../api/README.md`.
+Start the API first, including the local database setup described in `../server/README.md`.
 
 Then start the web development server:
 
@@ -56,7 +56,7 @@ The API must allow this origin through `CORS_ORIGIN`, and auth requests require 
 Start and seed the backend first:
 
 ```bash
-cd ../api
+cd ../server
 bun run db:up
 bun run db:setup
 bun run dev

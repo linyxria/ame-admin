@@ -13,8 +13,8 @@ AME Admin is a full-stack admin dashboard starter built with Bun workspaces. It 
 ## Workspace
 
 ```text
-api  - Elysia backend, database schema, migrations, and seed scripts
-web  - React admin UI
+server - Elysia backend, database schema, migrations, and seed scripts
+web    - React admin UI
 ```
 
 The repository uses a single root `bun.lock`. Dependency installation and common commands should be run from the repository root unless you are working on a workspace-specific task.
@@ -27,10 +27,10 @@ Install dependencies:
 bun install
 ```
 
-Create the API environment file:
+Create the server environment file:
 
 ```bash
-cp api/.env.example api/.env
+cp server/.env.example server/.env
 ```
 
 Start PostgreSQL and initialize the database:
@@ -43,7 +43,7 @@ bun run db:setup
 Start the API and web app in separate terminals:
 
 ```bash
-bun run dev:api
+bun run dev:server
 ```
 
 ```bash
@@ -63,11 +63,11 @@ Email: admin@example.com
 Password: admin123456
 ```
 
-Change these values in `api/.env` before seeding if you want different local credentials.
+Change these values in `server/.env` before seeding if you want different local credentials.
 
 ## Environment
 
-The API environment is defined in `api/.env.example`.
+The server environment is defined in `server/.env.example`.
 
 Key variables:
 
@@ -89,7 +89,7 @@ VITE_API_URL=http://localhost:3000
 Run backend and frontend development servers:
 
 ```bash
-bun run dev:api
+bun run dev:server
 bun run dev:web
 ```
 
@@ -97,7 +97,7 @@ Build and type-check:
 
 ```bash
 bun run build:web
-bun run typecheck:api
+bun run typecheck:server
 ```
 
 Manage the local database:
@@ -125,22 +125,22 @@ bun run check:write
 You can also run workspace scripts directly:
 
 ```bash
-bun --filter @ame-admin/api dev
+bun --filter @ame-admin/server dev
 bun --filter @ame-admin/web build
 ```
 
 ## Database
 
-Local development uses Docker Compose from the API workspace. The compose project is named `ame-admin`, the database container is `db`, and the persistent volume is `ame-admin_db`.
+Local development uses Docker Compose from the server workspace. The compose project is named `ame-admin`, the database container is `db`, and the persistent volume is `ame-admin_db`.
 
-Useful API workspace commands:
+Useful server workspace commands:
 
 ```bash
-bun --filter @ame-admin/api db:logs
-bun --filter @ame-admin/api db:generate
-bun --filter @ame-admin/api db:migrate
-bun --filter @ame-admin/api db:seed
-bun --filter @ame-admin/api db:studio
+bun --filter @ame-admin/server db:logs
+bun --filter @ame-admin/server db:generate
+bun --filter @ame-admin/server db:migrate
+bun --filter @ame-admin/server db:seed
+bun --filter @ame-admin/server db:studio
 ```
 
 The default `DATABASE_URL` already matches the Docker database:

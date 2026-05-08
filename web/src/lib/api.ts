@@ -1,4 +1,4 @@
-import type { App } from "@ame-admin/api"
+import type { App } from "@ame-admin/server"
 import { treaty } from "@elysia/eden"
 import { API_URL } from "./config"
 
