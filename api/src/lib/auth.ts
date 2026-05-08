@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm"
 import { Elysia } from "elysia"
 import { db } from "@/db"
 import { schema, user } from "@/db/schema"
+import { isPublicSignUpAllowed } from "@/modules/system/setting/service"
 import { env } from "./env"
 
 type CreateAuthOptions = {
@@ -25,7 +26,7 @@ export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
     },
   })
 
-export const auth = createAuth()
+export const auth = createAuth({ disableSignUp: false })
 
 export const authMacro = new Elysia({ name: "auth-macro" }).macro({
   auth: {
@@ -54,4 +55,13 @@ export const authMacro = new Elysia({ name: "auth-macro" }).macro({
   },
 })
 
-export const authPlugin = new Elysia({ name: "auth" }).mount(auth.handler).use(authMacro)
+export const authPlugin = new Elysia({ name: "auth" })
+  .onBeforeHandle(async ({ request, status }) => {
+    const pathname = new URL(request.url).pathname
+
+    if (pathname.endsWith("/sign-up/email") && !(await isPublicSignUpAllowed())) {
+      return status(403, { message: "Public sign-up is disabled" })
+    }
+  })
+  .mount(auth.handler)
+  .use(authMacro)

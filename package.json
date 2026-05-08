@@ -11,6 +11,7 @@
     "db:up": "bun --filter @ame-admin/api db:up",
     "db:down": "bun --filter @ame-admin/api db:down",
     "db:setup": "bun --filter @ame-admin/api db:setup",
+    "test": "bun --filter @ame-admin/api test",
     "lint": "biome lint api web",
     "format": "biome format --write api web",
     "check": "biome check api web",

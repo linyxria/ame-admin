@@ -1,13 +1,15 @@
 import { hashPassword } from "better-auth/crypto"
-import { and, asc, eq } from "drizzle-orm"
+import { and, asc, count, eq, ilike, inArray, or } from "drizzle-orm"
 import { Elysia } from "elysia"
 import { db } from "@/db"
 import { account, role, session, user, userRole } from "@/db/schema"
 import { authMacro, createAuth } from "@/lib/auth"
+import { paginated, parsePagination } from "@/lib/pagination"
 import { writeAuditLog } from "../audit-log/service"
 import { createNotification } from "../notification/service"
 import { systemPermissionMacro } from "../rbac/service"
-import { createUserBody, resetPasswordBody, updateUserBody } from "./model"
+import { getPasswordMinLength } from "../setting/service"
+import { createUserBody, resetPasswordBody, updateUserBody, usersQuery } from "./model"
 import { assignUserRoles } from "./service"
 
 export const userRoutes = new Elysia({ name: "system.users", prefix: "/users" })
@@ -15,8 +17,14 @@ export const userRoutes = new Elysia({ name: "system.users", prefix: "/users" })
   .use(systemPermissionMacro)
   .get(
     "/",
-    async () => {
-      const rows = await db
+    async ({ query }) => {
+      const { page, pageSize, offset } = parsePagination(query)
+      const keyword = query.keyword?.trim()
+      const where = keyword
+        ? or(ilike(user.name, `%${keyword}%`), ilike(user.email, `%${keyword}%`))
+        : undefined
+      const [totalRow] = await db.select({ value: count() }).from(user).where(where)
+      const userRows = await db
         .select({
           id: user.id,
           name: user.name,
@@ -26,44 +34,56 @@ export const userRoutes = new Elysia({ name: "system.users", prefix: "/users" })
           enabled: user.enabled,
           builtIn: user.builtIn,
           createdAt: user.createdAt,
-          roleId: role.id,
-          roleName: role.name,
-          roleCode: role.code,
         })
         .from(user)
-        .leftJoin(userRole, eq(userRole.userId, user.id))
-        .leftJoin(role, eq(role.id, userRole.roleId))
+        .where(where)
         .orderBy(asc(user.createdAt))
+        .limit(pageSize)
+        .offset(offset)
 
-      const users = new Map<
-        string,
-        (typeof rows)[number] & { roles: { id: string; name: string; code: string }[] }
-      >()
+      const roleRows = userRows.length
+        ? await db
+            .select({
+              userId: userRole.userId,
+              roleId: role.id,
+              roleName: role.name,
+              roleCode: role.code,
+            })
+            .from(userRole)
+            .innerJoin(role, eq(role.id, userRole.roleId))
+            .where(
+              inArray(
+                userRole.userId,
+                userRows.map((item) => item.id),
+              ),
+            )
+        : []
 
-      for (const row of rows) {
-        const current =
-          users.get(row.id) ??
-          ({
-            ...row,
-            roles: [],
-          } as (typeof rows)[number] & { roles: { id: string; name: string; code: string }[] })
+      const rolesByUser = new Map<string, { id: string; name: string; code: string }[]>()
 
-        if (row.roleId && row.roleName && row.roleCode) {
-          current.roles.push({ id: row.roleId, name: row.roleName, code: row.roleCode })
-        }
-
-        users.set(row.id, current)
+      for (const row of roleRows) {
+        const roles = rolesByUser.get(row.userId) ?? []
+        roles.push({ id: row.roleId, name: row.roleName, code: row.roleCode })
+        rolesByUser.set(row.userId, roles)
       }
 
-      return Array.from(users.values()).map(
-        ({ roleId: _roleId, roleName: _roleName, roleCode: _roleCode, ...item }) => item,
+      return paginated(
+        userRows.map((item) => ({ ...item, roles: rolesByUser.get(item.id) ?? [] })),
+        totalRow?.value ?? 0,
+        page,
+        pageSize,
       )
     },
-    { auth: true, menu: "/system/users" },
+    { auth: true, menu: "/system/users", query: usersQuery },
   )
   .post(
     "/",
-    async ({ body, user: currentUser }) => {
+    async ({ body, user: currentUser, status }) => {
+      const passwordMinLength = await getPasswordMinLength()
+      if (body.password.length < passwordMinLength) {
+        return status(400, { message: `密码至少 ${passwordMinLength} 位` })
+      }
+
       const authInstance = createAuth({ disableSignUp: false })
 
       await authInstance.api.signUpEmail({
@@ -174,8 +194,9 @@ export const userRoutes = new Elysia({ name: "system.users", prefix: "/users" })
   .post(
     "/:id/reset-password",
     async ({ body, params, user: currentUser, status }) => {
-      if (body.password.length < 8) {
-        return status(400, { message: "密码至少 8 位" })
+      const passwordMinLength = await getPasswordMinLength()
+      if (body.password.length < passwordMinLength) {
+        return status(400, { message: `密码至少 ${passwordMinLength} 位` })
       }
 
       const [targetAccount] = await db

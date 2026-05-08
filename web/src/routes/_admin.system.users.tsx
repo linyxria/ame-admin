@@ -37,16 +37,23 @@ function UsersRoute() {
   const [editing, setEditing] = useState<SystemUser | null>(null)
   const [open, setOpen] = useState(false)
   const [keyword, setKeyword] = useState("")
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
   const [resetting, setResetting] = useState<SystemUser | null>(null)
   const [password, setPassword] = useState("")
+  const listParams = { page, pageSize, keyword }
 
   const usersQuery = useQuery({
-    queryKey: systemQueryKeys.users,
-    queryFn: systemApi.users,
+    queryKey: systemQueryKeys.users(listParams),
+    queryFn: () => systemApi.users(listParams),
   })
   const rolesQuery = useQuery({
     queryKey: systemQueryKeys.roles,
     queryFn: systemApi.roles,
+  })
+  const settingsQuery = useQuery({
+    queryKey: systemQueryKeys.settings,
+    queryFn: systemApi.settings,
   })
   const permissionsQuery = useQuery({
     queryKey: systemQueryKeys.myPermissions,
@@ -57,15 +64,14 @@ function UsersRoute() {
   const canCreate = userActions.includes("create")
   const canUpdate = userActions.includes("update")
   const canDelete = userActions.includes("delete")
-  const users = (usersQuery.data ?? []).filter((item) =>
-    `${item.name} ${item.email} ${item.roles.map((role) => role.name).join(" ")}`
-      .toLowerCase()
-      .includes(keyword.toLowerCase()),
+  const users = usersQuery.data?.items ?? []
+  const passwordMinLength = Number(
+    settingsQuery.data?.find((item) => item.key === "passwordMinLength")?.value ?? 8,
   )
 
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.users }),
+      queryClient.invalidateQueries({ queryKey: ["system", "users"] }),
       queryClient.invalidateQueries({ queryKey: systemQueryKeys.roles }),
     ])
   }
@@ -173,14 +179,26 @@ function UsersRoute() {
         rowKey="id"
         loading={usersQuery.isLoading || rolesQuery.isLoading}
         dataSource={users}
-        pagination={{ showSizeChanger: true }}
+        pagination={{
+          current: page,
+          pageSize,
+          total: usersQuery.data?.total ?? 0,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination) => {
+          setPage(pagination.current ?? 1)
+          setPageSize(pagination.pageSize ?? 20)
+        }}
         title={() => (
           <Input.Search
             allowClear
             className="max-w-sm"
-            placeholder="搜索姓名、邮箱或角色"
+            placeholder="搜索姓名或邮箱"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => {
+              setKeyword(event.target.value)
+              setPage(1)
+            }}
           />
         )}
         columns={[
@@ -308,7 +326,13 @@ function UsersRoute() {
             <Form.Item
               name="password"
               label="初始密码"
-              rules={[{ required: true, min: 8, message: "密码至少 8 位" }]}
+              rules={[
+                {
+                  required: true,
+                  min: passwordMinLength,
+                  message: `密码至少 ${passwordMinLength} 位`,
+                },
+              ]}
             >
               <Input.Password />
             </Form.Item>
@@ -333,8 +357,8 @@ function UsersRoute() {
           if (!resetting) {
             return
           }
-          if (password.length < 8) {
-            message.error("密码至少 8 位")
+          if (password.length < passwordMinLength) {
+            message.error(`密码至少 ${passwordMinLength} 位`)
             return
           }
           try {
@@ -348,7 +372,7 @@ function UsersRoute() {
       >
         <Input.Password
           value={password}
-          minLength={8}
+          minLength={passwordMinLength}
           placeholder="输入新的临时密码"
           onChange={(event) => setPassword(event.target.value)}
         />

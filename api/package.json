@@ -11,6 +11,7 @@
     "db:seed": "bun run src/scripts/seed-admin.ts",
     "db:setup": "bun run db:migrate && bun run db:seed",
     "db:studio": "drizzle-kit studio",
+    "test": "bun test",
     "lint": "bun run --cwd .. lint",
     "format": "bun run --cwd .. format",
     "check": "bun run --cwd .. check",

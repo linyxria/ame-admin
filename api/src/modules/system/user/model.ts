@@ -1,5 +1,10 @@
 import { t } from "elysia"
 import { optionalText } from "@/lib/model"
+import { paginationQuery } from "@/lib/pagination"
+
+export const usersQuery = t.Object({
+  ...paginationQuery,
+})
 
 export const createUserBody = t.Object({
   name: t.String({ minLength: 1 }),

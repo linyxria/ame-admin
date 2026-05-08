@@ -13,6 +13,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminNotificationsRouteImport } from './routes/_admin.notifications'
+import { Route as AdminForbiddenRouteImport } from './routes/_admin.forbidden'
 import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
 import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
 import { Route as AdminSystemSettingsRouteImport } from './routes/_admin.system.settings'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminForbiddenRoute = AdminForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -98,6 +104,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/forbidden': typeof AdminForbiddenRoute
   '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
   '/demos/charts': typeof AdminDemosChartsRoute
@@ -113,6 +120,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/dashboard': typeof AdminDashboardRoute
+  '/forbidden': typeof AdminForbiddenRoute
   '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
   '/demos/charts': typeof AdminDemosChartsRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
   '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/forbidden': typeof AdminForbiddenRoute
   '/_admin/notifications': typeof AdminNotificationsRoute
   '/_admin/account/settings': typeof AdminAccountSettingsRoute
   '/_admin/demos/charts': typeof AdminDemosChartsRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/forbidden'
     | '/notifications'
     | '/account/settings'
     | '/demos/charts'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/forbidden'
     | '/notifications'
     | '/account/settings'
     | '/demos/charts'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/_admin'
     | '/login'
     | '/_admin/dashboard'
+    | '/_admin/forbidden'
     | '/_admin/notifications'
     | '/_admin/account/settings'
     | '/_admin/demos/charts'
@@ -224,6 +236,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/forbidden': {
+      id: '/_admin/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof AdminForbiddenRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/dashboard': {
@@ -301,6 +320,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminForbiddenRoute: typeof AdminForbiddenRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminAccountSettingsRoute: typeof AdminAccountSettingsRoute
   AdminDemosChartsRoute: typeof AdminDemosChartsRoute
@@ -315,6 +335,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
+  AdminForbiddenRoute: AdminForbiddenRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminAccountSettingsRoute: AdminAccountSettingsRoute,
   AdminDemosChartsRoute: AdminDemosChartsRoute,

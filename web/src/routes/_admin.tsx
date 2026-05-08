@@ -2,7 +2,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router"
 import { AdminLayout } from "../layouts/admin"
 import { systemApi, systemQueryKeys } from "../lib/system-api"
 
-const publicAdminPaths = new Set(["/dashboard", "/account/settings"])
+const publicAdminPaths = new Set(["/dashboard", "/account/settings", "/forbidden"])
 
 export const Route = createFileRoute("/_admin")({
   component: AdminLayout,
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/_admin")({
 
       if (!canAccess) {
         throw redirect({
-          to: "/dashboard",
+          to: "/forbidden",
           replace: true,
         })
       }

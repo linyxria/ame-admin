@@ -202,7 +202,18 @@ export function AdminLayout() {
           },
           { title: t("userSettings") },
         ]
-      : [{ title: t("dashboard") }]
+      : location.pathname === "/forbidden"
+        ? [
+            {
+              title: (
+                <Link to="/dashboard" className="ame-text-muted">
+                  {t("dashboard")}
+                </Link>
+              ),
+            },
+            { title: "无权限访问" },
+          ]
+        : [{ title: t("dashboard") }]
   const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems
 
   return (

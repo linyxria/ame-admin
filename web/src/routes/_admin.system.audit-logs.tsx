@@ -11,9 +11,12 @@ export const Route = createFileRoute("/_admin/system/audit-logs")({
 
 function AuditLogsRoute() {
   const [keyword, setKeyword] = useState("")
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const listParams = { page, pageSize, keyword }
   const auditLogsQuery = useQuery({
-    queryKey: systemQueryKeys.auditLogs(keyword),
-    queryFn: () => systemApi.auditLogs(keyword),
+    queryKey: systemQueryKeys.auditLogs(listParams),
+    queryFn: () => systemApi.auditLogs(listParams),
   })
 
   return (
@@ -34,15 +37,27 @@ function AuditLogsRoute() {
       <Table<AuditLog>
         rowKey="id"
         loading={auditLogsQuery.isLoading}
-        dataSource={auditLogsQuery.data ?? []}
-        pagination={{ showSizeChanger: true }}
+        dataSource={auditLogsQuery.data?.items ?? []}
+        pagination={{
+          current: page,
+          pageSize,
+          total: auditLogsQuery.data?.total ?? 0,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination) => {
+          setPage(pagination.current ?? 1)
+          setPageSize(pagination.pageSize ?? 20)
+        }}
         title={() => (
           <Input.Search
             allowClear
             className="max-w-sm"
             placeholder="搜索操作人、资源或摘要"
             value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
+            onChange={(event) => {
+              setKeyword(event.target.value)
+              setPage(1)
+            }}
           />
         )}
         columns={[

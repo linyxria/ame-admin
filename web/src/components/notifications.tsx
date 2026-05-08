@@ -12,17 +12,18 @@ export function Notifications() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [type, setType] = useState("message")
+  const listParams = { page: 1, pageSize: 100 }
   const notificationsQuery = useQuery({
-    queryKey: systemQueryKeys.notifications,
-    queryFn: systemApi.notifications,
+    queryKey: systemQueryKeys.notifications(listParams),
+    queryFn: () => systemApi.notifications(listParams),
     refetchInterval: 60_000,
   })
-  const items = notificationsQuery.data ?? []
-  const unread = items.filter((item) => !item.readAt).length
+  const items = notificationsQuery.data?.items ?? []
+  const unread = notificationsQuery.data?.unreadTotal ?? 0
   const visibleItems = items.filter((item) => item.type === type)
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.notifications }),
+      queryClient.invalidateQueries({ queryKey: ["system", "notifications"] }),
       queryClient.invalidateQueries({ queryKey: systemQueryKeys.overview }),
     ])
   }

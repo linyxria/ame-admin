@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { App, Button, Space, Table, Tag } from "antd"
 import { CheckCheck, Trash2 } from "lucide-react"
+import { useState } from "react"
 import { type NotificationItem, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/notifications")({
@@ -11,12 +12,15 @@ export const Route = createFileRoute("/_admin/notifications")({
 function NotificationsRoute() {
   const { message } = App.useApp()
   const queryClient = useQueryClient()
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(20)
+  const listParams = { page, pageSize }
   const notificationsQuery = useQuery({
-    queryKey: systemQueryKeys.notifications,
-    queryFn: systemApi.notifications,
+    queryKey: systemQueryKeys.notifications(listParams),
+    queryFn: () => systemApi.notifications(listParams),
   })
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: systemQueryKeys.notifications })
+    await queryClient.invalidateQueries({ queryKey: ["system", "notifications"] })
   }
   const readAll = useMutation({
     mutationFn: systemApi.readAllNotifications,
@@ -49,8 +53,17 @@ function NotificationsRoute() {
       <Table<NotificationItem>
         rowKey="id"
         loading={notificationsQuery.isLoading}
-        dataSource={notificationsQuery.data ?? []}
-        pagination={{ showSizeChanger: true }}
+        dataSource={notificationsQuery.data?.items ?? []}
+        pagination={{
+          current: page,
+          pageSize,
+          total: notificationsQuery.data?.total ?? 0,
+          showSizeChanger: true,
+        }}
+        onChange={(pagination) => {
+          setPage(pagination.current ?? 1)
+          setPageSize(pagination.pageSize ?? 20)
+        }}
         columns={[
           {
             title: "状态",
