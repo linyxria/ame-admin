@@ -38,6 +38,7 @@ import { useTranslation } from "react-i18next"
 import { GlobalSearch } from "../components/global-search"
 import { Notifications } from "../components/notifications"
 import { type Locale, locales } from "../i18n"
+import { getMenuTitle } from "../lib/menu-title"
 import { systemApi, systemQueryKeys } from "../lib/system-api"
 import { useThemeSettings } from "../lib/theme"
 
@@ -122,13 +123,13 @@ export function AdminLayout() {
     {
       key: "zh-CN",
       icon: locale === "zh-CN" ? <Check size={16} /> : <span className="w-4" />,
-      label: "简体中文",
+      label: t("simplifiedChinese"),
       onClick: () => void i18n.changeLanguage("zh-CN"),
     },
     {
       key: "en-US",
       icon: locale === "en-US" ? <Check size={16} /> : <span className="w-4" />,
-      label: "English",
+      label: t("english"),
       onClick: () => void i18n.changeLanguage("en-US"),
     },
   ]
@@ -141,7 +142,11 @@ export function AdminLayout() {
       return {
         key: item.path,
         icon: item.icon ? iconMap[item.icon as keyof typeof iconMap] : <MenuIcon size={16} />,
-        label: children.length ? item.title : <Link to={item.path}>{item.title}</Link>,
+        label: children.length ? (
+          getMenuTitle(item, t)
+        ) : (
+          <Link to={item.path}>{getMenuTitle(item, t)}</Link>
+        ),
         children: children.length
           ? children.map((child) => ({
               key: child.path,
@@ -150,7 +155,7 @@ export function AdminLayout() {
               ) : (
                 <MenuIcon size={16} />
               ),
-              label: <Link to={child.path}>{child.title}</Link>,
+              label: <Link to={child.path}>{getMenuTitle(child, t)}</Link>,
             }))
           : undefined,
       }
@@ -183,10 +188,10 @@ export function AdminLayout() {
           title:
             index !== items.length - 1 && !menus.some((child) => child.parentId === item.id) ? (
               <Link to={item.path} className="ame-text-muted">
-                {item.title}
+                {getMenuTitle(item, t)}
               </Link>
             ) : (
-              item.title
+              getMenuTitle(item, t)
             ),
         }))
     : undefined
@@ -211,7 +216,7 @@ export function AdminLayout() {
                 </Link>
               ),
             },
-            { title: "无权限访问" },
+            { title: t("forbidden") },
           ]
         : [{ title: t("dashboard") }]
   const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems

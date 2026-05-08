@@ -1,3 +1,4 @@
+import i18n from "../i18n"
 import { api } from "./api"
 
 type QueryData<T extends (...args: never[]) => Promise<{ data: unknown }>> = NonNullable<
@@ -15,7 +16,7 @@ const unwrap = async <T>(response: Promise<{ data: T; error: unknown }>) => {
     const message =
       typeof error === "object" && error && "message" in error && typeof error.message === "string"
         ? error.message
-        : "请求失败"
+        : i18n.t("requestFailed")
 
     if (status === 401 && globalThis.location.pathname !== "/login") {
       const redirect = `${globalThis.location.pathname}${globalThis.location.search}`

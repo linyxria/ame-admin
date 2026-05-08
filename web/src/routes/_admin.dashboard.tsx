@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useRouteContext } from "@tanstack/react-router"
 import { Card, Col, Empty, Row, Space, Statistic, Tag } from "antd"
+import { useTranslation } from "react-i18next"
 import { systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/dashboard")({
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/_admin/dashboard")({
 
 function DashboardRoute() {
   const { session, user } = useRouteContext({ from: "/_admin/dashboard" })
+  const { t } = useTranslation()
   const overviewQuery = useQuery({
     queryKey: systemQueryKeys.overview,
     queryFn: systemApi.overview,
@@ -19,35 +21,38 @@ function DashboardRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div>
         <h1 className="ame-page-title mb-1.5 text-4xl font-semibold">Dashboard</h1>
-        <p className="ame-page-description text-base">管理后台基础骨架已经就绪。</p>
+        <p className="ame-page-description text-base">{t("dashboardReady")}</p>
       </div>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} md={6}>
           <Card>
-            <Statistic title="用户数量" value={overview?.users ?? 0} />
+            <Statistic title={t("userCount")} value={overview?.users ?? 0} />
           </Card>
         </Col>
         <Col xs={24} md={6}>
           <Card>
-            <Statistic title="角色数量" value={overview?.roles ?? 0} />
+            <Statistic title={t("roleCount")} value={overview?.roles ?? 0} />
           </Card>
         </Col>
         <Col xs={24} md={6}>
           <Card>
-            <Statistic title="菜单数量" value={overview?.menus ?? 0} />
+            <Statistic title={t("menuCount")} value={overview?.menus ?? 0} />
           </Card>
         </Col>
         <Col xs={24} md={6}>
           <Card>
-            <Statistic title="未读通知" value={overview?.unreadNotifications ?? 0} />
+            <Statistic
+              title={t("unreadNotifications")}
+              value={overview?.unreadNotifications ?? 0}
+            />
           </Card>
         </Col>
       </Row>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={14}>
-          <Card title="最近操作">
+          <Card title={t("recentOperations")}>
             {overview?.latestAuditLogs.length ? (
               <div className="divide-y">
                 {overview.latestAuditLogs.map((item) => (
@@ -57,30 +62,30 @@ function DashboardRoute() {
                       <span>{item.summary}</span>
                     </Space>
                     <div className="ame-text-subtle mt-1 text-sm">
-                      {item.actorName ?? item.actorEmail ?? "系统"} ·{" "}
+                      {item.actorName ?? item.actorEmail ?? t("system")} ·{" "}
                       {new Date(item.createdAt).toLocaleString()}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无审计记录" />
+              <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={t("noAuditLogs")} />
             )}
           </Card>
         </Col>
         <Col xs={24} lg={10}>
-          <Card title={`当前用户 · ${session ? "已登录" : "加载中"}`}>
+          <Card title={`${t("currentUser")} · ${session ? t("signedIn") : t("loading")}`}>
             <div className="space-y-2">
               <div>
-                <span className="ame-text-subtle">姓名：</span>
+                <span className="ame-text-subtle">{t("name")}:</span>
                 {user.name}
               </div>
               <div>
-                <span className="ame-text-subtle">邮箱：</span>
+                <span className="ame-text-subtle">{t("email")}:</span>
                 {user.email}
               </div>
               <div>
-                <span className="ame-text-subtle">用户 ID：</span>
+                <span className="ame-text-subtle">{t("userId")}:</span>
                 <span className="break-all">{user.id}</span>
               </div>
             </div>

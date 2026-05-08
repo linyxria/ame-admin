@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate, useRouteContext } from "@tanstack/react-router"
 import { Alert, Button, Card, Checkbox, Form, Input, Typography } from "antd"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 
 interface LoginSearch {
   redirect?: string
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/login")({
   validateSearch: (search): LoginSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
-  // TODO 这里不确定做重定向合不合适, 先注释掉可以在登录页面少一次 getSession 的调用
+  // TODO: Redirecting here may cost an extra getSession call on the login page.
   // beforeLoad: async ({ context, search }) => {
   //   const { data } = await context.auth.getSession()
 
@@ -36,6 +37,7 @@ function LoginRoute() {
   const { auth } = useRouteContext({ from: "/login" })
   const navigate = useNavigate()
   const { redirect } = Route.useSearch()
+  const { t } = useTranslation()
   const [error, setError] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
 
@@ -52,7 +54,7 @@ function LoginRoute() {
     setSubmitting(false)
 
     if (result.error) {
-      setError(result.error.message ?? "登录失败，请检查邮箱和密码")
+      setError(result.error.message ?? t("loginFailed"))
       return
     }
 
@@ -66,17 +68,13 @@ function LoginRoute() {
           <h1 className="ame-page-title mb-4 text-[46px] leading-[1.05] font-semibold max-[760px]:text-4xl">
             AME Admin
           </h1>
-          <p className="ame-page-description max-w-105 text-[17px]">
-            登录后可以管理 AME 的运营数据、用户和内部工作流。
-          </p>
+          <p className="ame-page-description max-w-105 text-[17px]">{t("loginDescription")}</p>
         </div>
 
         <Card className="w-full rounded-lg shadow-[0_18px_45px_rgba(15,23,42,0.12)] [&_.ant-card-body]:grid [&_.ant-card-body]:gap-5 [&_.ant-card-body]:p-7 max-[760px]:[&_.ant-card-body]:p-5.5">
           <div>
-            <h2 className="ame-page-title mb-1 text-2xl font-semibold">管理员登录</h2>
-            <Typography.Text type="secondary">
-              本地默认账号：admin@example.com / admin123456
-            </Typography.Text>
+            <h2 className="ame-page-title mb-1 text-2xl font-semibold">{t("adminLogin")}</h2>
+            <Typography.Text type="secondary">{t("localDefaultAccount")}</Typography.Text>
           </div>
 
           {error ? <Alert type="error" title={error} showIcon /> : null}
@@ -84,10 +82,10 @@ function LoginRoute() {
           <Form layout="vertical" requiredMark={false} onFinish={submit}>
             <Form.Item
               name="email"
-              label="邮箱"
+              label={t("email")}
               rules={[
-                { required: true, message: "请输入邮箱" },
-                { type: "email", message: "请输入有效邮箱" },
+                { required: true, message: t("enterEmail") },
+                { type: "email", message: t("enterValidEmail") },
               ]}
             >
               <Input autoComplete="email" placeholder="admin@example.com" size="large" />
@@ -95,21 +93,21 @@ function LoginRoute() {
 
             <Form.Item
               name="password"
-              label="密码"
+              label={t("password")}
               rules={[
-                { required: true, message: "请输入密码" },
-                { min: 8, message: "密码至少 8 位" },
+                { required: true, message: t("enterPassword") },
+                { min: 8, message: t("passwordMinLength", { count: 8 }) },
               ]}
             >
               <Input.Password autoComplete="current-password" size="large" />
             </Form.Item>
 
             <Form.Item name="rememberMe" valuePropName="checked" initialValue>
-              <Checkbox>保持登录</Checkbox>
+              <Checkbox>{t("rememberMe")}</Checkbox>
             </Form.Item>
 
             <Button type="primary" htmlType="submit" size="large" block loading={submitting}>
-              登录
+              {t("signIn")}
             </Button>
           </Form>
         </Card>

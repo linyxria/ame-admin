@@ -29,6 +29,13 @@
       "when": 1777363500000,
       "tag": "0003_admin_operations",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1777450000000,
+      "tag": "0004_menu_title_key",
+      "breakpoints": true
     }
   ]
 }

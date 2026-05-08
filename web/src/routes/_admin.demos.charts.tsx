@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { Card, Col, Progress, Row, Space, Statistic, Table, Tag } from "antd"
+import { useTranslation } from "react-i18next"
 
 export const Route = createFileRoute("/_admin/demos/charts")({
   component: ChartsDemoRoute,
@@ -16,32 +17,34 @@ const bars = [
 ]
 
 function ChartsDemoRoute() {
+  const { t } = useTranslation()
+
   return (
     <Space orientation="vertical" size="large" className="w-full">
       <div>
-        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">图表示例</h1>
-        <p className="ame-page-description text-sm">展示卡片指标、柱状趋势、进度和排行。</p>
+        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("chartDemo")}</h1>
+        <p className="ame-page-description text-sm">{t("chartsDescription")}</p>
       </div>
       <Row gutter={[16, 16]}>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="活跃用户" value={12846} />
+            <Statistic title={t("activeUsers")} value={12846} />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="转化率" value={38.6} suffix="%" />
+            <Statistic title={t("conversionRate")} value={38.6} suffix="%" />
           </Card>
         </Col>
         <Col xs={24} md={8}>
           <Card>
-            <Statistic title="工单完成" value={92} suffix="%" />
+            <Statistic title={t("ticketCompletion")} value={92} suffix="%" />
           </Card>
         </Col>
       </Row>
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
-          <Card title="访问趋势">
+          <Card title={t("visitTrend")}>
             <div className="flex h-72 items-end gap-4 px-2">
               {bars.map((item) => (
                 <div key={item.label} className="flex flex-1 flex-col items-center gap-2">
@@ -56,7 +59,7 @@ function ChartsDemoRoute() {
           </Card>
         </Col>
         <Col xs={24} lg={8}>
-          <Card title="目标进度">
+          <Card title={t("goalProgress")}>
             <Space orientation="vertical" className="w-full">
               <Progress percent={72} />
               <Progress percent={54} status="active" />
@@ -65,19 +68,19 @@ function ChartsDemoRoute() {
           </Card>
         </Col>
       </Row>
-      <Card title="渠道排行">
+      <Card title={t("channelRanking")}>
         <Table
           rowKey="channel"
           pagination={false}
           dataSource={[
-            { channel: "Organic", visits: 4821, status: "稳定" },
-            { channel: "Referral", visits: 3188, status: "增长" },
-            { channel: "Campaign", visits: 2419, status: "观察" },
+            { channel: "Organic", visits: 4821, status: t("stable") },
+            { channel: "Referral", visits: 3188, status: t("growing") },
+            { channel: "Campaign", visits: 2419, status: t("watching") },
           ]}
           columns={[
-            { title: "渠道", dataIndex: "channel" },
-            { title: "访问量", dataIndex: "visits" },
-            { title: "状态", dataIndex: "status", render: (value) => <Tag>{value}</Tag> },
+            { title: t("channel"), dataIndex: "channel" },
+            { title: t("visits"), dataIndex: "visits" },
+            { title: t("status"), dataIndex: "status", render: (value) => <Tag>{value}</Tag> },
           ]}
         />
       </Card>

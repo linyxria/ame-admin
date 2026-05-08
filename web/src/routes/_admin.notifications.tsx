@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { App, Button, Space, Table, Tag } from "antd"
 import { CheckCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { type NotificationItem, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/notifications")({
@@ -11,6 +12,7 @@ export const Route = createFileRoute("/_admin/notifications")({
 
 function NotificationsRoute() {
   const { message } = App.useApp()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -35,18 +37,20 @@ function NotificationsRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">通知中心</h1>
-          <p className="ame-page-description text-sm">查看消息、通知和待办。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">
+            {t("notificationCenter")}
+          </h1>
+          <p className="ame-page-description text-sm">{t("notificationsDescription")}</p>
         </div>
         <Button
           icon={<CheckCheck size={16} />}
           loading={readAll.isPending}
           onClick={async () => {
             await readAll.mutateAsync()
-            message.success("已全部标记为已读")
+            message.success(t("markedAllRead"))
           }}
         >
-          全部已读
+          {t("markAllRead")}
         </Button>
       </div>
 
@@ -66,24 +70,29 @@ function NotificationsRoute() {
         }}
         columns={[
           {
-            title: "状态",
+            title: t("status"),
             dataIndex: "readAt",
             width: 100,
             render: (value) => (
-              <Tag color={value ? "default" : "blue"}>{value ? "已读" : "未读"}</Tag>
+              <Tag color={value ? "default" : "blue"}>{value ? t("read") : t("unread")}</Tag>
             ),
           },
-          { title: "类型", dataIndex: "type", width: 100, render: (value) => <Tag>{value}</Tag> },
-          { title: "标题", dataIndex: "title" },
-          { title: "内容", dataIndex: "description", render: (value) => value || "-" },
           {
-            title: "时间",
+            title: t("type"),
+            dataIndex: "type",
+            width: 100,
+            render: (value) => <Tag>{value}</Tag>,
+          },
+          { title: t("title"), dataIndex: "title" },
+          { title: t("content"), dataIndex: "description", render: (value) => value || "-" },
+          {
+            title: t("createdAt"),
             dataIndex: "createdAt",
             width: 190,
             render: (value) => new Date(value).toLocaleString(),
           },
           {
-            title: "操作",
+            title: t("operation"),
             width: 90,
             render: (_, record) => (
               <Button

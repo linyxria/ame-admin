@@ -27,6 +27,7 @@ export const menuRoutes = new Elysia({ name: "system.menus", prefix: "/menus" })
         id: menuId,
         parentId: body.parentId ?? null,
         title: body.title,
+        titleKey: body.titleKey ?? null,
         path: body.path,
         icon: body.icon ?? null,
         sort: body.sort ?? 0,
@@ -54,6 +55,7 @@ export const menuRoutes = new Elysia({ name: "system.menus", prefix: "/menus" })
         .set({
           parentId: body.parentId ?? null,
           title: body.title,
+          ...("titleKey" in body ? { titleKey: body.titleKey ?? null } : {}),
           path: body.path,
           icon: body.icon ?? null,
           sort: body.sort ?? 0,

@@ -17,6 +17,7 @@ import {
 } from "antd"
 import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { type SystemUser, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/system/users")({
@@ -33,6 +34,7 @@ type UserForm = {
 function UsersRoute() {
   const [form] = Form.useForm<UserForm>()
   const { message } = App.useApp()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<SystemUser | null>(null)
   const [open, setOpen] = useState(false)
@@ -134,19 +136,19 @@ function UsersRoute() {
           roleIds: values.roleIds ?? [],
         })
       }
-      message.success("保存成功")
+      message.success(t("saveSuccess"))
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "保存失败")
+      message.error(error instanceof Error ? error.message : t("saveFailed"))
     }
   }
 
   const remove = async (id: string) => {
     try {
       await deleteUser.mutateAsync(id)
-      message.success("删除成功")
+      message.success(t("deleteSuccess"))
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "删除失败")
+      message.error(error instanceof Error ? error.message : t("deleteFailed"))
     }
   }
 
@@ -154,8 +156,8 @@ function UsersRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">用户管理</h1>
-          <p className="ame-page-description text-sm">维护后台账号和用户角色。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("userManagement")}</h1>
+          <p className="ame-page-description text-sm">{t("usersDescription")}</p>
         </div>
         <Space>
           <Button
@@ -170,7 +172,7 @@ function UsersRoute() {
             icon={<Plus size={16} />}
             onClick={() => showModal()}
           >
-            新建用户
+            {t("createUser")}
           </Button>
         </Space>
       </div>
@@ -193,7 +195,7 @@ function UsersRoute() {
           <Input.Search
             allowClear
             className="max-w-sm"
-            placeholder="搜索姓名或邮箱"
+            placeholder={t("searchNameOrEmail")}
             value={keyword}
             onChange={(event) => {
               setKeyword(event.target.value)
@@ -203,7 +205,7 @@ function UsersRoute() {
         )}
         columns={[
           {
-            title: "用户",
+            title: t("user"),
             render: (_, record) => (
               <Space>
                 <Avatar src={record.image}>{record.name.slice(0, 1)}</Avatar>
@@ -211,19 +213,19 @@ function UsersRoute() {
               </Space>
             ),
           },
-          { title: "邮箱", dataIndex: "email" },
+          { title: t("email"), dataIndex: "email" },
           {
-            title: "角色",
+            title: t("role"),
             dataIndex: "roles",
             render: (value: SystemUser["roles"]) =>
               value.length > 0 ? (
                 value.map((role) => <Tag key={role.id}>{role.name}</Tag>)
               ) : (
-                <span className="ame-text-subtle">未分配</span>
+                <span className="ame-text-subtle">{t("unassigned")}</span>
               ),
           },
           {
-            title: "状态",
+            title: t("status"),
             dataIndex: "enabled",
             width: 110,
             render: (enabled, record) => (
@@ -231,8 +233,8 @@ function UsersRoute() {
                 size="small"
                 checked={enabled}
                 disabled={record.builtIn || !canUpdate}
-                checkedChildren="启用"
-                unCheckedChildren="停用"
+                checkedChildren={t("enabled")}
+                unCheckedChildren={t("disabled")}
                 onChange={(checked) =>
                   updateUser.mutate({
                     id: record.id,
@@ -243,19 +245,21 @@ function UsersRoute() {
             ),
           },
           {
-            title: "邮箱验证",
+            title: t("emailVerified"),
             dataIndex: "emailVerified",
             width: 110,
             render: (verified) => (
-              <Tag color={verified ? "green" : "default"}>{verified ? "已验证" : "未验证"}</Tag>
+              <Tag color={verified ? "green" : "default"}>
+                {verified ? t("verified") : t("unverified")}
+              </Tag>
             ),
           },
           {
-            title: "操作",
+            title: t("operation"),
             width: 150,
             render: (_, record) => (
               <Space>
-                <Tooltip title="编辑">
+                <Tooltip title={t("edit")}>
                   <Button
                     type="text"
                     disabled={!canUpdate}
@@ -263,7 +267,7 @@ function UsersRoute() {
                     onClick={() => showModal(record)}
                   />
                 </Tooltip>
-                <Tooltip title="重置密码">
+                <Tooltip title={t("resetPassword")}>
                   <Button
                     type="text"
                     disabled={!canUpdate}
@@ -274,18 +278,18 @@ function UsersRoute() {
                     }}
                   />
                 </Tooltip>
-                <Tooltip title="强制重新登录">
+                <Tooltip title={t("forceSignOut")}>
                   <Popconfirm
-                    title="确认让这个用户的所有会话失效？"
+                    title={t("confirmRevokeSessions")}
                     onConfirm={() => revokeSessions.mutate(record.id)}
                     disabled={!canUpdate}
                   >
                     <Button type="text" disabled={!canUpdate} icon={<LogOut size={16} />} />
                   </Popconfirm>
                 </Tooltip>
-                <Tooltip title={record.builtIn ? "内置系统管理员不允许删除" : "删除"}>
+                <Tooltip title={record.builtIn ? t("builtInAdminDeleteDisabled") : t("delete")}>
                   <Popconfirm
-                    title="确认删除这个用户？"
+                    title={t("confirmDeleteUser")}
                     onConfirm={() => remove(record.id)}
                     disabled={record.builtIn || !canDelete}
                   >
@@ -304,7 +308,7 @@ function UsersRoute() {
       />
 
       <Modal
-        title={editing ? "编辑用户" : "新建用户"}
+        title={editing ? t("editUser") : t("createUser")}
         open={open}
         onOk={submit}
         onCancel={() => setOpen(false)}
@@ -312,32 +316,36 @@ function UsersRoute() {
         forceRender
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="姓名" rules={[{ required: true, message: "请输入姓名" }]}>
+          <Form.Item
+            name="name"
+            label={t("name")}
+            rules={[{ required: true, message: t("enterName") }]}
+          >
             <Input />
           </Form.Item>
           <Form.Item
             name="email"
-            label="邮箱"
-            rules={[{ required: true, type: "email", message: "请输入有效邮箱" }]}
+            label={t("email")}
+            rules={[{ required: true, type: "email", message: t("enterValidEmail") }]}
           >
             <Input />
           </Form.Item>
           {!editing ? (
             <Form.Item
               name="password"
-              label="初始密码"
+              label={t("initialPassword")}
               rules={[
                 {
                   required: true,
                   min: passwordMinLength,
-                  message: `密码至少 ${passwordMinLength} 位`,
+                  message: t("passwordMinLength", { count: passwordMinLength }),
                 },
               ]}
             >
               <Input.Password />
             </Form.Item>
           ) : null}
-          <Form.Item name="roleIds" label="角色">
+          <Form.Item name="roleIds" label={t("role")}>
             <Select
               mode="multiple"
               options={(rolesQuery.data ?? []).map((role) => ({
@@ -349,7 +357,7 @@ function UsersRoute() {
         </Form>
       </Modal>
       <Modal
-        title={`重置密码 · ${resetting?.name ?? ""}`}
+        title={`${t("resetPassword")} · ${resetting?.name ?? ""}`}
         open={Boolean(resetting)}
         okButtonProps={{ loading: resetPassword.isPending }}
         onCancel={() => setResetting(null)}
@@ -358,22 +366,22 @@ function UsersRoute() {
             return
           }
           if (password.length < passwordMinLength) {
-            message.error(`密码至少 ${passwordMinLength} 位`)
+            message.error(t("passwordMinLength", { count: passwordMinLength }))
             return
           }
           try {
             await resetPassword.mutateAsync({ id: resetting.id, nextPassword: password })
-            message.success("密码已重置")
+            message.success(t("passwordResetSuccess"))
             setResetting(null)
           } catch (error) {
-            message.error(error instanceof Error ? error.message : "重置失败")
+            message.error(error instanceof Error ? error.message : t("resetPasswordFailed"))
           }
         }}
       >
         <Input.Password
           value={password}
           minLength={passwordMinLength}
-          placeholder="输入新的临时密码"
+          placeholder={t("newTemporaryPassword")}
           onChange={(event) => setPassword(event.target.value)}
         />
       </Modal>

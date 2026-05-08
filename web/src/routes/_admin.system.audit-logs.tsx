@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { Button, Input, Space, Table, Tag } from "antd"
 import { RotateCw } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { type AuditLog, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/system/audit-logs")({
@@ -10,6 +11,7 @@ export const Route = createFileRoute("/_admin/system/audit-logs")({
 })
 
 function AuditLogsRoute() {
+  const { t } = useTranslation()
   const [keyword, setKeyword] = useState("")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -23,8 +25,8 @@ function AuditLogsRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">审计日志</h1>
-          <p className="ame-page-description text-sm">查看后台关键操作记录。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("auditLogs")}</h1>
+          <p className="ame-page-description text-sm">{t("auditLogsDescription")}</p>
         </div>
         <Button
           icon={<RotateCw size={16} />}
@@ -52,7 +54,7 @@ function AuditLogsRoute() {
           <Input.Search
             allowClear
             className="max-w-sm"
-            placeholder="搜索操作人、资源或摘要"
+            placeholder={t("searchAuditLogs")}
             value={keyword}
             onChange={(event) => {
               setKeyword(event.target.value)
@@ -62,13 +64,13 @@ function AuditLogsRoute() {
         )}
         columns={[
           {
-            title: "时间",
+            title: t("createdAt"),
             dataIndex: "createdAt",
             width: 190,
             render: (value) => new Date(value).toLocaleString(),
           },
           {
-            title: "操作人",
+            title: t("actor"),
             render: (_, record) => (
               <div>
                 <div>{record.actorName ?? "-"}</div>
@@ -76,11 +78,16 @@ function AuditLogsRoute() {
               </div>
             ),
           },
-          { title: "动作", dataIndex: "action", width: 140, render: (value) => <Tag>{value}</Tag> },
-          { title: "资源", dataIndex: "resource", width: 120 },
-          { title: "摘要", dataIndex: "summary" },
           {
-            title: "详情",
+            title: t("action"),
+            dataIndex: "action",
+            width: 140,
+            render: (value) => <Tag>{value}</Tag>,
+          },
+          { title: t("resource"), dataIndex: "resource", width: 120 },
+          { title: t("summary"), dataIndex: "summary" },
+          {
+            title: t("detail"),
             dataIndex: "detail",
             render: (value) => (
               <pre className="m-0 max-w-md truncate text-xs">{value ? String(value) : "-"}</pre>

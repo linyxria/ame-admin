@@ -2,15 +2,17 @@ import { Button, Empty, Input, Modal } from "antd"
 import { Search } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { getMenuTitle } from "../lib/menu-title"
 import type { Menu } from "../lib/system-api"
 
 export function GlobalSearch({ menus }: { menus: Menu[] }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [keyword, setKeyword] = useState("")
-  const results = menus.filter((menu) =>
-    `${menu.title} ${menu.path}`.toLowerCase().includes(keyword.toLowerCase()),
-  )
+  const results = menus.filter((menu) => {
+    const title = getMenuTitle(menu, t)
+    return `${title} ${menu.title} ${menu.path}`.toLowerCase().includes(keyword.toLowerCase())
+  })
 
   return (
     <>
@@ -39,7 +41,7 @@ export function GlobalSearch({ menus }: { menus: Menu[] }) {
                 href={item.path}
                 className="ame-hover-surface ame-text-muted block rounded-md px-3 py-2"
               >
-                <div className="font-medium">{item.title}</div>
+                <div className="font-medium">{getMenuTitle(item, t)}</div>
                 <div className="ame-text-subtle text-xs">{item.path}</div>
               </a>
             ))

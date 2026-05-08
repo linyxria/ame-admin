@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { App, Button, Card, Form, Input, Select, Space, Switch } from "antd"
+import { useTranslation } from "react-i18next"
 import { type SettingsInput, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/system/settings")({
@@ -20,6 +21,7 @@ const getSetting = (items: Awaited<ReturnType<typeof systemApi.settings>> | null
 function SystemSettingsRoute() {
   const [form] = Form.useForm<SettingsForm>()
   const { message } = App.useApp()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const settingsQuery = useQuery({
     queryKey: systemQueryKeys.settings,
@@ -37,13 +39,13 @@ function SystemSettingsRoute() {
     mutationFn: systemApi.updateSettings,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: systemQueryKeys.settings })
-      message.success("保存成功")
+      message.success(t("saveSuccess"))
     },
   })
   const settings = settingsQuery.data ?? []
   const initialValues = {
-    siteName: getSetting(settings, "siteName") ?? "AME 管理后台",
-    defaultLanguage: getSetting(settings, "defaultLanguage") ?? "zh-CN",
+    siteName: getSetting(settings, "siteName") ?? t("appName"),
+    defaultLanguage: getSetting(settings, "defaultLanguage") ?? "en-US",
     passwordMinLength: Number(getSetting(settings, "passwordMinLength") ?? 8),
     allowPublicSignUp: getSetting(settings, "allowPublicSignUp") === "true",
   }
@@ -52,17 +54,21 @@ function SystemSettingsRoute() {
     const values = await form.validateFields()
     const body: SettingsInput = {
       items: [
-        { key: "siteName", value: values.siteName, description: "站点名称" },
-        { key: "defaultLanguage", value: values.defaultLanguage, description: "默认语言" },
+        { key: "siteName", value: values.siteName, description: t("siteName") },
+        {
+          key: "defaultLanguage",
+          value: values.defaultLanguage,
+          description: t("defaultLanguage"),
+        },
         {
           key: "passwordMinLength",
           value: String(values.passwordMinLength),
-          description: "密码最小长度",
+          description: t("passwordMinLengthSetting"),
         },
         {
           key: "allowPublicSignUp",
           value: String(values.allowPublicSignUp),
-          description: "是否允许公开注册",
+          description: t("allowPublicSignUp"),
         },
       ],
     }
@@ -72,8 +78,8 @@ function SystemSettingsRoute() {
   return (
     <Space orientation="vertical" size="large" className="w-full">
       <div>
-        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">系统设置</h1>
-        <p className="ame-page-description text-sm">维护后台基础配置。</p>
+        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("systemSettings")}</h1>
+        <p className="ame-page-description text-sm">{t("settingsDescription")}</p>
       </div>
 
       <Card loading={settingsQuery.isLoading}>
@@ -84,23 +90,39 @@ function SystemSettingsRoute() {
           initialValues={initialValues}
           key={settings.map((item) => `${item.key}:${item.value}`).join("|")}
         >
-          <Form.Item name="siteName" label="站点名称" rules={[{ required: true }]}>
+          <Form.Item name="siteName" label={t("siteName")} rules={[{ required: true }]}>
             <Input disabled={!canUpdate} />
           </Form.Item>
-          <Form.Item name="defaultLanguage" label="默认语言" rules={[{ required: true }]}>
+          <Form.Item
+            name="defaultLanguage"
+            label={t("defaultLanguage")}
+            rules={[{ required: true }]}
+          >
             <Select
               disabled={!canUpdate}
               options={[
-                { label: "简体中文", value: "zh-CN" },
-                { label: "English", value: "en-US" },
+                { label: t("simplifiedChinese"), value: "zh-CN" },
+                { label: t("english"), value: "en-US" },
               ]}
             />
           </Form.Item>
-          <Form.Item name="passwordMinLength" label="密码最小长度" rules={[{ required: true }]}>
+          <Form.Item
+            name="passwordMinLength"
+            label={t("passwordMinLengthSetting")}
+            rules={[{ required: true }]}
+          >
             <Input type="number" min={8} disabled={!canUpdate} />
           </Form.Item>
-          <Form.Item name="allowPublicSignUp" label="公开注册" valuePropName="checked">
-            <Switch disabled={!canUpdate} checkedChildren="允许" unCheckedChildren="禁止" />
+          <Form.Item
+            name="allowPublicSignUp"
+            label={t("allowPublicSignUp")}
+            valuePropName="checked"
+          >
+            <Switch
+              disabled={!canUpdate}
+              checkedChildren={t("allowed")}
+              unCheckedChildren={t("blocked")}
+            />
           </Form.Item>
           <Form.Item>
             <Button
@@ -109,7 +131,7 @@ function SystemSettingsRoute() {
               loading={updateSettings.isPending}
               onClick={submit}
             >
-              保存
+              {t("save")}
             </Button>
           </Form.Item>
         </Form>

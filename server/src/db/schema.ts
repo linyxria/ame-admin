@@ -94,6 +94,7 @@ export const menu = pgTable(
     id: text("id").primaryKey(),
     parentId: text("parentId"),
     title: text("title").notNull(),
+    titleKey: text("titleKey"),
     path: text("path").notNull(),
     icon: text("icon"),
     sort: integer("sort").notNull().default(0),

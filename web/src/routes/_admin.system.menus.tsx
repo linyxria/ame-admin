@@ -17,6 +17,8 @@ import {
 } from "antd"
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { getMenuTitle } from "../lib/menu-title"
 import { type Menu, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/system/menus")({
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/_admin/system/menus")({
 type MenuForm = {
   parentId?: string | null
   title: string
+  titleKey?: string | null
   path: string
   icon?: string | null
   sort: number
@@ -35,6 +38,7 @@ type MenuForm = {
 function MenusRoute() {
   const [form] = Form.useForm<MenuForm>()
   const { message } = App.useApp()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<Menu | null>(null)
   const [open, setOpen] = useState(false)
@@ -82,12 +86,21 @@ function MenusRoute() {
         ? {
             parentId: menu.parentId,
             title: menu.title,
+            titleKey: menu.titleKey,
             path: menu.path,
             icon: menu.icon,
             sort: menu.sort,
             visible: menu.visible,
           }
-        : { parentId: null, title: "", path: "", icon: null, sort: 0, visible: true },
+        : {
+            parentId: null,
+            title: "",
+            titleKey: null,
+            path: "",
+            icon: null,
+            sort: 0,
+            visible: true,
+          },
     )
     setOpen(true)
   }
@@ -97,6 +110,7 @@ function MenusRoute() {
     const body = {
       parentId: values.parentId ?? null,
       title: values.title,
+      titleKey: values.titleKey ?? null,
       path: values.path,
       icon: values.icon ?? null,
       sort: values.sort ?? 0,
@@ -109,19 +123,19 @@ function MenusRoute() {
       } else {
         await createMenu.mutateAsync(body)
       }
-      message.success("保存成功")
+      message.success(t("saveSuccess"))
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "保存失败")
+      message.error(error instanceof Error ? error.message : t("saveFailed"))
     }
   }
 
   const remove = async (id: string) => {
     try {
       await deleteMenu.mutateAsync(id)
-      message.success("删除成功")
+      message.success(t("deleteSuccess"))
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "删除失败")
+      message.error(error instanceof Error ? error.message : t("deleteFailed"))
     }
   }
 
@@ -129,8 +143,8 @@ function MenusRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">菜单管理</h1>
-          <p className="ame-page-description text-sm">维护后台导航和角色可授权菜单。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("menuManagement")}</h1>
+          <p className="ame-page-description text-sm">{t("menusDescription")}</p>
         </div>
         <Space>
           <Button
@@ -145,7 +159,7 @@ function MenusRoute() {
             icon={<Plus size={16} />}
             onClick={() => showModal()}
           >
-            新建菜单
+            {t("createMenu")}
           </Button>
         </Space>
       </div>
@@ -155,24 +169,26 @@ function MenusRoute() {
         loading={menusQuery.isLoading}
         dataSource={menusQuery.data ?? []}
         columns={[
-          { title: "菜单名称", dataIndex: "title" },
-          { title: "路由", dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
-          { title: "图标", dataIndex: "icon", render: (value) => value || "-" },
-          { title: "排序", dataIndex: "sort", width: 90 },
+          { title: t("menuName"), render: (_, record) => getMenuTitle(record, t) },
+          { title: t("route"), dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
+          { title: t("icon"), dataIndex: "icon", render: (value) => value || "-" },
+          { title: t("sort"), dataIndex: "sort", width: 90 },
           {
-            title: "可见",
+            title: t("sidebarVisible"),
             dataIndex: "visible",
             width: 100,
             render: (visible) => (
-              <Tag color={visible ? "green" : "default"}>{visible ? "显示" : "隐藏"}</Tag>
+              <Tag color={visible ? "green" : "default"}>
+                {visible ? t("visible") : t("hidden")}
+              </Tag>
             ),
           },
           {
-            title: "操作",
+            title: t("operation"),
             width: 150,
             render: (_, record) => (
               <Space>
-                <Tooltip title="编辑">
+                <Tooltip title={t("edit")}>
                   <Button
                     type="text"
                     disabled={!canUpdate}
@@ -180,9 +196,9 @@ function MenusRoute() {
                     onClick={() => showModal(record)}
                   />
                 </Tooltip>
-                <Tooltip title={record.builtIn ? "核心菜单不允许删除" : "删除"}>
+                <Tooltip title={record.builtIn ? t("builtInMenuDeleteDisabled") : t("delete")}>
                   <Popconfirm
-                    title="确认删除这个菜单？"
+                    title={t("confirmDeleteMenu")}
                     onConfirm={() => remove(record.id)}
                     disabled={record.builtIn || !canDelete}
                   >
@@ -201,7 +217,7 @@ function MenusRoute() {
       />
 
       <Modal
-        title={editing ? "编辑菜单" : "新建菜单"}
+        title={editing ? t("editMenu") : t("createMenu")}
         open={open}
         onOk={submit}
         onCancel={() => setOpen(false)}
@@ -209,29 +225,32 @@ function MenusRoute() {
         forceRender
       >
         <Form form={form} layout="vertical" initialValues={{ sort: 0, visible: true }}>
-          <Form.Item name="parentId" label="上级菜单">
+          <Form.Item name="parentId" label={t("parentMenu")}>
             <Select
               allowClear
               options={(menusQuery.data ?? [])
                 .filter((item) => item.id !== editing?.id && !item.parentId)
-                .map((item) => ({ label: item.title, value: item.id }))}
+                .map((item) => ({ label: getMenuTitle(item, t), value: item.id }))}
             />
+          </Form.Item>
+          <Form.Item name="titleKey" hidden>
+            <Input />
           </Form.Item>
           <Form.Item
             name="title"
-            label="菜单名称"
-            rules={[{ required: true, message: "请输入菜单名称" }]}
+            label={t("menuName")}
+            rules={[{ required: true, message: t("enterMenuName") }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="path"
-            label="路由地址"
-            rules={[{ required: true, message: "请输入路由地址" }]}
+            label={t("routePath")}
+            rules={[{ required: true, message: t("enterRoutePath") }]}
           >
             <Input placeholder="/system/users" />
           </Form.Item>
-          <Form.Item name="icon" label="图标">
+          <Form.Item name="icon" label={t("icon")}>
             <Select
               allowClear
               options={[
@@ -245,11 +264,11 @@ function MenusRoute() {
               ]}
             />
           </Form.Item>
-          <Form.Item name="sort" label="排序">
+          <Form.Item name="sort" label={t("sort")}>
             <InputNumber className="w-full" min={0} />
           </Form.Item>
-          <Form.Item name="visible" label="侧边栏显示" valuePropName="checked">
-            <Switch checkedChildren="显示" unCheckedChildren="隐藏" />
+          <Form.Item name="visible" label={t("sidebarVisible")} valuePropName="checked">
+            <Switch checkedChildren={t("visible")} unCheckedChildren={t("hidden")} />
           </Form.Item>
         </Form>
       </Modal>

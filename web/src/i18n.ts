@@ -18,13 +18,13 @@ const resources = {
 const readLocale = (): Locale => {
   const saved = localStorage.getItem("ame-locale")
 
-  return locales.includes(saved as Locale) ? (saved as Locale) : "zh-CN"
+  return locales.includes(saved as Locale) ? (saved as Locale) : "en-US"
 }
 
 void i18n.use(initReactI18next).init({
   resources,
   lng: readLocale(),
-  fallbackLng: "zh-CN",
+  fallbackLng: "en-US",
   interpolation: {
     escapeValue: false,
   },

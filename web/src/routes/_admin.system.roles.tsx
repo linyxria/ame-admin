@@ -17,6 +17,8 @@ import {
 } from "antd"
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
+import { getMenuTitle } from "../lib/menu-title"
 import { type Role, systemApi, systemQueryKeys } from "../lib/system-api"
 
 export const Route = createFileRoute("/_admin/system/roles")({
@@ -33,15 +35,16 @@ type RoleForm = {
 }
 
 const actionOptions = [
-  { label: "查看", value: "view" },
-  { label: "新增", value: "create" },
-  { label: "编辑", value: "update" },
-  { label: "删除", value: "delete" },
+  { labelKey: "view", value: "view" },
+  { labelKey: "create", value: "create" },
+  { labelKey: "update", value: "update" },
+  { labelKey: "delete", value: "delete" },
 ]
 
 function RolesRoute() {
   const [form] = Form.useForm<RoleForm>()
   const { message } = App.useApp()
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<Role | null>(null)
   const [open, setOpen] = useState(false)
@@ -93,13 +96,13 @@ function RolesRoute() {
         !item.parentId || !(menusQuery.data ?? []).some((parent) => parent.id === item.parentId),
     )
     .map((item) => ({
-      title: item.title,
+      title: getMenuTitle(item, t),
       value: item.id,
       key: item.id,
       children: (menusQuery.data ?? [])
         .filter((child) => child.parentId === item.id)
         .map((child) => ({
-          title: child.title,
+          title: getMenuTitle(child, t),
           value: child.id,
           key: child.id,
         })),
@@ -143,19 +146,19 @@ function RolesRoute() {
       } else {
         await createRole.mutateAsync(body)
       }
-      message.success("保存成功")
+      message.success(t("saveSuccess"))
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "保存失败")
+      message.error(error instanceof Error ? error.message : t("saveFailed"))
     }
   }
 
   const remove = async (id: string) => {
     try {
       await deleteRole.mutateAsync(id)
-      message.success("删除成功")
+      message.success(t("deleteSuccess"))
     } catch (error) {
-      message.error(error instanceof Error ? error.message : "删除失败")
+      message.error(error instanceof Error ? error.message : t("deleteFailed"))
     }
   }
 
@@ -163,8 +166,8 @@ function RolesRoute() {
     <Space orientation="vertical" size="large" className="w-full">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">角色管理</h1>
-          <p className="ame-page-description text-sm">维护角色基础信息和可访问菜单。</p>
+          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("roleManagement")}</h1>
+          <p className="ame-page-description text-sm">{t("rolesDescription")}</p>
         </div>
         <Space>
           <Button
@@ -179,7 +182,7 @@ function RolesRoute() {
             icon={<Plus size={16} />}
             onClick={() => showModal()}
           >
-            新建角色
+            {t("createRole")}
           </Button>
         </Space>
       </div>
@@ -189,23 +192,29 @@ function RolesRoute() {
         loading={rolesQuery.isLoading || menusQuery.isLoading}
         dataSource={rolesQuery.data ?? []}
         columns={[
-          { title: "角色名称", dataIndex: "name" },
-          { title: "标识", dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
-          { title: "说明", dataIndex: "description", render: (value) => value || "-" },
+          { title: t("roleName"), dataIndex: "name" },
+          { title: t("roleCode"), dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
+          { title: t("description"), dataIndex: "description", render: (value) => value || "-" },
           {
-            title: "状态",
+            title: t("status"),
             dataIndex: "enabled",
             render: (enabled) => (
-              <Tag color={enabled ? "green" : "default"}>{enabled ? "启用" : "停用"}</Tag>
+              <Tag color={enabled ? "green" : "default"}>
+                {enabled ? t("enabled") : t("disabled")}
+              </Tag>
             ),
           },
-          { title: "菜单数", dataIndex: "menuIds", render: (value: string[]) => value.length },
           {
-            title: "操作",
+            title: t("menuTotal"),
+            dataIndex: "menuIds",
+            render: (value: string[]) => value.length,
+          },
+          {
+            title: t("operation"),
             width: 150,
             render: (_, record) => (
               <Space>
-                <Tooltip title="编辑">
+                <Tooltip title={t("edit")}>
                   <Button
                     type="text"
                     disabled={!canUpdate}
@@ -213,9 +222,9 @@ function RolesRoute() {
                     onClick={() => showModal(record)}
                   />
                 </Tooltip>
-                <Tooltip title={record.builtIn ? "内置超级管理员角色不允许删除" : "删除"}>
+                <Tooltip title={record.builtIn ? t("builtInRoleDeleteDisabled") : t("delete")}>
                   <Popconfirm
-                    title="确认删除这个角色？"
+                    title={t("confirmDeleteRole")}
                     onConfirm={() => remove(record.id)}
                     disabled={record.builtIn || !canDelete}
                   >
@@ -234,7 +243,7 @@ function RolesRoute() {
       />
 
       <Modal
-        title={editing ? "编辑角色" : "新建角色"}
+        title={editing ? t("editRole") : t("createRole")}
         open={open}
         onOk={submit}
         onCancel={() => setOpen(false)}
@@ -248,25 +257,25 @@ function RolesRoute() {
         >
           <Form.Item
             name="name"
-            label="角色名称"
-            rules={[{ required: true, message: "请输入角色名称" }]}
+            label={t("roleName")}
+            rules={[{ required: true, message: t("enterRoleName") }]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name="code"
-            label="角色标识"
-            rules={[{ required: true, message: "请输入角色标识" }]}
+            label={t("roleCode")}
+            rules={[{ required: true, message: t("enterRoleCode") }]}
           >
             <Input />
           </Form.Item>
-          <Form.Item name="description" label="说明">
+          <Form.Item name="description" label={t("description")}>
             <Input.TextArea rows={3} />
           </Form.Item>
-          <Form.Item name="enabled" label="状态" valuePropName="checked">
-            <Switch checkedChildren="启用" unCheckedChildren="停用" />
+          <Form.Item name="enabled" label={t("status")} valuePropName="checked">
+            <Switch checkedChildren={t("enabled")} unCheckedChildren={t("disabled")} />
           </Form.Item>
-          <Form.Item name="menuIds" label="菜单权限">
+          <Form.Item name="menuIds" label={t("menuPermission")}>
             <TreeSelect
               treeCheckable
               allowClear
@@ -274,7 +283,7 @@ function RolesRoute() {
               treeData={menuTree}
             />
           </Form.Item>
-          <Form.Item label="动作权限" shouldUpdate>
+          <Form.Item label={t("actionPermission")} shouldUpdate>
             {() => (
               <Space orientation="vertical" className="w-full">
                 {selectedMenuIds.length ? (
@@ -290,9 +299,14 @@ function RolesRoute() {
                         key={menuId}
                         className="ame-border flex items-center justify-between gap-4 rounded-md border px-3 py-2"
                       >
-                        <span className="ame-text min-w-32">{menu?.title ?? menuId}</span>
+                        <span className="ame-text min-w-32">
+                          {menu ? getMenuTitle(menu, t) : menuId}
+                        </span>
                         <Checkbox.Group
-                          options={actionOptions}
+                          options={actionOptions.map((item) => ({
+                            label: t(item.labelKey),
+                            value: item.value,
+                          }))}
                           value={current?.actions ?? ["view"]}
                           onChange={(actions) => {
                             const next = permissions.filter(
@@ -309,7 +323,7 @@ function RolesRoute() {
                     )
                   })
                 ) : (
-                  <span className="ame-text-subtle">先选择菜单后配置动作权限。</span>
+                  <span className="ame-text-subtle">{t("selectMenuBeforeActions")}</span>
                 )}
               </Space>
             )}
