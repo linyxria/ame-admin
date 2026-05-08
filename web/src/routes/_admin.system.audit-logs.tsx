@@ -4,7 +4,7 @@ import { Button, Input, Space, Table, Tag } from "antd"
 import { RotateCw } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { type AuditLog, systemApi, systemQueryKeys } from "../lib/system-api"
+import { type AuditLog, auditLogsQueryOptions } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/audit-logs")({
   component: AuditLogsRoute,
@@ -16,10 +16,7 @@ function AuditLogsRoute() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const listParams = { page, pageSize, keyword }
-  const auditLogsQuery = useQuery({
-    queryKey: systemQueryKeys.auditLogs(listParams),
-    queryFn: () => systemApi.auditLogs(listParams),
-  })
+  const auditLogsQuery = useQuery(auditLogsQueryOptions(listParams))
 
   return (
     <Space orientation="vertical" size="large" className="w-full">

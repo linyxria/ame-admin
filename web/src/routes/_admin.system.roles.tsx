@@ -19,7 +19,18 @@ import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { getMenuTitle } from "../lib/menu-title"
-import { type Role, systemApi, systemQueryKeys } from "../lib/system-api"
+import {
+  createRoleMutationOptions,
+  deleteRoleMutationOptions,
+  updateRoleMutationOptions,
+} from "../services/system/mutations"
+import {
+  menusQueryOptions,
+  myPermissionsQueryOptions,
+  type Role,
+  rolesQueryOptions,
+  systemQueryKeys,
+} from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/roles")({
   component: RolesRoute,
@@ -50,18 +61,9 @@ function RolesRoute() {
   const [open, setOpen] = useState(false)
   const selectedMenuIds = Form.useWatch("menuIds", form) ?? []
 
-  const rolesQuery = useQuery({
-    queryKey: systemQueryKeys.roles,
-    queryFn: systemApi.roles,
-  })
-  const menusQuery = useQuery({
-    queryKey: systemQueryKeys.menus,
-    queryFn: systemApi.menus,
-  })
-  const permissionsQuery = useQuery({
-    queryKey: systemQueryKeys.myPermissions,
-    queryFn: systemApi.myPermissions,
-  })
+  const rolesQuery = useQuery(rolesQueryOptions())
+  const menusQuery = useQuery(menusQueryOptions())
+  const permissionsQuery = useQuery(myPermissionsQueryOptions())
   const roleActions =
     permissionsQuery.data?.find((item) => item.path === "/system/roles")?.actions ?? []
   const canCreate = roleActions.includes("create")
@@ -77,16 +79,15 @@ function RolesRoute() {
   }
 
   const createRole = useMutation({
-    mutationFn: systemApi.createRole,
+    ...createRoleMutationOptions(),
     onSuccess: refresh,
   })
   const updateRole = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof systemApi.updateRole>[1] }) =>
-      systemApi.updateRole(id, body),
+    ...updateRoleMutationOptions(),
     onSuccess: refresh,
   })
   const deleteRole = useMutation({
-    mutationFn: systemApi.deleteRole,
+    ...deleteRoleMutationOptions(),
     onSuccess: refresh,
   })
 

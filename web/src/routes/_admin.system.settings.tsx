@@ -2,7 +2,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { App, Button, Card, Form, Input, Select, Space, Switch } from "antd"
 import { useTranslation } from "react-i18next"
-import { type SettingsInput, systemApi, systemQueryKeys } from "../lib/system-api"
+import { type SettingsInput, updateSettingsMutationOptions } from "../services/system/mutations"
+import {
+  myPermissionsQueryOptions,
+  type SystemSetting,
+  settingsQueryOptions,
+  systemQueryKeys,
+} from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/settings")({
   component: SystemSettingsRoute,
@@ -15,7 +21,7 @@ type SettingsForm = {
   allowPublicSignUp: boolean
 }
 
-const getSetting = (items: Awaited<ReturnType<typeof systemApi.settings>> | null, key: string) =>
+const getSetting = (items: SystemSetting[] | null, key: string) =>
   items?.find((item) => item.key === key)?.value
 
 function SystemSettingsRoute() {
@@ -23,20 +29,14 @@ function SystemSettingsRoute() {
   const { message } = App.useApp()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const settingsQuery = useQuery({
-    queryKey: systemQueryKeys.settings,
-    queryFn: systemApi.settings,
-  })
-  const permissionsQuery = useQuery({
-    queryKey: systemQueryKeys.myPermissions,
-    queryFn: systemApi.myPermissions,
-  })
+  const settingsQuery = useQuery(settingsQueryOptions())
+  const permissionsQuery = useQuery(myPermissionsQueryOptions())
   const canUpdate =
     permissionsQuery.data
       ?.find((item) => item.path === "/system/settings")
       ?.actions.includes("update") ?? false
   const updateSettings = useMutation({
-    mutationFn: systemApi.updateSettings,
+    ...updateSettingsMutationOptions(),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: systemQueryKeys.settings })
       message.success(t("saveSuccess"))

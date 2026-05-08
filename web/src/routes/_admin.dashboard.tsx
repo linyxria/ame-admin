@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, useRouteContext } from "@tanstack/react-router"
 import { Card, Col, Empty, Row, Space, Statistic, Tag } from "antd"
 import { useTranslation } from "react-i18next"
-import { systemApi, systemQueryKeys } from "../lib/system-api"
+import { overviewQueryOptions } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/dashboard")({
   component: DashboardRoute,
@@ -11,10 +11,7 @@ export const Route = createFileRoute("/_admin/dashboard")({
 function DashboardRoute() {
   const { session, user } = useRouteContext({ from: "/_admin/dashboard" })
   const { t } = useTranslation()
-  const overviewQuery = useQuery({
-    queryKey: systemQueryKeys.overview,
-    queryFn: systemApi.overview,
-  })
+  const overviewQuery = useQuery(overviewQueryOptions())
   const overview = overviewQuery.data
 
   return (

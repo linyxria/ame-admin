@@ -18,7 +18,21 @@ import {
 import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { type SystemUser, systemApi, systemQueryKeys } from "../lib/system-api"
+import {
+  createUserMutationOptions,
+  deleteUserMutationOptions,
+  resetUserPasswordMutationOptions,
+  revokeUserSessionsMutationOptions,
+  updateUserMutationOptions,
+} from "../services/system/mutations"
+import {
+  myPermissionsQueryOptions,
+  rolesQueryOptions,
+  type SystemUser,
+  settingsQueryOptions,
+  systemQueryKeys,
+  usersQueryOptions,
+} from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/users")({
   component: UsersRoute,
@@ -45,22 +59,10 @@ function UsersRoute() {
   const [password, setPassword] = useState("")
   const listParams = { page, pageSize, keyword }
 
-  const usersQuery = useQuery({
-    queryKey: systemQueryKeys.users(listParams),
-    queryFn: () => systemApi.users(listParams),
-  })
-  const rolesQuery = useQuery({
-    queryKey: systemQueryKeys.roles,
-    queryFn: systemApi.roles,
-  })
-  const settingsQuery = useQuery({
-    queryKey: systemQueryKeys.settings,
-    queryFn: systemApi.settings,
-  })
-  const permissionsQuery = useQuery({
-    queryKey: systemQueryKeys.myPermissions,
-    queryFn: systemApi.myPermissions,
-  })
+  const usersQuery = useQuery(usersQueryOptions(listParams))
+  const rolesQuery = useQuery(rolesQueryOptions())
+  const settingsQuery = useQuery(settingsQueryOptions())
+  const permissionsQuery = useQuery(myPermissionsQueryOptions())
   const userActions =
     permissionsQuery.data?.find((item) => item.path === "/system/users")?.actions ?? []
   const canCreate = userActions.includes("create")
@@ -79,25 +81,23 @@ function UsersRoute() {
   }
 
   const createUser = useMutation({
-    mutationFn: systemApi.createUser,
+    ...createUserMutationOptions(),
     onSuccess: refresh,
   })
   const updateUser = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof systemApi.updateUser>[1] }) =>
-      systemApi.updateUser(id, body),
+    ...updateUserMutationOptions(),
     onSuccess: refresh,
   })
   const deleteUser = useMutation({
-    mutationFn: systemApi.deleteUser,
+    ...deleteUserMutationOptions(),
     onSuccess: refresh,
   })
   const resetPassword = useMutation({
-    mutationFn: ({ id, nextPassword }: { id: string; nextPassword: string }) =>
-      systemApi.resetUserPassword(id, nextPassword),
+    ...resetUserPasswordMutationOptions(),
     onSuccess: refresh,
   })
   const revokeSessions = useMutation({
-    mutationFn: systemApi.revokeUserSessions,
+    ...revokeUserSessionsMutationOptions(),
     onSuccess: refresh,
   })
 

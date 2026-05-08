@@ -3,7 +3,7 @@ import { Search } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { getMenuTitle } from "../lib/menu-title"
-import type { Menu } from "../lib/system-api"
+import type { Menu } from "../services/system/queries"
 
 export function GlobalSearch({ menus }: { menus: Menu[] }) {
   const { t } = useTranslation()

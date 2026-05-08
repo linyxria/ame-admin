@@ -19,7 +19,17 @@ import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { getMenuTitle } from "../lib/menu-title"
-import { type Menu, systemApi, systemQueryKeys } from "../lib/system-api"
+import {
+  createMenuMutationOptions,
+  deleteMenuMutationOptions,
+  updateMenuMutationOptions,
+} from "../services/system/mutations"
+import {
+  type Menu,
+  menusQueryOptions,
+  myPermissionsQueryOptions,
+  systemQueryKeys,
+} from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/menus")({
   component: MenusRoute,
@@ -43,14 +53,8 @@ function MenusRoute() {
   const [editing, setEditing] = useState<Menu | null>(null)
   const [open, setOpen] = useState(false)
 
-  const menusQuery = useQuery({
-    queryKey: systemQueryKeys.menus,
-    queryFn: systemApi.menus,
-  })
-  const permissionsQuery = useQuery({
-    queryKey: systemQueryKeys.myPermissions,
-    queryFn: systemApi.myPermissions,
-  })
+  const menusQuery = useQuery(menusQueryOptions())
+  const permissionsQuery = useQuery(myPermissionsQueryOptions())
   const menuActions =
     permissionsQuery.data?.find((item) => item.path === "/system/menus")?.actions ?? []
   const canCreate = menuActions.includes("create")
@@ -66,16 +70,15 @@ function MenusRoute() {
   }
 
   const createMenu = useMutation({
-    mutationFn: systemApi.createMenu,
+    ...createMenuMutationOptions(),
     onSuccess: refresh,
   })
   const updateMenu = useMutation({
-    mutationFn: ({ id, body }: { id: string; body: Parameters<typeof systemApi.updateMenu>[1] }) =>
-      systemApi.updateMenu(id, body),
+    ...updateMenuMutationOptions(),
     onSuccess: refresh,
   })
   const deleteMenu = useMutation({
-    mutationFn: systemApi.deleteMenu,
+    ...deleteMenuMutationOptions(),
     onSuccess: refresh,
   })
 

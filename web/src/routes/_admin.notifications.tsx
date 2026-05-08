@@ -4,7 +4,11 @@ import { App, Button, Space, Table, Tag } from "antd"
 import { CheckCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { type NotificationItem, systemApi, systemQueryKeys } from "../lib/system-api"
+import {
+  deleteNotificationMutationOptions,
+  readAllNotificationsMutationOptions,
+} from "../services/system/mutations"
+import { type NotificationItem, notificationsQueryOptions } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/notifications")({
   component: NotificationsRoute,
@@ -17,19 +21,16 @@ function NotificationsRoute() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const listParams = { page, pageSize }
-  const notificationsQuery = useQuery({
-    queryKey: systemQueryKeys.notifications(listParams),
-    queryFn: () => systemApi.notifications(listParams),
-  })
+  const notificationsQuery = useQuery(notificationsQueryOptions(listParams))
   const refresh = async () => {
     await queryClient.invalidateQueries({ queryKey: ["system", "notifications"] })
   }
   const readAll = useMutation({
-    mutationFn: systemApi.readAllNotifications,
+    ...readAllNotificationsMutationOptions(),
     onSuccess: refresh,
   })
   const remove = useMutation({
-    mutationFn: systemApi.deleteNotification,
+    ...deleteNotificationMutationOptions(),
     onSuccess: refresh,
   })
 

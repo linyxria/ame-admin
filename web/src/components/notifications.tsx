@@ -4,7 +4,11 @@ import { Avatar, Badge, Button, Empty, Popover, Tabs } from "antd"
 import { Bell } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { systemApi, systemQueryKeys } from "../lib/system-api"
+import {
+  readAllNotificationsMutationOptions,
+  readNotificationMutationOptions,
+} from "../services/system/mutations"
+import { notificationsQueryOptions, systemQueryKeys } from "../services/system/queries"
 
 const formatTime = (value: Date | string) => new Date(value).toLocaleString()
 
@@ -14,8 +18,7 @@ export function Notifications() {
   const [type, setType] = useState("message")
   const listParams = { page: 1, pageSize: 100 }
   const notificationsQuery = useQuery({
-    queryKey: systemQueryKeys.notifications(listParams),
-    queryFn: () => systemApi.notifications(listParams),
+    ...notificationsQueryOptions(listParams),
     refetchInterval: 60_000,
   })
   const items = notificationsQuery.data?.items ?? []
@@ -28,11 +31,11 @@ export function Notifications() {
     ])
   }
   const readAll = useMutation({
-    mutationFn: systemApi.readAllNotifications,
+    ...readAllNotificationsMutationOptions(),
     onSuccess: refresh,
   })
   const readOne = useMutation({
-    mutationFn: systemApi.readNotification,
+    ...readNotificationMutationOptions(),
     onSuccess: refresh,
   })
 

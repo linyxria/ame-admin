@@ -39,8 +39,8 @@ import { GlobalSearch } from "../components/global-search"
 import { Notifications } from "../components/notifications"
 import { type Locale, locales } from "../i18n"
 import { getMenuTitle } from "../lib/menu-title"
-import { systemApi, systemQueryKeys } from "../lib/system-api"
 import { useThemeSettings } from "../lib/theme"
+import { myMenusQueryOptions, settingsQueryOptions } from "../services/system/queries"
 
 const { Header, Sider, Content } = Layout
 
@@ -66,14 +66,8 @@ export function AdminLayout() {
   const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : "zh-CN"
   const { compact, mode, primaryColor, setCompact, setMode, setPrimaryColor } = useThemeSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const menusQuery = useQuery({
-    queryKey: systemQueryKeys.myMenus,
-    queryFn: systemApi.myMenus,
-  })
-  const settingsQuery = useQuery({
-    queryKey: systemQueryKeys.settings,
-    queryFn: systemApi.settings,
-  })
+  const menusQuery = useQuery(myMenusQueryOptions())
+  const settingsQuery = useQuery(settingsQueryOptions())
   const menus = menusQuery.data ?? []
   const siteName =
     settingsQuery.data?.find((item) => item.key === "siteName")?.value || t("appName")

@@ -3,7 +3,7 @@ import { createFileRoute, useRouteContext } from "@tanstack/react-router"
 import { App, Avatar, Button, Card, Form, Input, Space, Typography } from "antd"
 import { User } from "lucide-react"
 import { useTranslation } from "react-i18next"
-import { type ProfileInput, systemApi } from "../lib/system-api"
+import { type ProfileInput, updateProfileMutationOptions } from "../services/system/mutations"
 
 export const Route = createFileRoute("/_admin/account/settings")({
   component: AccountSettingsRoute,
@@ -16,7 +16,7 @@ function AccountSettingsRoute() {
   const { user } = useRouteContext({ from: "/_admin/account/settings" })
   const { t } = useTranslation()
   const updateProfile = useMutation({
-    mutationFn: systemApi.updateProfile,
+    ...updateProfileMutationOptions(),
     onSuccess: async () => {
       await queryClient.invalidateQueries()
       message.success(t("save"))
