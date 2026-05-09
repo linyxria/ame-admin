@@ -10,7 +10,9 @@ import {
 } from "../services/system/mutations"
 import { notificationsQueryOptions, systemQueryKeys } from "../services/system/queries"
 
-const formatTime = (value: Date | string) => new Date(value).toLocaleString()
+function formatTime(value: Date | string) {
+  return new Date(value).toLocaleString()
+}
 
 export function Notifications() {
   const { t } = useTranslation()

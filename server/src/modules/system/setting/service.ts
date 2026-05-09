@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm"
 import { db } from "@/db"
 import { systemSetting } from "@/db/schema"
 
-export const getSystemSetting = async (key: string) => {
+export async function getSystemSetting(key: string) {
   const [item] = await db
     .select({ value: systemSetting.value })
     .from(systemSetting)
@@ -12,11 +12,12 @@ export const getSystemSetting = async (key: string) => {
   return item?.value
 }
 
-export const getPasswordMinLength = async () => {
+export async function getPasswordMinLength() {
   const value = Number.parseInt((await getSystemSetting("passwordMinLength")) ?? "", 10)
 
   return Number.isFinite(value) && value >= 8 ? value : 8
 }
 
-export const isPublicSignUpAllowed = async () =>
-  (await getSystemSetting("allowPublicSignUp")) === "true"
+export async function isPublicSignUpAllowed() {
+  return (await getSystemSetting("allowPublicSignUp")) === "true"
+}

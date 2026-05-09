@@ -28,83 +28,99 @@ type UpdateMenuVariables = {
   body: MenuInput
 }
 
-export const updateProfileMutationOptions = () =>
-  mutationOptions({
+export function updateProfileMutationOptions() {
+  return mutationOptions({
     mutationFn: (body: ProfileInput) => api.admin.profile.patch(body),
   })
+}
 
-export const createUserMutationOptions = () =>
-  mutationOptions({
+export function createUserMutationOptions() {
+  return mutationOptions({
     mutationFn: (body: CreateUserInput) => api.admin.users.post(body),
   })
+}
 
-export const updateUserMutationOptions = () =>
-  mutationOptions({
+export function updateUserMutationOptions() {
+  return mutationOptions({
     mutationFn: ({ id, body }: UpdateUserVariables) => api.admin.users({ id }).patch(body),
   })
+}
 
-export const deleteUserMutationOptions = () =>
-  mutationOptions({
+export function deleteUserMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.users({ id }).delete(),
   })
+}
 
-export const resetUserPasswordMutationOptions = () =>
-  mutationOptions({
+export function resetUserPasswordMutationOptions() {
+  return mutationOptions({
     mutationFn: ({ id, nextPassword }: ResetUserPasswordVariables) =>
       api.admin.users({ id })["reset-password"].post({ password: nextPassword }),
   })
+}
 
-export const revokeUserSessionsMutationOptions = () =>
-  mutationOptions({
+export function revokeUserSessionsMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.users({ id })["revoke-sessions"].post(),
   })
+}
 
-export const createRoleMutationOptions = () =>
-  mutationOptions({
+export function createRoleMutationOptions() {
+  return mutationOptions({
     mutationFn: (body: RoleInput) => api.admin.roles.post(body),
   })
+}
 
-export const updateRoleMutationOptions = () =>
-  mutationOptions({
+export function updateRoleMutationOptions() {
+  return mutationOptions({
     mutationFn: ({ id, body }: UpdateRoleVariables) => api.admin.roles({ id }).patch(body),
   })
+}
 
-export const deleteRoleMutationOptions = () =>
-  mutationOptions({
+export function deleteRoleMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.roles({ id }).delete(),
   })
+}
 
-export const createMenuMutationOptions = () =>
-  mutationOptions({
+export function createMenuMutationOptions() {
+  return mutationOptions({
     mutationFn: (body: MenuInput) => api.admin.menus.post(body),
   })
+}
 
-export const updateMenuMutationOptions = () =>
-  mutationOptions({
+export function updateMenuMutationOptions() {
+  return mutationOptions({
     mutationFn: ({ id, body }: UpdateMenuVariables) => api.admin.menus({ id }).patch(body),
   })
+}
 
-export const deleteMenuMutationOptions = () =>
-  mutationOptions({
+export function deleteMenuMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.menus({ id }).delete(),
   })
+}
 
-export const updateSettingsMutationOptions = () =>
-  mutationOptions({
+export function updateSettingsMutationOptions() {
+  return mutationOptions({
     mutationFn: (body: SettingsInput) => api.admin.settings.put(body),
   })
+}
 
-export const readNotificationMutationOptions = () =>
-  mutationOptions({
+export function readNotificationMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.notifications({ id }).read.post(),
   })
+}
 
-export const readAllNotificationsMutationOptions = () =>
-  mutationOptions({
+export function readAllNotificationsMutationOptions() {
+  return mutationOptions({
     mutationFn: () => api.admin.notifications["read-all"].post(),
   })
+}
 
-export const deleteNotificationMutationOptions = () =>
-  mutationOptions({
+export function deleteNotificationMutationOptions() {
+  return mutationOptions({
     mutationFn: (id: string) => api.admin.notifications({ id }).delete(),
   })
+}

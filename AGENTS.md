@@ -15,6 +15,12 @@
 - Be willing to make broader coherent changes when they simplify the model or remove magic ids, duplicated logic, or special-case branches.
 - Keep migrations, seed data, API types, and UI behavior aligned in the same change.
 
+## Functions
+
+- Use `function` declarations for top-level functions.
+- Do not define module-level functions as `const foo = () => ...`.
+- This does not apply to local functions inside React components or callbacks passed inline to APIs.
+
 ## React
 
 - React Compiler is enabled for this project.

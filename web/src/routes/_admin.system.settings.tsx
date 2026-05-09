@@ -21,8 +21,9 @@ type SettingsForm = {
   allowPublicSignUp: boolean
 }
 
-const getSetting = (items: SystemSetting[] | null, key: string) =>
-  items?.find((item) => item.key === key)?.value
+function getSetting(items: SystemSetting[] | null, key: string) {
+  return items?.find((item) => item.key === key)?.value
+}
 
 function SystemSettingsRoute() {
   const [form] = Form.useForm<SettingsForm>()

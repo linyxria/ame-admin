@@ -4,7 +4,7 @@ import { roleMenu } from "@/db/schema"
 
 const allActions = ["view", "create", "update", "delete"] as const
 
-const normalizeActions = (actions?: string[]) => {
+function normalizeActions(actions?: string[]) {
   const allowed = new Set(allActions)
   const normalized = (actions ?? ["view"]).filter((action) => allowed.has(action as never))
 

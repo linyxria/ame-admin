@@ -22,7 +22,7 @@ const defaultTheme: ThemeSettings = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
-const readTheme = (): ThemeSettings => {
+function readTheme(): ThemeSettings {
   const saved = localStorage.getItem("ame-theme")
 
   if (!saved) {

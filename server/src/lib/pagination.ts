@@ -10,7 +10,7 @@ export const paginationQuery = {
   keyword: t.Optional(t.String()),
 }
 
-export const parsePagination = (query: { page?: string; pageSize?: string }) => {
+export function parsePagination(query: { page?: string; pageSize?: string }) {
   const page = Math.max(Number.parseInt(query.page ?? "", 10) || DEFAULT_PAGE, 1)
   const requestedPageSize = Number.parseInt(query.pageSize ?? "", 10) || DEFAULT_PAGE_SIZE
   const pageSize = Math.min(Math.max(requestedPageSize, 1), MAX_PAGE_SIZE)
@@ -22,9 +22,11 @@ export const parsePagination = (query: { page?: string; pageSize?: string }) => 
   }
 }
 
-export const paginated = <T>(items: T[], total: number, page: number, pageSize: number) => ({
-  items,
-  total,
-  page,
-  pageSize,
-})
+export function paginated<T>(items: T[], total: number, page: number, pageSize: number) {
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+  }
+}

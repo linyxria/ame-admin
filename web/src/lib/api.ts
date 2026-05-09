@@ -29,8 +29,8 @@ const rawApi = treaty<App>(API_URL, {
   },
 })
 
-const dataApi = <T extends object>(target: T): DataClient<T> =>
-  new Proxy(target, {
+function dataApi<T extends object>(target: T): DataClient<T> {
+  return new Proxy(target, {
     get(value, property, receiver) {
       const next = Reflect.get(value, property, receiver)
 
@@ -48,5 +48,6 @@ const dataApi = <T extends object>(target: T): DataClient<T> =>
         : result
     },
   }) as DataClient<T>
+}
 
 export const api = dataApi(rawApi)

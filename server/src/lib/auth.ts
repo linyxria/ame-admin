@@ -11,8 +11,8 @@ type CreateAuthOptions = {
   disableSignUp?: boolean
 }
 
-export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
-  betterAuth({
+export function createAuth({ disableSignUp = true }: CreateAuthOptions = {}) {
+  return betterAuth({
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_SECRET,
     trustedOrigins: [env.CORS_ORIGIN],
@@ -25,6 +25,7 @@ export const createAuth = ({ disableSignUp = true }: CreateAuthOptions = {}) =>
       disableSignUp,
     },
   })
+}
 
 export const auth = createAuth({ disableSignUp: false })
 

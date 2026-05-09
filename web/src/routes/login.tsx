@@ -7,7 +7,9 @@ interface LoginSearch {
   redirect?: string
 }
 
-const redirectTo = (redirect: string | undefined) => redirect ?? "/"
+function redirectTo(redirect: string | undefined) {
+  return redirect ?? "/"
+}
 
 export const Route = createFileRoute("/login")({
   component: LoginRoute,

@@ -4,9 +4,11 @@ import { db } from "@/db"
 import { menu, role, roleMenu, userRole } from "@/db/schema"
 import { auth } from "@/lib/auth"
 
-export const splitActions = (actions: string) => actions.split(",").filter(Boolean)
+export function splitActions(actions: string) {
+  return actions.split(",").filter(Boolean)
+}
 
-const canAccessMenu = async (userId: string, path: string, action = "view") => {
+async function canAccessMenu(userId: string, path: string, action = "view") {
   const [allowed] = await db
     .select({ id: menu.id, actions: roleMenu.actions })
     .from(userRole)

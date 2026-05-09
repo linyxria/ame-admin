@@ -1,1 +1,3 @@
-export const id = () => crypto.randomUUID()
+export function id() {
+  return crypto.randomUUID()
+}

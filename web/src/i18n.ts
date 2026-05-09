@@ -15,7 +15,7 @@ const resources = {
   },
 } satisfies Record<Locale, { translation: typeof zhCN }>
 
-const readLocale = (): Locale => {
+function readLocale(): Locale {
   const saved = localStorage.getItem("ame-locale")
 
   return locales.includes(saved as Locale) ? (saved as Locale) : "en-US"

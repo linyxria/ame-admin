@@ -8,7 +8,7 @@ for (const key of required) {
   }
 }
 
-const requiredEnv = (key: (typeof required)[number]) => {
+function requiredEnv(key: (typeof required)[number]) {
   const value = process.env[key]
 
   if (!value) {
