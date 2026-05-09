@@ -11,13 +11,13 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Tag,
   Tooltip,
 } from "antd"
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 import { getMenuTitle } from "../lib/menu-title"
 import {
   createMenuMutationOptions,
@@ -171,7 +171,7 @@ function MenusRoute() {
         </Space>
       </div>
 
-      <Table<Menu>
+      <DataTable<Menu>
         rowKey="id"
         loading={menusQuery.isLoading}
         dataSource={menusQuery.data ?? []}

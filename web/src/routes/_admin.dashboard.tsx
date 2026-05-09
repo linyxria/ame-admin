@@ -51,7 +51,7 @@ function DashboardRoute() {
         <Col xs={24} lg={14}>
           <Card title={t("recentOperations")}>
             {overview?.latestAuditLogs.length ? (
-              <div className="divide-y">
+              <div className="divide-y divide-(--ame-border)">
                 {overview.latestAuditLogs.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0">
                     <Space>

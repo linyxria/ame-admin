@@ -10,7 +10,6 @@ import {
   Popconfirm,
   Space,
   Switch,
-  Table,
   Tag,
   Tooltip,
   TreeSelect,
@@ -18,6 +17,7 @@ import {
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 import { getMenuTitle } from "../lib/menu-title"
 import {
   createRoleMutationOptions,
@@ -192,7 +192,7 @@ function RolesRoute() {
         </Space>
       </div>
 
-      <Table<Role>
+      <DataTable<Role>
         rowKey="id"
         loading={rolesQuery.isLoading || menusQuery.isLoading}
         dataSource={rolesQuery.data ?? []}

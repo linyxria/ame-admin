@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Card, Col, Progress, Row, Space, Statistic, Table, Tag } from "antd"
+import { Card, Col, Progress, Row, Space, Statistic, Tag } from "antd"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 
 export const Route = createFileRoute("/_admin/demos/charts")({
   component: ChartsDemoRoute,
@@ -69,7 +70,7 @@ function ChartsDemoRoute() {
         </Col>
       </Row>
       <Card title={t("channelRanking")}>
-        <Table
+        <DataTable
           rowKey="channel"
           pagination={false}
           dataSource={[

@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Button, Input, Space, Table, Tag } from "antd"
+import { Button, Input, Space, Tag } from "antd"
 import { RotateCw } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 import { type AuditLog, auditLogsQueryOptions } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/audit-logs")({
@@ -33,7 +34,7 @@ function AuditLogsRoute() {
         />
       </div>
 
-      <Table<AuditLog>
+      <DataTable<AuditLog>
         rowKey="id"
         loading={auditLogsQuery.isLoading}
         dataSource={auditLogsQuery.data?.items ?? []}

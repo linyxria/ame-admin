@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { App, Button, Space, Table, Tag } from "antd"
+import { App, Button, Space, Tag } from "antd"
 import { CheckCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 import {
   deleteNotificationMutationOptions,
   readAllNotificationsMutationOptions,
@@ -59,7 +60,7 @@ function NotificationsRoute() {
         </Button>
       </div>
 
-      <Table<NotificationItem>
+      <DataTable<NotificationItem>
         rowKey="id"
         loading={notificationsQuery.isLoading}
         dataSource={notificationsQuery.data?.items ?? []}

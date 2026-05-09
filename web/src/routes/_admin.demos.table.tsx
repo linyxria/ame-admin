@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Button, Card, Input, Space, Table, Tag } from "antd"
+import { Button, Card, Input, Space, Tag } from "antd"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 
 export const Route = createFileRoute("/_admin/demos/table")({
   component: TableDemoRoute,
@@ -36,7 +37,7 @@ function TableDemoRoute() {
             <Button type="primary">{t("createProject")}</Button>
           </Space>
         </div>
-        <Table
+        <DataTable
           rowKey="id"
           rowSelection={{}}
           dataSource={rows}

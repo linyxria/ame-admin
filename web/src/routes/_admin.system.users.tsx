@@ -11,13 +11,13 @@ import {
   Select,
   Space,
   Switch,
-  Table,
   Tag,
   Tooltip,
 } from "antd"
 import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { DataTable } from "../components/data-table"
 import {
   createUserMutationOptions,
   deleteUserMutationOptions,
@@ -182,7 +182,7 @@ function UsersRoute() {
         </Space>
       </div>
 
-      <Table<SystemUser>
+      <DataTable<SystemUser>
         rowKey="id"
         loading={usersQuery.isLoading || rolesQuery.isLoading}
         dataSource={users}
