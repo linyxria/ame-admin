@@ -25,10 +25,13 @@ import {
   updateMenuMutationOptions,
 } from "../services/system/mutations"
 import {
+  currentUserMenusQueryKey,
+  currentUserPermissionsQueryKey,
+  currentUserPermissionsQueryOptions,
   type Menu,
+  menusQueryKey,
   menusQueryOptions,
-  myPermissionsQueryOptions,
-  systemQueryKeys,
+  rolesQueryKey,
 } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/menus")({
@@ -54,7 +57,7 @@ function MenusRoute() {
   const [open, setOpen] = useState(false)
 
   const menusQuery = useQuery(menusQueryOptions())
-  const permissionsQuery = useQuery(myPermissionsQueryOptions())
+  const permissionsQuery = useQuery(currentUserPermissionsQueryOptions())
   const menuActions =
     permissionsQuery.data?.find((item) => item.path === "/system/menus")?.actions ?? []
   const canCreate = menuActions.includes("create")
@@ -63,9 +66,10 @@ function MenusRoute() {
 
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.menus }),
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.roles }),
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.myMenus }),
+      queryClient.invalidateQueries({ queryKey: menusQueryKey }),
+      queryClient.invalidateQueries({ queryKey: rolesQueryKey }),
+      queryClient.invalidateQueries({ queryKey: currentUserMenusQueryKey }),
+      queryClient.invalidateQueries({ queryKey: currentUserPermissionsQueryKey }),
     ])
   }
 

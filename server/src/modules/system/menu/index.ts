@@ -112,10 +112,13 @@ export const menuRoutes = new Elysia({ name: "system.menus", prefix: "/menus" })
     { auth: true, menu: { paths: "/system/menus", action: "delete" } },
   )
 
-export const myMenuRoutes = new Elysia({ name: "system.my-menus" })
+export const currentUserMenuRoutes = new Elysia({
+  name: "system.current-user-menus",
+  prefix: "/me",
+})
   .use(authMacro)
   .get(
-    "/my-menus",
+    "/menus",
     async ({ user: currentUser }) => {
       const roleIds = await db
         .select({ roleId: userRole.roleId })
@@ -157,7 +160,7 @@ export const myMenuRoutes = new Elysia({ name: "system.my-menus" })
     { auth: true },
   )
   .get(
-    "/my-permissions",
+    "/permissions",
     async ({ user: currentUser }) => {
       const rows = await db
         .select({ path: menu.path, actions: roleMenu.actions })

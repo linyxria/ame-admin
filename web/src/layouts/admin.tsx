@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
 import type { MenuProps } from "antd"
 import {
@@ -40,7 +40,14 @@ import { Notifications } from "../components/notifications"
 import { type Locale, locales } from "../i18n"
 import { getMenuTitle } from "../lib/menu-title"
 import { useThemeSettings } from "../lib/theme"
-import { myMenusQueryOptions, settingsQueryOptions } from "../services/system/queries"
+import { signOutMutationOptions } from "../services/auth/mutations"
+import { sessionQueryKey } from "../services/auth/queries"
+import {
+  currentUserMenusQueryKey,
+  currentUserMenusQueryOptions,
+  currentUserPermissionsQueryKey,
+  settingsQueryOptions,
+} from "../services/system/queries"
 
 const { Header, Sider, Content } = Layout
 
@@ -60,29 +67,29 @@ const iconMap = {
 
 export function AdminLayout() {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const location = useLocation()
-  const { user, auth } = useRouteContext({ from: "/_admin" })
+  const { user } = useRouteContext({ from: "/_admin" })
   const { i18n, t } = useTranslation()
   const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : "zh-CN"
   const { compact, mode, primaryColor, setCompact, setMode, setPrimaryColor } = useThemeSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const menusQuery = useQuery(myMenusQueryOptions())
+  const menusQuery = useQuery(currentUserMenusQueryOptions())
   const settingsQuery = useQuery(settingsQueryOptions())
+  const signOutMutation = useMutation(signOutMutationOptions())
   const menus = menusQuery.data ?? []
   const siteName =
     settingsQuery.data?.find((item) => item.key === "siteName")?.value || t("appName")
 
   const signOut = async () => {
-    await auth.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          void router.navigate({
-            to: "/login",
-            search: { redirect: location.href },
-            replace: true,
-          })
-        },
-      },
+    await signOutMutation.mutateAsync()
+    queryClient.removeQueries({ queryKey: sessionQueryKey })
+    queryClient.removeQueries({ queryKey: currentUserMenusQueryKey })
+    queryClient.removeQueries({ queryKey: currentUserPermissionsQueryKey })
+    void router.navigate({
+      to: "/login",
+      search: { redirect: location.href },
+      replace: true,
     })
   }
 

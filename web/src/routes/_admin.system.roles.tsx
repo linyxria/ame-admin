@@ -25,11 +25,14 @@ import {
   updateRoleMutationOptions,
 } from "../services/system/mutations"
 import {
+  currentUserMenusQueryKey,
+  currentUserPermissionsQueryKey,
+  currentUserPermissionsQueryOptions,
+  menusQueryKey,
   menusQueryOptions,
-  myPermissionsQueryOptions,
   type Role,
+  rolesQueryKey,
   rolesQueryOptions,
-  systemQueryKeys,
 } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/roles")({
@@ -63,7 +66,7 @@ function RolesRoute() {
 
   const rolesQuery = useQuery(rolesQueryOptions())
   const menusQuery = useQuery(menusQueryOptions())
-  const permissionsQuery = useQuery(myPermissionsQueryOptions())
+  const permissionsQuery = useQuery(currentUserPermissionsQueryOptions())
   const roleActions =
     permissionsQuery.data?.find((item) => item.path === "/system/roles")?.actions ?? []
   const canCreate = roleActions.includes("create")
@@ -72,9 +75,10 @@ function RolesRoute() {
 
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.roles }),
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.menus }),
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.myMenus }),
+      queryClient.invalidateQueries({ queryKey: rolesQueryKey }),
+      queryClient.invalidateQueries({ queryKey: menusQueryKey }),
+      queryClient.invalidateQueries({ queryKey: currentUserMenusQueryKey }),
+      queryClient.invalidateQueries({ queryKey: currentUserPermissionsQueryKey }),
     ])
   }
 

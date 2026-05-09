@@ -8,7 +8,11 @@ import {
   readAllNotificationsMutationOptions,
   readNotificationMutationOptions,
 } from "../services/system/mutations"
-import { notificationsQueryOptions, systemQueryKeys } from "../services/system/queries"
+import {
+  notificationsQueryOptions,
+  notificationsQueryPrefixKey,
+  overviewQueryKey,
+} from "../services/system/queries"
 
 function formatTime(value: Date | string) {
   return new Date(value).toLocaleString()
@@ -28,8 +32,8 @@ export function Notifications() {
   const visibleItems = items.filter((item) => item.type === type)
   const refresh = async () => {
     await Promise.all([
-      queryClient.invalidateQueries({ queryKey: ["system", "notifications"] }),
-      queryClient.invalidateQueries({ queryKey: systemQueryKeys.overview }),
+      queryClient.invalidateQueries({ queryKey: notificationsQueryPrefixKey }),
+      queryClient.invalidateQueries({ queryKey: overviewQueryKey }),
     ])
   }
   const readAll = useMutation({

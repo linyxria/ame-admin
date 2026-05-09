@@ -1,7 +1,10 @@
-import { createFileRoute, useNavigate, useRouteContext } from "@tanstack/react-router"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Alert, Button, Card, Checkbox, Form, Input, Typography } from "antd"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import { signInEmailMutationOptions } from "../services/auth/mutations"
+import { sessionQueryKey } from "../services/auth/queries"
 
 interface LoginSearch {
   redirect?: string
@@ -16,9 +19,9 @@ export const Route = createFileRoute("/login")({
   validateSearch: (search): LoginSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
-  // TODO: Redirecting here may cost an extra getSession call on the login page.
+  // TODO: Redirecting here should reuse the cached session query.
   // beforeLoad: async ({ context, search }) => {
-  //   const { data } = await context.auth.getSession()
+  //   const { data } = await context.queryClient.ensureQueryData(sessionQueryOptions())
 
   //   if (data) {
   //     throw redirect({
@@ -36,30 +39,37 @@ type AuthFormValues = {
 }
 
 function LoginRoute() {
-  const { auth } = useRouteContext({ from: "/login" })
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
   const { redirect } = Route.useSearch()
   const { t } = useTranslation()
   const [error, setError] = useState<string>()
-  const [submitting, setSubmitting] = useState(false)
+  const signIn = useMutation(signInEmailMutationOptions())
 
   const submit = async (values: AuthFormValues) => {
-    setSubmitting(true)
     setError(undefined)
 
-    const result = await auth.signIn.email({
-      email: values.email,
-      password: values.password,
-      rememberMe: values.rememberMe ?? true,
-    })
+    const result = await signIn
+      .mutateAsync({
+        email: values.email,
+        password: values.password,
+        rememberMe: values.rememberMe ?? true,
+      })
+      .catch((error: unknown) => {
+        setError(error instanceof Error ? error.message : t("loginFailed"))
+        return null
+      })
 
-    setSubmitting(false)
+    if (!result) {
+      return
+    }
 
     if (result.error) {
       setError(result.error.message ?? t("loginFailed"))
       return
     }
 
+    queryClient.removeQueries({ queryKey: sessionQueryKey })
     await navigate({ to: redirectTo(redirect), replace: true })
   }
 
@@ -108,7 +118,7 @@ function LoginRoute() {
               <Checkbox>{t("rememberMe")}</Checkbox>
             </Form.Item>
 
-            <Button type="primary" htmlType="submit" size="large" block loading={submitting}>
+            <Button type="primary" htmlType="submit" size="large" block loading={signIn.isPending}>
               {t("signIn")}
             </Button>
           </Form>

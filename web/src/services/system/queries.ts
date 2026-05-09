@@ -1,17 +1,19 @@
 import { queryOptions } from "@tanstack/react-query"
-import { api } from "../../lib/api"
+import { api } from "@/lib/api"
+
+const CURRENT_USER_STALE_TIME = 60_000
 
 type QueryData<T extends (...args: never[]) => Promise<unknown>> = NonNullable<
   Awaited<ReturnType<T>>
 >
 
-export type Overview = QueryData<typeof api.admin.overview.get>
-export type Role = QueryData<typeof api.admin.roles.get>[number]
-export type Menu = QueryData<typeof api.admin.menus.get>[number]
-export type SystemUser = QueryData<typeof api.admin.users.get>["items"][number]
-export type AuditLog = QueryData<(typeof api.admin)["audit-logs"]["get"]>["items"][number]
-export type NotificationItem = QueryData<typeof api.admin.notifications.get>["items"][number]
-export type SystemSetting = QueryData<typeof api.admin.settings.get>[number]
+export type Overview = QueryData<typeof api.system.overview.get>
+export type Role = QueryData<typeof api.system.roles.get>[number]
+export type Menu = QueryData<typeof api.system.menus.get>[number]
+export type SystemUser = QueryData<typeof api.system.users.get>["items"][number]
+export type AuditLog = QueryData<(typeof api.system)["audit-logs"]["get"]>["items"][number]
+export type NotificationItem = QueryData<typeof api.system.notifications.get>["items"][number]
+export type SystemSetting = QueryData<typeof api.system.settings.get>[number]
 
 export type ListParams = {
   page?: number
@@ -32,89 +34,101 @@ function listQuery(params?: ListParams) {
   }
 }
 
-export const systemQueryKeys = {
-  overview: ["system", "overview"] as const,
-  users: (params?: ListParams) =>
-    ["system", "users", params?.page ?? 1, params?.pageSize ?? 20, params?.keyword ?? ""] as const,
-  roles: ["system", "roles"] as const,
-  menus: ["system", "menus"] as const,
-  myMenus: ["system", "my-menus"] as const,
-  myPermissions: ["system", "my-permissions"] as const,
-  auditLogs: (params?: ListParams) =>
-    [
-      "system",
-      "audit-logs",
-      params?.page ?? 1,
-      params?.pageSize ?? 20,
-      params?.keyword ?? "",
-    ] as const,
-  notifications: (params?: NotificationListParams) =>
-    [
-      "system",
-      "notifications",
-      params?.page ?? 1,
-      params?.pageSize ?? 20,
-      params?.keyword ?? "",
-      params?.type ?? "",
-      params?.read ?? "",
-    ] as const,
-  settings: ["system", "settings"] as const,
+export const overviewQueryKey = ["system", "overview"] as const
+export const usersQueryPrefixKey = ["system", "users"] as const
+export const rolesQueryKey = ["system", "roles"] as const
+export const menusQueryKey = ["system", "menus"] as const
+export const currentUserMenusQueryKey = ["system", "current-user-menus"] as const
+export const currentUserPermissionsQueryKey = ["system", "current-user-permissions"] as const
+export const auditLogsQueryPrefixKey = ["system", "audit-logs"] as const
+export const notificationsQueryPrefixKey = ["system", "notifications"] as const
+export const settingsQueryKey = ["system", "settings"] as const
+
+export function usersQueryKey(params?: ListParams) {
+  return [
+    ...usersQueryPrefixKey,
+    params?.page ?? 1,
+    params?.pageSize ?? 20,
+    params?.keyword ?? "",
+  ] as const
+}
+
+export function auditLogsQueryKey(params?: ListParams) {
+  return [
+    ...auditLogsQueryPrefixKey,
+    params?.page ?? 1,
+    params?.pageSize ?? 20,
+    params?.keyword ?? "",
+  ] as const
+}
+
+export function notificationsQueryKey(params?: NotificationListParams) {
+  return [
+    ...notificationsQueryPrefixKey,
+    params?.page ?? 1,
+    params?.pageSize ?? 20,
+    params?.keyword ?? "",
+    params?.type ?? "",
+    params?.read ?? "",
+  ] as const
 }
 
 export function overviewQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.overview,
-    queryFn: () => api.admin.overview.get(),
+    queryKey: overviewQueryKey,
+    queryFn: () => api.system.overview.get(),
   })
 }
 
 export function usersQueryOptions(params?: ListParams) {
   return queryOptions({
-    queryKey: systemQueryKeys.users(params),
-    queryFn: () => api.admin.users.get({ query: listQuery(params) }),
+    queryKey: usersQueryKey(params),
+    queryFn: () => api.system.users.get({ query: listQuery(params) }),
   })
 }
 
 export function rolesQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.roles,
-    queryFn: () => api.admin.roles.get(),
+    queryKey: rolesQueryKey,
+    queryFn: () => api.system.roles.get(),
   })
 }
 
 export function menusQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.menus,
-    queryFn: () => api.admin.menus.get(),
+    queryKey: menusQueryKey,
+    queryFn: () => api.system.menus.get(),
   })
 }
 
-export function myMenusQueryOptions() {
+export function currentUserMenusQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.myMenus,
-    queryFn: () => api.admin["my-menus"].get(),
+    queryKey: currentUserMenusQueryKey,
+    queryFn: () => api.system.me.menus.get(),
+    staleTime: CURRENT_USER_STALE_TIME,
   })
 }
 
-export function myPermissionsQueryOptions() {
+export function currentUserPermissionsQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.myPermissions,
-    queryFn: () => api.admin["my-permissions"].get(),
+    queryKey: currentUserPermissionsQueryKey,
+    queryFn: () => api.system.me.permissions.get(),
+    staleTime: CURRENT_USER_STALE_TIME,
   })
 }
 
 export function auditLogsQueryOptions(params?: ListParams) {
   return queryOptions({
-    queryKey: systemQueryKeys.auditLogs(params),
-    queryFn: () => api.admin["audit-logs"].get({ query: listQuery(params) }),
+    queryKey: auditLogsQueryKey(params),
+    queryFn: () => api.system["audit-logs"].get({ query: listQuery(params) }),
   })
 }
 
 export function notificationsQueryOptions(params?: NotificationListParams) {
   return queryOptions({
-    queryKey: systemQueryKeys.notifications(params),
+    queryKey: notificationsQueryKey(params),
     queryFn: () =>
-      api.admin.notifications.get({
+      api.system.notifications.get({
         query: {
           ...listQuery(params),
           type: params?.type || undefined,
@@ -126,7 +140,7 @@ export function notificationsQueryOptions(params?: NotificationListParams) {
 
 export function settingsQueryOptions() {
   return queryOptions({
-    queryKey: systemQueryKeys.settings,
-    queryFn: () => api.admin.settings.get(),
+    queryKey: settingsQueryKey,
+    queryFn: () => api.system.settings.get(),
   })
 }

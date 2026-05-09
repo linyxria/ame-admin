@@ -50,4 +50,4 @@ function dataApi<T extends object>(target: T): DataClient<T> {
   }) as DataClient<T>
 }
 
-export const api = dataApi(rawApi)
+export const api = dataApi(rawApi.api)

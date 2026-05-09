@@ -86,19 +86,19 @@ bun run dev
 The default server URL is:
 
 ```text
-http://localhost:3000
+http://localhost:3000/api
 ```
 
 Health check:
 
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3000/api/health
 ```
 
 Protected routes should reject unauthenticated requests:
 
 ```bash
-curl -i http://localhost:3000/me
+curl -i http://localhost:3000/api/me
 ```
 
 Without a valid Better Auth session cookie, the response should be `401 Unauthorized`.
@@ -107,9 +107,9 @@ Without a valid Better Auth session cookie, the response should be `401 Unauthor
 
 Better Auth is mounted on the Elysia app and currently uses email/password login. Common auth endpoints include:
 
-- `POST /sign-in/email`
-- `POST /sign-out`
-- `GET /get-session`
+- `POST /api/auth/sign-in/email`
+- `POST /api/auth/sign-out`
+- `GET /api/auth/get-session`
 
 Public registration is disabled by default. Use the seed script to create the initial administrator account.
 

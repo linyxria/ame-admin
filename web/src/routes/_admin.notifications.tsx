@@ -8,7 +8,11 @@ import {
   deleteNotificationMutationOptions,
   readAllNotificationsMutationOptions,
 } from "../services/system/mutations"
-import { type NotificationItem, notificationsQueryOptions } from "../services/system/queries"
+import {
+  type NotificationItem,
+  notificationsQueryOptions,
+  notificationsQueryPrefixKey,
+} from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/notifications")({
   component: NotificationsRoute,
@@ -23,7 +27,7 @@ function NotificationsRoute() {
   const listParams = { page, pageSize }
   const notificationsQuery = useQuery(notificationsQueryOptions(listParams))
   const refresh = async () => {
-    await queryClient.invalidateQueries({ queryKey: ["system", "notifications"] })
+    await queryClient.invalidateQueries({ queryKey: notificationsQueryPrefixKey })
   }
   const readAll = useMutation({
     ...readAllNotificationsMutationOptions(),

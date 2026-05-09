@@ -4,10 +4,10 @@ import { App, Button, Card, Form, Input, Select, Space, Switch } from "antd"
 import { useTranslation } from "react-i18next"
 import { type SettingsInput, updateSettingsMutationOptions } from "../services/system/mutations"
 import {
-  myPermissionsQueryOptions,
+  currentUserPermissionsQueryOptions,
   type SystemSetting,
+  settingsQueryKey,
   settingsQueryOptions,
-  systemQueryKeys,
 } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/settings")({
@@ -31,7 +31,7 @@ function SystemSettingsRoute() {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const settingsQuery = useQuery(settingsQueryOptions())
-  const permissionsQuery = useQuery(myPermissionsQueryOptions())
+  const permissionsQuery = useQuery(currentUserPermissionsQueryOptions())
   const canUpdate =
     permissionsQuery.data
       ?.find((item) => item.path === "/system/settings")
@@ -39,7 +39,7 @@ function SystemSettingsRoute() {
   const updateSettings = useMutation({
     ...updateSettingsMutationOptions(),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: systemQueryKeys.settings })
+      await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
       message.success(t("saveSuccess"))
     },
   })
