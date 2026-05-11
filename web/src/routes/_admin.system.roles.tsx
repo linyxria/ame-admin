@@ -18,6 +18,7 @@ import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
+import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
 import { getMenuTitle } from "../lib/menu-title"
 import {
   createRoleMutationOptions,
@@ -169,83 +170,85 @@ function RolesRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("roleManagement")}</h1>
-          <p className="ame-page-description text-sm">{t("rolesDescription")}</p>
-        </div>
-        <Space>
-          <Button
-            icon={<RotateCw size={16} />}
-            onClick={() => {
-              void refresh()
-            }}
-          />
-          <Button
-            type="primary"
-            disabled={!canCreate}
-            icon={<Plus size={16} />}
-            onClick={() => showModal()}
-          >
-            {t("createRole")}
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title={t("roleManagement")}
+        description={t("rolesDescription")}
+        actions={
+          <ToolbarSurface>
+            <Button
+              icon={<RotateCw size={16} />}
+              onClick={() => {
+                void refresh()
+              }}
+            />
+            <Button
+              type="primary"
+              disabled={!canCreate}
+              icon={<Plus size={16} />}
+              onClick={() => showModal()}
+            >
+              {t("createRole")}
+            </Button>
+          </ToolbarSurface>
+        }
+      />
 
-      <DataTable<Role>
-        rowKey="id"
-        loading={rolesQuery.isLoading || menusQuery.isLoading}
-        dataSource={rolesQuery.data ?? []}
-        columns={[
-          { title: t("roleName"), dataIndex: "name" },
-          { title: t("roleCode"), dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
-          { title: t("description"), dataIndex: "description", render: (value) => value || "-" },
-          {
-            title: t("status"),
-            dataIndex: "enabled",
-            render: (enabled) => (
-              <Tag color={enabled ? "green" : "default"}>
-                {enabled ? t("enabled") : t("disabled")}
-              </Tag>
-            ),
-          },
-          {
-            title: t("menuTotal"),
-            dataIndex: "menuIds",
-            render: (value: string[]) => value.length,
-          },
-          {
-            title: t("operation"),
-            width: 150,
-            render: (_, record) => (
-              <Space>
-                <Tooltip title={t("edit")}>
-                  <Button
-                    type="text"
-                    disabled={!canUpdate}
-                    icon={<Pencil size={16} />}
-                    onClick={() => showModal(record)}
-                  />
-                </Tooltip>
-                <Tooltip title={record.builtIn ? t("builtInRoleDeleteDisabled") : t("delete")}>
-                  <Popconfirm
-                    title={t("confirmDeleteRole")}
-                    onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn || !canDelete}
-                  >
+      <SectionPanel title={t("roleManagement")}>
+        <DataTable<Role>
+          rowKey="id"
+          loading={rolesQuery.isLoading || menusQuery.isLoading}
+          dataSource={rolesQuery.data ?? []}
+          columns={[
+            { title: t("roleName"), dataIndex: "name" },
+            { title: t("roleCode"), dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
+            { title: t("description"), dataIndex: "description", render: (value) => value || "-" },
+            {
+              title: t("status"),
+              dataIndex: "enabled",
+              render: (enabled) => (
+                <Tag color={enabled ? "green" : "default"}>
+                  {enabled ? t("enabled") : t("disabled")}
+                </Tag>
+              ),
+            },
+            {
+              title: t("menuTotal"),
+              dataIndex: "menuIds",
+              render: (value: string[]) => value.length,
+            },
+            {
+              title: t("operation"),
+              width: 150,
+              render: (_, record) => (
+                <Space>
+                  <Tooltip title={t("edit")}>
                     <Button
                       type="text"
-                      danger
-                      disabled={record.builtIn || !canDelete}
-                      icon={<Trash2 size={16} />}
+                      disabled={!canUpdate}
+                      icon={<Pencil size={16} />}
+                      onClick={() => showModal(record)}
                     />
-                  </Popconfirm>
-                </Tooltip>
-              </Space>
-            ),
-          },
-        ]}
-      />
+                  </Tooltip>
+                  <Tooltip title={record.builtIn ? t("builtInRoleDeleteDisabled") : t("delete")}>
+                    <Popconfirm
+                      title={t("confirmDeleteRole")}
+                      onConfirm={() => remove(record.id)}
+                      disabled={record.builtIn || !canDelete}
+                    >
+                      <Button
+                        type="text"
+                        danger
+                        disabled={record.builtIn || !canDelete}
+                        icon={<Trash2 size={16} />}
+                      />
+                    </Popconfirm>
+                  </Tooltip>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </SectionPanel>
 
       <Modal
         title={editing ? t("editRole") : t("createRole")}

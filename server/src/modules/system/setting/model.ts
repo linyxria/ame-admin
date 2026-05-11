@@ -10,3 +10,9 @@ export const settingsBody = t.Object({
     }),
   ),
 })
+
+export type SettingsBody = typeof settingsBody.static
+
+export const settingModels = {
+  "System.SettingsBody": settingsBody,
+}

@@ -8,11 +8,7 @@ import {
   readAllNotificationsMutationOptions,
   readNotificationMutationOptions,
 } from "../services/system/mutations"
-import {
-  notificationsQueryOptions,
-  notificationsQueryPrefixKey,
-  overviewQueryKey,
-} from "../services/system/queries"
+import { notificationsQueryOptions, notificationsQueryPrefixKey } from "../services/system/queries"
 
 function formatTime(value: Date | string) {
   return new Date(value).toLocaleString()
@@ -31,10 +27,7 @@ export function Notifications() {
   const unread = notificationsQuery.data?.unreadTotal ?? 0
   const visibleItems = items.filter((item) => item.type === type)
   const refresh = async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: notificationsQueryPrefixKey }),
-      queryClient.invalidateQueries({ queryKey: overviewQueryKey }),
-    ])
+    await queryClient.invalidateQueries({ queryKey: notificationsQueryPrefixKey })
   }
   const readAll = useMutation({
     ...readAllNotificationsMutationOptions(),
@@ -46,7 +39,7 @@ export function Notifications() {
   })
 
   const content = (
-    <div className="w-96 max-w-[calc(100vw-32px)]">
+    <div className="w-[min(24rem,90vw)]">
       <div className="px-4">
         <Tabs
           activeKey={type}
@@ -118,7 +111,12 @@ export function Notifications() {
       content={content}
       styles={{ container: { padding: 0 } }}
     >
-      <Button type="text" aria-label={t("notifications")} loading={notificationsQuery.isLoading}>
+      <Button
+        type="text"
+        className="ame-topbar-icon"
+        aria-label={t("notifications")}
+        loading={notificationsQuery.isLoading}
+      >
         <Badge count={unread} size="small">
           <Bell size={18} />
         </Badge>

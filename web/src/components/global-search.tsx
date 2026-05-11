@@ -2,22 +2,32 @@ import { Button, Empty, Input, Modal } from "antd"
 import { Search } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
+import type { NavigationEntry } from "../lib/examples"
 import { getMenuTitle } from "../lib/menu-title"
-import type { Menu } from "../services/system/queries"
 
-export function GlobalSearch({ menus }: { menus: Menu[] }) {
+export function GlobalSearch({ menus }: { menus: NavigationEntry[] }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [keyword, setKeyword] = useState("")
-  const results = menus.filter((menu) => {
-    const title = getMenuTitle(menu, t)
-    return `${title} ${menu.title} ${menu.path}`.toLowerCase().includes(keyword.toLowerCase())
+  const entries = menus.map((menu) => ({
+    id: menu.id,
+    title: getMenuTitle(menu, t),
+    searchableTitle: `${getMenuTitle(menu, t)} ${menu.title}`,
+    path: menu.path,
+  }))
+  const results = entries.filter((entry) => {
+    return `${entry.searchableTitle} ${entry.path}`.toLowerCase().includes(keyword.toLowerCase())
   })
 
   return (
     <>
-      <Button type="text" icon={<Search size={18} />} onClick={() => setOpen(true)}>
-        <span className="hidden md:inline">{t("search")}</span>
+      <Button
+        className="ml-auto"
+        type="text"
+        icon={<Search size={16} />}
+        onClick={() => setOpen(true)}
+      >
+        <span className="hidden truncate md:inline">{t("search")}</span>
       </Button>
       <Modal
         title={t("globalSearch")}
@@ -41,7 +51,7 @@ export function GlobalSearch({ menus }: { menus: Menu[] }) {
                 href={item.path}
                 className="ame-hover-surface ame-text-muted block rounded-md px-3 py-2"
               >
-                <div className="font-medium">{getMenuTitle(item, t)}</div>
+                <div className="font-medium">{item.title}</div>
                 <div className="ame-text-subtle text-xs">{item.path}</div>
               </a>
             ))

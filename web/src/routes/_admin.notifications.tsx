@@ -5,6 +5,7 @@ import { CheckCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
+import { PageHeader, SectionPanel } from "../components/design-system"
 import {
   deleteNotificationMutationOptions,
   readAllNotificationsMutationOptions,
@@ -41,76 +42,76 @@ function NotificationsRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">
-            {t("notificationCenter")}
-          </h1>
-          <p className="ame-page-description text-sm">{t("notificationsDescription")}</p>
-        </div>
-        <Button
-          icon={<CheckCheck size={16} />}
-          loading={readAll.isPending}
-          onClick={async () => {
-            await readAll.mutateAsync()
-            message.success(t("markedAllRead"))
-          }}
-        >
-          {t("markAllRead")}
-        </Button>
-      </div>
-
-      <DataTable<NotificationItem>
-        rowKey="id"
-        loading={notificationsQuery.isLoading}
-        dataSource={notificationsQuery.data?.items ?? []}
-        pagination={{
-          current: page,
-          pageSize,
-          total: notificationsQuery.data?.total ?? 0,
-          showSizeChanger: true,
-        }}
-        onChange={(pagination) => {
-          setPage(pagination.current ?? 1)
-          setPageSize(pagination.pageSize ?? 20)
-        }}
-        columns={[
-          {
-            title: t("status"),
-            dataIndex: "readAt",
-            width: 100,
-            render: (value) => (
-              <Tag color={value ? "default" : "blue"}>{value ? t("read") : t("unread")}</Tag>
-            ),
-          },
-          {
-            title: t("type"),
-            dataIndex: "type",
-            width: 100,
-            render: (value) => <Tag>{value}</Tag>,
-          },
-          { title: t("title"), dataIndex: "title" },
-          { title: t("content"), dataIndex: "description", render: (value) => value || "-" },
-          {
-            title: t("createdAt"),
-            dataIndex: "createdAt",
-            width: 190,
-            render: (value) => new Date(value).toLocaleString(),
-          },
-          {
-            title: t("operation"),
-            width: 90,
-            render: (_, record) => (
-              <Button
-                type="text"
-                danger
-                icon={<Trash2 size={16} />}
-                onClick={() => remove.mutate(record.id)}
-              />
-            ),
-          },
-        ]}
+      <PageHeader
+        title={t("notificationCenter")}
+        description={t("notificationsDescription")}
+        actions={
+          <Button
+            icon={<CheckCheck size={16} />}
+            loading={readAll.isPending}
+            onClick={async () => {
+              await readAll.mutateAsync()
+              message.success(t("markedAllRead"))
+            }}
+          >
+            {t("markAllRead")}
+          </Button>
+        }
       />
+
+      <SectionPanel title={t("notificationCenter")}>
+        <DataTable<NotificationItem>
+          rowKey="id"
+          loading={notificationsQuery.isLoading}
+          dataSource={notificationsQuery.data?.items ?? []}
+          pagination={{
+            current: page,
+            pageSize,
+            total: notificationsQuery.data?.total ?? 0,
+            showSizeChanger: true,
+          }}
+          onChange={(pagination) => {
+            setPage(pagination.current ?? 1)
+            setPageSize(pagination.pageSize ?? 20)
+          }}
+          columns={[
+            {
+              title: t("status"),
+              dataIndex: "readAt",
+              width: 100,
+              render: (value) => (
+                <Tag color={value ? "default" : "blue"}>{value ? t("read") : t("unread")}</Tag>
+              ),
+            },
+            {
+              title: t("type"),
+              dataIndex: "type",
+              width: 100,
+              render: (value) => <Tag>{value}</Tag>,
+            },
+            { title: t("title"), dataIndex: "title" },
+            { title: t("content"), dataIndex: "description", render: (value) => value || "-" },
+            {
+              title: t("createdAt"),
+              dataIndex: "createdAt",
+              width: 190,
+              render: (value) => new Date(value).toLocaleString(),
+            },
+            {
+              title: t("operation"),
+              width: 90,
+              render: (_, record) => (
+                <Button
+                  type="text"
+                  danger
+                  icon={<Trash2 size={16} />}
+                  onClick={() => remove.mutate(record.id)}
+                />
+              ),
+            },
+          ]}
+        />
+      </SectionPanel>
     </Space>
   )
 }

@@ -6,3 +6,9 @@ export const notificationsQuery = t.Object({
   type: t.Optional(t.String()),
   read: t.Optional(t.String()),
 })
+
+export type NotificationsQuery = typeof notificationsQuery.static
+
+export const notificationModels = {
+  "System.NotificationsQuery": notificationsQuery,
+}

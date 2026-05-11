@@ -1,8 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useRouteContext } from "@tanstack/react-router"
-import { App, Avatar, Button, Card, Form, Input, Space, Typography } from "antd"
+import { App, Avatar, Button, Form, Input, Space, Typography } from "antd"
 import { User } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { PageHeader, SectionPanel } from "../components/design-system"
 import { type ProfileInput, updateProfileMutationOptions } from "../services/system/mutations"
 
 export const Route = createFileRoute("/_admin/account/settings")({
@@ -29,12 +30,9 @@ function AccountSettingsRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div>
-        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("userSettings")}</h1>
-        <p className="ame-page-description text-sm">{user.email}</p>
-      </div>
+      <PageHeader title={t("userSettings")} description={user.email} />
 
-      <Card>
+      <SectionPanel title={t("editProfile")}>
         <Form
           form={form}
           layout="vertical"
@@ -61,7 +59,7 @@ function AccountSettingsRoute() {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </SectionPanel>
     </Space>
   )
 }

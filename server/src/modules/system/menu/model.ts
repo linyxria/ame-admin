@@ -10,3 +10,9 @@ export const menuBody = t.Object({
   sort: t.Optional(t.Number()),
   visible: t.Optional(t.Boolean()),
 })
+
+export type MenuBody = typeof menuBody.static
+
+export const menuModels = {
+  "System.MenuBody": menuBody,
+}

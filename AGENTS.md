@@ -1,5 +1,13 @@
 # Project Conventions
 
+## Directory-Specific Instructions
+
+- For any task that touches `web/`, read `web/AGENTS.md` before planning or editing.
+- For any task that touches `server/`, read `server/AGENTS.md` before planning or editing when that file exists.
+- For tasks involving frontend UI, Ant Design, React, accessibility, or frontend performance under `web/`, read the relevant skill files under `web/.agents/skills/` before planning or editing.
+- For tasks involving backend architecture, API design, database work, authentication, authorization, or server performance under `server/`, read the relevant skill files under `server/.agents/skills/` before planning or editing when that directory exists.
+- Treat directory-local `AGENTS.md` and `.agents/skills/*/SKILL.md` files as canonical for that directory. Do not duplicate their full contents in this root file.
+
 ## Full-Stack Data Flow
 
 - Use Eden Treaty as the frontend API client for Elysia endpoints.
@@ -20,12 +28,6 @@
 - Use `function` declarations for top-level functions.
 - Do not define module-level functions as `const foo = () => ...`.
 - This does not apply to local functions inside React components or callbacks passed inline to APIs.
-
-## React
-
-- React Compiler is enabled for this project.
-- Do not add `memo`, `useMemo`, or `useCallback` only for render optimization.
-- Use manual memoization only when it is required for semantic stability, such as a third-party API that depends on referential identity, or when profiling shows a real issue.
 
 ## File Naming
 

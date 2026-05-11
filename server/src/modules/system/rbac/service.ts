@@ -2,13 +2,15 @@ import { and, eq } from "drizzle-orm"
 import { Elysia } from "elysia"
 import { db } from "@/db"
 import { menu, role, roleMenu, userRole } from "@/db/schema"
-import { auth } from "@/lib/auth"
+import { authMacro } from "@/lib/auth"
+
+type MenuPermissionOptions = string | string[] | { paths: string | string[]; action?: string }
 
 export function splitActions(actions: string) {
   return actions.split(",").filter(Boolean)
 }
 
-async function canAccessMenu(userId: string, path: string, action = "view") {
+export async function canAccessMenu(userId: string, path: string, action = "view") {
   const [allowed] = await db
     .select({ id: menu.id, actions: roleMenu.actions })
     .from(userRole)
@@ -28,26 +30,28 @@ async function canAccessMenu(userId: string, path: string, action = "view") {
   return Boolean(allowed && splitActions(allowed.actions).includes(action))
 }
 
-export const systemPermissionMacro = new Elysia({ name: "system-permission" }).macro({
-  menu: (options: string | string[] | { paths: string | string[]; action?: string }) => ({
-    async beforeHandle({ headers, status }) {
-      const session = await auth.api.getSession({
-        headers: new Headers(
-          Object.entries(headers).filter((entry): entry is [string, string] => Boolean(entry[1])),
-        ),
-      })
+function normalizeMenuOptions(options: MenuPermissionOptions) {
+  const paths = typeof options === "object" && !Array.isArray(options) ? options.paths : options
+  const action = typeof options === "object" && !Array.isArray(options) ? options.action : "view"
 
-      if (!session) {
-        return status(401, { message: "Unauthorized" })
-      }
+  return {
+    action: action ?? "view",
+    candidates: Array.isArray(paths) ? paths : [paths],
+  }
+}
 
-      const paths = typeof options === "object" && !Array.isArray(options) ? options.paths : options
-      const action =
-        typeof options === "object" && !Array.isArray(options) ? options.action : "view"
-      const candidates = Array.isArray(paths) ? paths : [paths]
+export const systemPermissionMacro = new Elysia({ name: "system-permission" })
+  .use(authMacro)
+  .macro("menu", (options: MenuPermissionOptions) => ({
+    auth: true,
+    async resolve(context) {
+      const { status } = context
+      const { user } = context as typeof context & { user: { id: string } }
+      const { action, candidates } = normalizeMenuOptions(options)
+
       const allowed = await Promise.any(
         candidates.map(async (path) => {
-          if (await canAccessMenu(session.user.id, path, action ?? "view")) {
+          if (await canAccessMenu(user.id, path, action)) {
             return true
           }
 
@@ -59,5 +63,4 @@ export const systemPermissionMacro = new Elysia({ name: "system-permission" }).m
         return status(403, { message: "Forbidden" })
       }
     },
-  }),
-})
+  }))

@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, Outlet, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
 import type { MenuProps } from "antd"
 import {
-  Menu as AntMenu,
+  Menu,
   Avatar,
   Breadcrumb,
   Button,
@@ -15,16 +15,23 @@ import {
 } from "antd"
 import {
   Bell,
+  Bot,
+  ChartColumn,
   Check,
   ChevronDown,
   ClipboardList,
   FileText,
   Gauge,
+  Globe2,
+  House,
   Languages,
   LogOut,
-  Menu as MenuIcon,
+  MapIcon,
+  MenuIcon,
+  Monitor,
   Moon,
   Palette,
+  Radar,
   ScrollText,
   Settings,
   Shield,
@@ -38,6 +45,7 @@ import { useTranslation } from "react-i18next"
 import { GlobalSearch } from "../components/global-search"
 import { Notifications } from "../components/notifications"
 import { type Locale, locales } from "../i18n"
+import { exampleMenus, type NavigationEntry } from "../lib/examples"
 import { getMenuTitle } from "../lib/menu-title"
 import { useThemeSettings } from "../lib/theme"
 import { signOutMutationOptions } from "../services/auth/mutations"
@@ -53,16 +61,24 @@ const { Header, Sider, Content } = Layout
 
 const iconMap = {
   audit: <ScrollText size={16} />,
+  ai: <Bot size={16} />,
+  analytics: <ChartColumn size={16} />,
   bell: <Bell size={16} />,
+  chart3d: <ChartColumn size={16} />,
   dashboard: <Gauge size={16} />,
   chart: <Gauge size={16} />,
   demo: <ClipboardList size={16} />,
   form: <FileText size={16} />,
+  globe: <Globe2 size={16} />,
+  map: <MapIcon size={16} />,
   menu: <MenuIcon size={16} />,
+  monitor: <Monitor size={16} />,
+  radar: <Radar size={16} />,
   settings: <Settings size={16} />,
   table: <Table2 size={16} />,
   team: <Shield size={16} />,
   user: <Users size={16} />,
+  workbench: <House size={16} />,
 }
 
 export function AdminLayout() {
@@ -78,19 +94,22 @@ export function AdminLayout() {
   const settingsQuery = useQuery(settingsQueryOptions())
   const signOutMutation = useMutation(signOutMutationOptions())
   const menus = menusQuery.data ?? []
+  const navigationMenus: NavigationEntry[] = [...menus, ...exampleMenus]
   const siteName =
     settingsQuery.data?.find((item) => item.key === "siteName")?.value || t("appName")
 
   const signOut = async () => {
+    await queryClient.cancelQueries({ queryKey: currentUserMenusQueryKey })
+    await queryClient.cancelQueries({ queryKey: currentUserPermissionsQueryKey })
     await signOutMutation.mutateAsync()
-    queryClient.removeQueries({ queryKey: sessionQueryKey })
-    queryClient.removeQueries({ queryKey: currentUserMenusQueryKey })
-    queryClient.removeQueries({ queryKey: currentUserPermissionsQueryKey })
-    void router.navigate({
+    await router.navigate({
       to: "/login",
       search: { redirect: location.href },
       replace: true,
     })
+    queryClient.removeQueries({ queryKey: sessionQueryKey })
+    queryClient.removeQueries({ queryKey: currentUserMenusQueryKey })
+    queryClient.removeQueries({ queryKey: currentUserPermissionsQueryKey })
   }
 
   const userMenuItems: MenuProps["items"] = [
@@ -135,10 +154,16 @@ export function AdminLayout() {
     },
   ]
 
-  const menuItems: MenuProps["items"] = menus
-    .filter((item) => !item.parentId || !menus.some((parent) => parent.id === item.parentId))
+  const menuItems: MenuProps["items"] = navigationMenus
+    .filter(
+      (item) =>
+        item.visible &&
+        (!item.parentId || !navigationMenus.some((parent) => parent.id === item.parentId)),
+    )
     .map((item) => {
-      const children = menus.filter((child) => child.parentId === item.id)
+      const children = navigationMenus.filter(
+        (child) => child.visible && child.parentId === item.id,
+      )
 
       return {
         key: item.path,
@@ -162,14 +187,16 @@ export function AdminLayout() {
       }
     })
 
-  const defaultOpenKeys = menus
+  const defaultOpenKeys = navigationMenus
     .filter((item) =>
-      menus.some((child) => child.parentId === item.id && child.path === location.pathname),
+      navigationMenus.some(
+        (child) => child.parentId === item.id && child.path === location.pathname,
+      ),
     )
     .map((item) => item.path)
 
-  const menuById = new Map(menus.map((item) => [item.id, item]))
-  const activeMenu = menus
+  const menuById = new Map(navigationMenus.map((item) => [item.id, item]))
+  const activeMenu = navigationMenus
     .filter(
       (item) => location.pathname === item.path || location.pathname.startsWith(`${item.path}/`),
     )
@@ -177,17 +204,21 @@ export function AdminLayout() {
   const menuBreadcrumbItems = activeMenu
     ? [activeMenu]
         .concat(
-          Array.from({ length: menus.length }).reduce<typeof menus>((parents, _item) => {
-            const previous = parents.at(-1) ?? activeMenu
-            const parent = previous.parentId ? menuById.get(previous.parentId) : undefined
+          Array.from({ length: navigationMenus.length }).reduce<typeof navigationMenus>(
+            (parents, _item) => {
+              const previous = parents.at(-1) ?? activeMenu
+              const parent = previous.parentId ? menuById.get(previous.parentId) : undefined
 
-            return parent ? parents.concat(parent) : parents
-          }, []),
+              return parent ? parents.concat(parent) : parents
+            },
+            [],
+          ),
         )
         .reverse()
         .map((item, index, items) => ({
           title:
-            index !== items.length - 1 && !menus.some((child) => child.parentId === item.id) ? (
+            index !== items.length - 1 &&
+            !navigationMenus.some((child) => child.parentId === item.id) ? (
               <Link to={item.path} className="ame-text-muted">
                 {getMenuTitle(item, t)}
               </Link>
@@ -201,8 +232,8 @@ export function AdminLayout() {
       ? [
           {
             title: (
-              <Link to="/dashboard" className="ame-text-muted">
-                {t("dashboard")}
+              <Link to="/dashboard/workbench" className="ame-text-muted">
+                {t("workbench")}
               </Link>
             ),
           },
@@ -212,39 +243,50 @@ export function AdminLayout() {
         ? [
             {
               title: (
-                <Link to="/dashboard" className="ame-text-muted">
-                  {t("dashboard")}
+                <Link to="/dashboard/workbench" className="ame-text-muted">
+                  {t("workbench")}
                 </Link>
               ),
             },
             { title: t("forbidden") },
           ]
-        : [{ title: t("dashboard") }]
+        : [{ title: t("workbench") }]
   const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems
 
   return (
-    <Layout className="h-screen overflow-hidden max-[760px]:min-w-215">
-      <Sider className="ame-border h-screen overflow-hidden border-r" width={224} theme={mode}>
-        <div className="ame-border ame-text flex h-16 items-center border-b px-5 text-base font-bold">
-          {siteName}
-        </div>
-        <div className="h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden">
-          <AntMenu
-            theme={mode}
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            defaultOpenKeys={defaultOpenKeys}
-            className="border-e-0 px-2 pt-3"
-            items={menuItems}
-          />
+    <Layout className="ame-app-shell h-screen overflow-hidden max-[760px]:min-w-215">
+      <Sider className="ame-sidebar h-screen overflow-hidden" width={236} theme={mode}>
+        <div className="flex h-full min-h-0 flex-col">
+          <div className="ame-brand ame-text flex h-16 shrink-0 items-center gap-3 px-5 text-base font-bold">
+            <span className="ame-brand-mark text-sm font-black">AM</span>
+            <span className="truncate">{siteName}</span>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
+            <Menu
+              theme={mode}
+              mode="inline"
+              selectedKeys={[location.pathname]}
+              defaultOpenKeys={defaultOpenKeys}
+              items={menuItems}
+            />
+          </div>
+          <div className="ame-sidebar-status shrink-0 px-4 py-3 text-[11px] leading-5">
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              System Status
+            </div>
+            <div className="font-semibold text-emerald-300">All Systems Operational</div>
+          </div>
         </div>
       </Sider>
       <Layout className="min-h-0">
-        <Header className="ame-border flex shrink-0 items-center justify-end gap-2 border-b">
-          <GlobalSearch menus={menus} />
+        <Header className="ame-topbar flex shrink-0 items-center gap-3">
+          <Breadcrumb className="mr-auto min-w-0" items={breadcrumbItems} />
+          <GlobalSearch menus={navigationMenus} />
           <Notifications />
           <Button
             type="text"
+            className="ame-topbar-icon"
             icon={mode === "dark" ? <Moon size={18} /> : <Sun size={18} />}
             onClick={() => setMode(mode === "dark" ? "light" : "dark")}
           />
@@ -252,11 +294,16 @@ export function AdminLayout() {
             menu={{ items: languageMenuItems, selectedKeys: [locale] }}
             placement="bottomRight"
           >
-            <Button type="text" icon={<Languages size={18} />} />
+            <Button type="text" className="ame-topbar-icon" icon={<Languages size={18} />} />
           </Dropdown>
-          <Button type="text" icon={<Settings size={18} />} onClick={() => setSettingsOpen(true)} />
+          <Button
+            type="text"
+            className="ame-topbar-icon"
+            icon={<Settings size={18} />}
+            onClick={() => setSettingsOpen(true)}
+          />
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <Button type="link" className="h-11 px-2">
+            <Button type="link" className="ame-shell-user px-2">
               <Space size={10}>
                 <Avatar src={user.image} icon={!user.image ? <User size={16} /> : undefined} />
                 <span className="flex flex-col items-start leading-tight">
@@ -298,8 +345,7 @@ export function AdminLayout() {
             </div>
           </Drawer>
         </Header>
-        <Content className="ame-page-bg min-h-0 overflow-auto p-6">
-          <Breadcrumb items={breadcrumbItems} style={{ marginBottom: 16 }} />
+        <Content className="ame-content ame-page-bg min-h-0 overflow-auto p-5">
           <Outlet />
         </Content>
       </Layout>

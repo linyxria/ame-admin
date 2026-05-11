@@ -24,4 +24,8 @@ export const env = {
   BETTER_AUTH_SECRET: requiredEnv("BETTER_AUTH_SECRET"),
   BETTER_AUTH_URL: requiredEnv("BETTER_AUTH_URL"),
   CORS_ORIGIN: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+  AI_PROVIDER: process.env.AI_PROVIDER ?? "openai-compatible",
+  AI_API_KEY: process.env.AI_API_KEY,
+  AI_BASE_URL: process.env.AI_BASE_URL,
+  AI_MODEL: process.env.AI_MODEL ?? "gpt-4o-mini",
 }

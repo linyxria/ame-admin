@@ -7,7 +7,6 @@ type QueryData<T extends (...args: never[]) => Promise<unknown>> = NonNullable<
   Awaited<ReturnType<T>>
 >
 
-export type Overview = QueryData<typeof api.system.overview.get>
 export type Role = QueryData<typeof api.system.roles.get>[number]
 export type Menu = QueryData<typeof api.system.menus.get>[number]
 export type SystemUser = QueryData<typeof api.system.users.get>["items"][number]
@@ -34,7 +33,6 @@ function listQuery(params?: ListParams) {
   }
 }
 
-export const overviewQueryKey = ["system", "overview"] as const
 export const usersQueryPrefixKey = ["system", "users"] as const
 export const rolesQueryKey = ["system", "roles"] as const
 export const menusQueryKey = ["system", "menus"] as const
@@ -71,13 +69,6 @@ export function notificationsQueryKey(params?: NotificationListParams) {
     params?.type ?? "",
     params?.read ?? "",
   ] as const
-}
-
-export function overviewQueryOptions() {
-  return queryOptions({
-    queryKey: overviewQueryKey,
-    queryFn: () => api.system.overview.get(),
-  })
 }
 
 export function usersQueryOptions(params?: ListParams) {

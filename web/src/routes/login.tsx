@@ -74,7 +74,7 @@ function LoginRoute() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-[image:var(--ame-login-bg)] p-8 max-[760px]:p-5">
+    <main className="grid min-h-screen place-items-center bg-(image:--ame-login-bg) p-8 max-[760px]:p-5">
       <section className="grid w-full max-w-240 grid-cols-[minmax(0,1fr)_420px] items-center gap-10 max-[760px]:grid-cols-1 max-[760px]:gap-6">
         <div>
           <h1 className="ame-page-title mb-4 text-[46px] leading-[1.05] font-semibold max-[760px]:text-4xl">
@@ -83,7 +83,10 @@ function LoginRoute() {
           <p className="ame-page-description max-w-105 text-[17px]">{t("loginDescription")}</p>
         </div>
 
-        <Card className="w-full rounded-lg shadow-[0_18px_45px_rgba(15,23,42,0.12)] [&_.ant-card-body]:grid [&_.ant-card-body]:gap-5 [&_.ant-card-body]:p-7 max-[760px]:[&_.ant-card-body]:p-5.5">
+        <Card
+          className="w-full rounded-lg shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
+          styles={{ body: { display: "grid", gap: 20, padding: "clamp(22px, 4vw, 28px)" } }}
+        >
           <div>
             <h2 className="ame-page-title mb-1 text-2xl font-semibold">{t("adminLogin")}</h2>
             <Typography.Text type="secondary">{t("localDefaultAccount")}</Typography.Text>

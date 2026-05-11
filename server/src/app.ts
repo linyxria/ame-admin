@@ -2,9 +2,11 @@ import { cors } from "@elysiajs/cors"
 import { Elysia } from "elysia"
 import { authPlugin } from "./lib/auth"
 import { env } from "./lib/env"
+import { aiRoutes } from "./modules/ai"
 import { systemRoutes } from "./modules/system"
 
 const apiRoutes = new Elysia({ name: "api", prefix: "/api" })
+  .use(aiRoutes)
   .use(systemRoutes)
   .get("/", () => ({ ok: true, service: "ame-admin-api" }))
   .get("/health", () => ({ ok: true }))

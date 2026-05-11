@@ -18,6 +18,7 @@ import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
+import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
 import { getMenuTitle } from "../lib/menu-title"
 import {
   createMenuMutationOptions,
@@ -148,80 +149,82 @@ function MenusRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("menuManagement")}</h1>
-          <p className="ame-page-description text-sm">{t("menusDescription")}</p>
-        </div>
-        <Space>
-          <Button
-            icon={<RotateCw size={16} />}
-            onClick={() => {
-              void refresh()
-            }}
-          />
-          <Button
-            type="primary"
-            disabled={!canCreate}
-            icon={<Plus size={16} />}
-            onClick={() => showModal()}
-          >
-            {t("createMenu")}
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title={t("menuManagement")}
+        description={t("menusDescription")}
+        actions={
+          <ToolbarSurface>
+            <Button
+              icon={<RotateCw size={16} />}
+              onClick={() => {
+                void refresh()
+              }}
+            />
+            <Button
+              type="primary"
+              disabled={!canCreate}
+              icon={<Plus size={16} />}
+              onClick={() => showModal()}
+            >
+              {t("createMenu")}
+            </Button>
+          </ToolbarSurface>
+        }
+      />
 
-      <DataTable<Menu>
-        rowKey="id"
-        loading={menusQuery.isLoading}
-        dataSource={menusQuery.data ?? []}
-        columns={[
-          { title: t("menuName"), render: (_, record) => getMenuTitle(record, t) },
-          { title: t("route"), dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
-          { title: t("icon"), dataIndex: "icon", render: (value) => value || "-" },
-          { title: t("sort"), dataIndex: "sort", width: 90 },
-          {
-            title: t("sidebarVisible"),
-            dataIndex: "visible",
-            width: 100,
-            render: (visible) => (
-              <Tag color={visible ? "green" : "default"}>
-                {visible ? t("visible") : t("hidden")}
-              </Tag>
-            ),
-          },
-          {
-            title: t("operation"),
-            width: 150,
-            render: (_, record) => (
-              <Space>
-                <Tooltip title={t("edit")}>
-                  <Button
-                    type="text"
-                    disabled={!canUpdate}
-                    icon={<Pencil size={16} />}
-                    onClick={() => showModal(record)}
-                  />
-                </Tooltip>
-                <Tooltip title={record.builtIn ? t("builtInMenuDeleteDisabled") : t("delete")}>
-                  <Popconfirm
-                    title={t("confirmDeleteMenu")}
-                    onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn || !canDelete}
-                  >
+      <SectionPanel title={t("menuManagement")}>
+        <DataTable<Menu>
+          rowKey="id"
+          loading={menusQuery.isLoading}
+          dataSource={menusQuery.data ?? []}
+          columns={[
+            { title: t("menuName"), render: (_, record) => getMenuTitle(record, t) },
+            { title: t("route"), dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
+            { title: t("icon"), dataIndex: "icon", render: (value) => value || "-" },
+            { title: t("sort"), dataIndex: "sort", width: 90 },
+            {
+              title: t("sidebarVisible"),
+              dataIndex: "visible",
+              width: 100,
+              render: (visible) => (
+                <Tag color={visible ? "green" : "default"}>
+                  {visible ? t("visible") : t("hidden")}
+                </Tag>
+              ),
+            },
+            {
+              title: t("operation"),
+              width: 150,
+              render: (_, record) => (
+                <Space>
+                  <Tooltip title={t("edit")}>
                     <Button
                       type="text"
-                      danger
-                      disabled={record.builtIn || !canDelete}
-                      icon={<Trash2 size={16} />}
+                      disabled={!canUpdate}
+                      icon={<Pencil size={16} />}
+                      onClick={() => showModal(record)}
                     />
-                  </Popconfirm>
-                </Tooltip>
-              </Space>
-            ),
-          },
-        ]}
-      />
+                  </Tooltip>
+                  <Tooltip title={record.builtIn ? t("builtInMenuDeleteDisabled") : t("delete")}>
+                    <Popconfirm
+                      title={t("confirmDeleteMenu")}
+                      onConfirm={() => remove(record.id)}
+                      disabled={record.builtIn || !canDelete}
+                    >
+                      <Button
+                        type="text"
+                        danger
+                        disabled={record.builtIn || !canDelete}
+                        icon={<Trash2 size={16} />}
+                      />
+                    </Popconfirm>
+                  </Tooltip>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </SectionPanel>
 
       <Modal
         title={editing ? t("editMenu") : t("createMenu")}
@@ -261,13 +264,24 @@ function MenusRoute() {
             <Select
               allowClear
               options={[
-                { label: "dashboard", value: "dashboard" },
-                { label: "settings", value: "settings" },
-                { label: "user", value: "user" },
-                { label: "team", value: "team" },
-                { label: "menu", value: "menu" },
+                { label: "ai", value: "ai" },
+                { label: "analytics", value: "analytics" },
                 { label: "audit", value: "audit" },
                 { label: "bell", value: "bell" },
+                { label: "chart", value: "chart" },
+                { label: "chart3d", value: "chart3d" },
+                { label: "dashboard", value: "dashboard" },
+                { label: "demo", value: "demo" },
+                { label: "form", value: "form" },
+                { label: "globe", value: "globe" },
+                { label: "map", value: "map" },
+                { label: "menu", value: "menu" },
+                { label: "monitor", value: "monitor" },
+                { label: "settings", value: "settings" },
+                { label: "table", value: "table" },
+                { label: "team", value: "team" },
+                { label: "user", value: "user" },
+                { label: "workbench", value: "workbench" },
               ]}
             />
           </Form.Item>

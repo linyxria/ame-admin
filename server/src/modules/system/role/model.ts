@@ -16,3 +16,9 @@ export const roleBody = t.Object({
     ),
   ),
 })
+
+export type RoleBody = typeof roleBody.static
+
+export const roleModels = {
+  "System.RoleBody": roleBody,
+}

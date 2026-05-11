@@ -1,5 +1,6 @@
 import { createFileRoute, redirect } from "@tanstack/react-router"
 import { AdminLayout } from "../layouts/admin"
+import { isExamplePath } from "../lib/examples"
 import { sessionQueryOptions } from "../services/auth/queries"
 import { currentUserMenusQueryOptions } from "../services/system/queries"
 
@@ -18,7 +19,7 @@ export const Route = createFileRoute("/_admin")({
       })
     }
 
-    if (!publicAdminPaths.has(location.pathname)) {
+    if (!publicAdminPaths.has(location.pathname) && !isExamplePath(location.pathname)) {
       const menus = await context.queryClient.ensureQueryData(currentUserMenusQueryOptions())
       const canAccess = (menus ?? []).some(
         (menu) => menu.path === location.pathname || location.pathname.startsWith(`${menu.path}/`),

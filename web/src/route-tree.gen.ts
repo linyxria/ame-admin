@@ -15,15 +15,23 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminNotificationsRouteImport } from './routes/_admin.notifications'
 import { Route as AdminForbiddenRouteImport } from './routes/_admin.forbidden'
 import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
+import { Route as AdminAiRouteImport } from './routes/_admin.ai'
 import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
 import { Route as AdminSystemSettingsRouteImport } from './routes/_admin.system.settings'
 import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
 import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
 import { Route as AdminSystemAuditLogsRouteImport } from './routes/_admin.system.audit-logs'
-import { Route as AdminDemosTableRouteImport } from './routes/_admin.demos.table'
-import { Route as AdminDemosFormRouteImport } from './routes/_admin.demos.form'
-import { Route as AdminDemosChartsRouteImport } from './routes/_admin.demos.charts'
+import { Route as AdminExamplesTableRouteImport } from './routes/_admin.examples.table'
+import { Route as AdminExamplesFormRouteImport } from './routes/_admin.examples.form'
+import { Route as AdminExamplesDigitalTwinRouteImport } from './routes/_admin.examples.digital-twin'
+import { Route as AdminDashboardWorkbenchRouteImport } from './routes/_admin.dashboard.workbench'
+import { Route as AdminDashboardMonitorRouteImport } from './routes/_admin.dashboard.monitor'
+import { Route as AdminDashboardAnalyticsRouteImport } from './routes/_admin.dashboard.analytics'
 import { Route as AdminAccountSettingsRouteImport } from './routes/_admin.account.settings'
+import { Route as AdminExamplesMaps3dRouteImport } from './routes/_admin.examples.maps.3d'
+import { Route as AdminExamplesMaps2dRouteImport } from './routes/_admin.examples.maps.2d'
+import { Route as AdminExamplesCharts3dRouteImport } from './routes/_admin.examples.charts.3d'
+import { Route as AdminExamplesCharts2dRouteImport } from './routes/_admin.examples.charts.2d'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -54,6 +62,11 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAiRoute = AdminAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSystemUsersRoute = AdminSystemUsersRouteImport.update({
   id: '/system/users',
   path: '/system/users',
@@ -79,127 +92,211 @@ const AdminSystemAuditLogsRoute = AdminSystemAuditLogsRouteImport.update({
   path: '/system/audit-logs',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminDemosTableRoute = AdminDemosTableRouteImport.update({
-  id: '/demos/table',
-  path: '/demos/table',
+const AdminExamplesTableRoute = AdminExamplesTableRouteImport.update({
+  id: '/examples/table',
+  path: '/examples/table',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminDemosFormRoute = AdminDemosFormRouteImport.update({
-  id: '/demos/form',
-  path: '/demos/form',
+const AdminExamplesFormRoute = AdminExamplesFormRouteImport.update({
+  id: '/examples/form',
+  path: '/examples/form',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminDemosChartsRoute = AdminDemosChartsRouteImport.update({
-  id: '/demos/charts',
-  path: '/demos/charts',
-  getParentRoute: () => AdminRoute,
+const AdminExamplesDigitalTwinRoute =
+  AdminExamplesDigitalTwinRouteImport.update({
+    id: '/examples/digital-twin',
+    path: '/examples/digital-twin',
+    getParentRoute: () => AdminRoute,
+  } as any)
+const AdminDashboardWorkbenchRoute = AdminDashboardWorkbenchRouteImport.update({
+  id: '/workbench',
+  path: '/workbench',
+  getParentRoute: () => AdminDashboardRoute,
+} as any)
+const AdminDashboardMonitorRoute = AdminDashboardMonitorRouteImport.update({
+  id: '/monitor',
+  path: '/monitor',
+  getParentRoute: () => AdminDashboardRoute,
+} as any)
+const AdminDashboardAnalyticsRoute = AdminDashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
+  getParentRoute: () => AdminDashboardRoute,
 } as any)
 const AdminAccountSettingsRoute = AdminAccountSettingsRouteImport.update({
   id: '/account/settings',
   path: '/account/settings',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExamplesMaps3dRoute = AdminExamplesMaps3dRouteImport.update({
+  id: '/examples/maps/3d',
+  path: '/examples/maps/3d',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExamplesMaps2dRoute = AdminExamplesMaps2dRouteImport.update({
+  id: '/examples/maps/2d',
+  path: '/examples/maps/2d',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExamplesCharts3dRoute = AdminExamplesCharts3dRouteImport.update({
+  id: '/examples/charts/3d',
+  path: '/examples/charts/3d',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExamplesCharts2dRoute = AdminExamplesCharts2dRouteImport.update({
+  id: '/examples/charts/2d',
+  path: '/examples/charts/2d',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof AdminDashboardRoute
+  '/ai': typeof AdminAiRoute
+  '/dashboard': typeof AdminDashboardRouteWithChildren
   '/forbidden': typeof AdminForbiddenRoute
   '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
-  '/demos/charts': typeof AdminDemosChartsRoute
-  '/demos/form': typeof AdminDemosFormRoute
-  '/demos/table': typeof AdminDemosTableRoute
+  '/dashboard/analytics': typeof AdminDashboardAnalyticsRoute
+  '/dashboard/monitor': typeof AdminDashboardMonitorRoute
+  '/dashboard/workbench': typeof AdminDashboardWorkbenchRoute
+  '/examples/digital-twin': typeof AdminExamplesDigitalTwinRoute
+  '/examples/form': typeof AdminExamplesFormRoute
+  '/examples/table': typeof AdminExamplesTableRoute
   '/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
   '/system/settings': typeof AdminSystemSettingsRoute
   '/system/users': typeof AdminSystemUsersRoute
+  '/examples/charts/2d': typeof AdminExamplesCharts2dRoute
+  '/examples/charts/3d': typeof AdminExamplesCharts3dRoute
+  '/examples/maps/2d': typeof AdminExamplesMaps2dRoute
+  '/examples/maps/3d': typeof AdminExamplesMaps3dRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
-  '/dashboard': typeof AdminDashboardRoute
+  '/ai': typeof AdminAiRoute
+  '/dashboard': typeof AdminDashboardRouteWithChildren
   '/forbidden': typeof AdminForbiddenRoute
   '/notifications': typeof AdminNotificationsRoute
   '/account/settings': typeof AdminAccountSettingsRoute
-  '/demos/charts': typeof AdminDemosChartsRoute
-  '/demos/form': typeof AdminDemosFormRoute
-  '/demos/table': typeof AdminDemosTableRoute
+  '/dashboard/analytics': typeof AdminDashboardAnalyticsRoute
+  '/dashboard/monitor': typeof AdminDashboardMonitorRoute
+  '/dashboard/workbench': typeof AdminDashboardWorkbenchRoute
+  '/examples/digital-twin': typeof AdminExamplesDigitalTwinRoute
+  '/examples/form': typeof AdminExamplesFormRoute
+  '/examples/table': typeof AdminExamplesTableRoute
   '/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/system/menus': typeof AdminSystemMenusRoute
   '/system/roles': typeof AdminSystemRolesRoute
   '/system/settings': typeof AdminSystemSettingsRoute
   '/system/users': typeof AdminSystemUsersRoute
+  '/examples/charts/2d': typeof AdminExamplesCharts2dRoute
+  '/examples/charts/3d': typeof AdminExamplesCharts3dRoute
+  '/examples/maps/2d': typeof AdminExamplesMaps2dRoute
+  '/examples/maps/3d': typeof AdminExamplesMaps3dRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_admin': typeof AdminRouteWithChildren
   '/login': typeof LoginRoute
-  '/_admin/dashboard': typeof AdminDashboardRoute
+  '/_admin/ai': typeof AdminAiRoute
+  '/_admin/dashboard': typeof AdminDashboardRouteWithChildren
   '/_admin/forbidden': typeof AdminForbiddenRoute
   '/_admin/notifications': typeof AdminNotificationsRoute
   '/_admin/account/settings': typeof AdminAccountSettingsRoute
-  '/_admin/demos/charts': typeof AdminDemosChartsRoute
-  '/_admin/demos/form': typeof AdminDemosFormRoute
-  '/_admin/demos/table': typeof AdminDemosTableRoute
+  '/_admin/dashboard/analytics': typeof AdminDashboardAnalyticsRoute
+  '/_admin/dashboard/monitor': typeof AdminDashboardMonitorRoute
+  '/_admin/dashboard/workbench': typeof AdminDashboardWorkbenchRoute
+  '/_admin/examples/digital-twin': typeof AdminExamplesDigitalTwinRoute
+  '/_admin/examples/form': typeof AdminExamplesFormRoute
+  '/_admin/examples/table': typeof AdminExamplesTableRoute
   '/_admin/system/audit-logs': typeof AdminSystemAuditLogsRoute
   '/_admin/system/menus': typeof AdminSystemMenusRoute
   '/_admin/system/roles': typeof AdminSystemRolesRoute
   '/_admin/system/settings': typeof AdminSystemSettingsRoute
   '/_admin/system/users': typeof AdminSystemUsersRoute
+  '/_admin/examples/charts/2d': typeof AdminExamplesCharts2dRoute
+  '/_admin/examples/charts/3d': typeof AdminExamplesCharts3dRoute
+  '/_admin/examples/maps/2d': typeof AdminExamplesMaps2dRoute
+  '/_admin/examples/maps/3d': typeof AdminExamplesMaps3dRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
+    | '/ai'
     | '/dashboard'
     | '/forbidden'
     | '/notifications'
     | '/account/settings'
-    | '/demos/charts'
-    | '/demos/form'
-    | '/demos/table'
+    | '/dashboard/analytics'
+    | '/dashboard/monitor'
+    | '/dashboard/workbench'
+    | '/examples/digital-twin'
+    | '/examples/form'
+    | '/examples/table'
     | '/system/audit-logs'
     | '/system/menus'
     | '/system/roles'
     | '/system/settings'
     | '/system/users'
+    | '/examples/charts/2d'
+    | '/examples/charts/3d'
+    | '/examples/maps/2d'
+    | '/examples/maps/3d'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/login'
+    | '/ai'
     | '/dashboard'
     | '/forbidden'
     | '/notifications'
     | '/account/settings'
-    | '/demos/charts'
-    | '/demos/form'
-    | '/demos/table'
+    | '/dashboard/analytics'
+    | '/dashboard/monitor'
+    | '/dashboard/workbench'
+    | '/examples/digital-twin'
+    | '/examples/form'
+    | '/examples/table'
     | '/system/audit-logs'
     | '/system/menus'
     | '/system/roles'
     | '/system/settings'
     | '/system/users'
+    | '/examples/charts/2d'
+    | '/examples/charts/3d'
+    | '/examples/maps/2d'
+    | '/examples/maps/3d'
   id:
     | '__root__'
     | '/'
     | '/_admin'
     | '/login'
+    | '/_admin/ai'
     | '/_admin/dashboard'
     | '/_admin/forbidden'
     | '/_admin/notifications'
     | '/_admin/account/settings'
-    | '/_admin/demos/charts'
-    | '/_admin/demos/form'
-    | '/_admin/demos/table'
+    | '/_admin/dashboard/analytics'
+    | '/_admin/dashboard/monitor'
+    | '/_admin/dashboard/workbench'
+    | '/_admin/examples/digital-twin'
+    | '/_admin/examples/form'
+    | '/_admin/examples/table'
     | '/_admin/system/audit-logs'
     | '/_admin/system/menus'
     | '/_admin/system/roles'
     | '/_admin/system/settings'
     | '/_admin/system/users'
+    | '/_admin/examples/charts/2d'
+    | '/_admin/examples/charts/3d'
+    | '/_admin/examples/maps/2d'
+    | '/_admin/examples/maps/3d'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -252,6 +349,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/ai': {
+      id: '/_admin/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AdminAiRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/_admin/system/users': {
       id: '/_admin/system/users'
       path: '/system/users'
@@ -287,26 +391,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSystemAuditLogsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/demos/table': {
-      id: '/_admin/demos/table'
-      path: '/demos/table'
-      fullPath: '/demos/table'
-      preLoaderRoute: typeof AdminDemosTableRouteImport
+    '/_admin/examples/table': {
+      id: '/_admin/examples/table'
+      path: '/examples/table'
+      fullPath: '/examples/table'
+      preLoaderRoute: typeof AdminExamplesTableRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/demos/form': {
-      id: '/_admin/demos/form'
-      path: '/demos/form'
-      fullPath: '/demos/form'
-      preLoaderRoute: typeof AdminDemosFormRouteImport
+    '/_admin/examples/form': {
+      id: '/_admin/examples/form'
+      path: '/examples/form'
+      fullPath: '/examples/form'
+      preLoaderRoute: typeof AdminExamplesFormRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/demos/charts': {
-      id: '/_admin/demos/charts'
-      path: '/demos/charts'
-      fullPath: '/demos/charts'
-      preLoaderRoute: typeof AdminDemosChartsRouteImport
+    '/_admin/examples/digital-twin': {
+      id: '/_admin/examples/digital-twin'
+      path: '/examples/digital-twin'
+      fullPath: '/examples/digital-twin'
+      preLoaderRoute: typeof AdminExamplesDigitalTwinRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/_admin/dashboard/workbench': {
+      id: '/_admin/dashboard/workbench'
+      path: '/workbench'
+      fullPath: '/dashboard/workbench'
+      preLoaderRoute: typeof AdminDashboardWorkbenchRouteImport
+      parentRoute: typeof AdminDashboardRoute
+    }
+    '/_admin/dashboard/monitor': {
+      id: '/_admin/dashboard/monitor'
+      path: '/monitor'
+      fullPath: '/dashboard/monitor'
+      preLoaderRoute: typeof AdminDashboardMonitorRouteImport
+      parentRoute: typeof AdminDashboardRoute
+    }
+    '/_admin/dashboard/analytics': {
+      id: '/_admin/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof AdminDashboardAnalyticsRouteImport
+      parentRoute: typeof AdminDashboardRoute
     }
     '/_admin/account/settings': {
       id: '/_admin/account/settings'
@@ -315,37 +440,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAccountSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_admin/examples/maps/3d': {
+      id: '/_admin/examples/maps/3d'
+      path: '/examples/maps/3d'
+      fullPath: '/examples/maps/3d'
+      preLoaderRoute: typeof AdminExamplesMaps3dRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/examples/maps/2d': {
+      id: '/_admin/examples/maps/2d'
+      path: '/examples/maps/2d'
+      fullPath: '/examples/maps/2d'
+      preLoaderRoute: typeof AdminExamplesMaps2dRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/examples/charts/3d': {
+      id: '/_admin/examples/charts/3d'
+      path: '/examples/charts/3d'
+      fullPath: '/examples/charts/3d'
+      preLoaderRoute: typeof AdminExamplesCharts3dRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/examples/charts/2d': {
+      id: '/_admin/examples/charts/2d'
+      path: '/examples/charts/2d'
+      fullPath: '/examples/charts/2d'
+      preLoaderRoute: typeof AdminExamplesCharts2dRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminDashboardRouteChildren {
+  AdminDashboardAnalyticsRoute: typeof AdminDashboardAnalyticsRoute
+  AdminDashboardMonitorRoute: typeof AdminDashboardMonitorRoute
+  AdminDashboardWorkbenchRoute: typeof AdminDashboardWorkbenchRoute
+}
+
+const AdminDashboardRouteChildren: AdminDashboardRouteChildren = {
+  AdminDashboardAnalyticsRoute: AdminDashboardAnalyticsRoute,
+  AdminDashboardMonitorRoute: AdminDashboardMonitorRoute,
+  AdminDashboardWorkbenchRoute: AdminDashboardWorkbenchRoute,
+}
+
+const AdminDashboardRouteWithChildren = AdminDashboardRoute._addFileChildren(
+  AdminDashboardRouteChildren,
+)
+
 interface AdminRouteChildren {
-  AdminDashboardRoute: typeof AdminDashboardRoute
+  AdminAiRoute: typeof AdminAiRoute
+  AdminDashboardRoute: typeof AdminDashboardRouteWithChildren
   AdminForbiddenRoute: typeof AdminForbiddenRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminAccountSettingsRoute: typeof AdminAccountSettingsRoute
-  AdminDemosChartsRoute: typeof AdminDemosChartsRoute
-  AdminDemosFormRoute: typeof AdminDemosFormRoute
-  AdminDemosTableRoute: typeof AdminDemosTableRoute
+  AdminExamplesDigitalTwinRoute: typeof AdminExamplesDigitalTwinRoute
+  AdminExamplesFormRoute: typeof AdminExamplesFormRoute
+  AdminExamplesTableRoute: typeof AdminExamplesTableRoute
   AdminSystemAuditLogsRoute: typeof AdminSystemAuditLogsRoute
   AdminSystemMenusRoute: typeof AdminSystemMenusRoute
   AdminSystemRolesRoute: typeof AdminSystemRolesRoute
   AdminSystemSettingsRoute: typeof AdminSystemSettingsRoute
   AdminSystemUsersRoute: typeof AdminSystemUsersRoute
+  AdminExamplesCharts2dRoute: typeof AdminExamplesCharts2dRoute
+  AdminExamplesCharts3dRoute: typeof AdminExamplesCharts3dRoute
+  AdminExamplesMaps2dRoute: typeof AdminExamplesMaps2dRoute
+  AdminExamplesMaps3dRoute: typeof AdminExamplesMaps3dRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminDashboardRoute: AdminDashboardRoute,
+  AdminAiRoute: AdminAiRoute,
+  AdminDashboardRoute: AdminDashboardRouteWithChildren,
   AdminForbiddenRoute: AdminForbiddenRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminAccountSettingsRoute: AdminAccountSettingsRoute,
-  AdminDemosChartsRoute: AdminDemosChartsRoute,
-  AdminDemosFormRoute: AdminDemosFormRoute,
-  AdminDemosTableRoute: AdminDemosTableRoute,
+  AdminExamplesDigitalTwinRoute: AdminExamplesDigitalTwinRoute,
+  AdminExamplesFormRoute: AdminExamplesFormRoute,
+  AdminExamplesTableRoute: AdminExamplesTableRoute,
   AdminSystemAuditLogsRoute: AdminSystemAuditLogsRoute,
   AdminSystemMenusRoute: AdminSystemMenusRoute,
   AdminSystemRolesRoute: AdminSystemRolesRoute,
   AdminSystemSettingsRoute: AdminSystemSettingsRoute,
   AdminSystemUsersRoute: AdminSystemUsersRoute,
+  AdminExamplesCharts2dRoute: AdminExamplesCharts2dRoute,
+  AdminExamplesCharts3dRoute: AdminExamplesCharts3dRoute,
+  AdminExamplesMaps2dRoute: AdminExamplesMaps2dRoute,
+  AdminExamplesMaps3dRoute: AdminExamplesMaps3dRoute,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)

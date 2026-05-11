@@ -1,7 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { App, Button, Card, Form, Input, Select, Space, Switch } from "antd"
+import { App, Button, Form, Input, Select, Space, Switch } from "antd"
 import { useTranslation } from "react-i18next"
+import { PageHeader, SectionPanel } from "../components/design-system"
 import { type SettingsInput, updateSettingsMutationOptions } from "../services/system/mutations"
 import {
   currentUserPermissionsQueryOptions,
@@ -78,12 +79,9 @@ function SystemSettingsRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div>
-        <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("systemSettings")}</h1>
-        <p className="ame-page-description text-sm">{t("settingsDescription")}</p>
-      </div>
+      <PageHeader title={t("systemSettings")} description={t("settingsDescription")} />
 
-      <Card loading={settingsQuery.isLoading}>
+      <SectionPanel title={t("systemSettings")}>
         <Form
           form={form}
           layout="vertical"
@@ -136,7 +134,7 @@ function SystemSettingsRoute() {
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </SectionPanel>
     </Space>
   )
 }

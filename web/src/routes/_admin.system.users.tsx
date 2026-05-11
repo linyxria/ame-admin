@@ -18,6 +18,7 @@ import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
+import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
 import {
   createUserMutationOptions,
   deleteUserMutationOptions,
@@ -159,44 +160,32 @@ function UsersRoute() {
 
   return (
     <Space orientation="vertical" size="large" className="w-full">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("userManagement")}</h1>
-          <p className="ame-page-description text-sm">{t("usersDescription")}</p>
-        </div>
-        <Space>
-          <Button
-            icon={<RotateCw size={16} />}
-            onClick={() => {
-              void refresh()
-            }}
-          />
-          <Button
-            type="primary"
-            disabled={!canCreate}
-            icon={<Plus size={16} />}
-            onClick={() => showModal()}
-          >
-            {t("createUser")}
-          </Button>
-        </Space>
-      </div>
+      <PageHeader
+        title={t("userManagement")}
+        description={t("usersDescription")}
+        actions={
+          <ToolbarSurface>
+            <Button
+              icon={<RotateCw size={16} />}
+              onClick={() => {
+                void refresh()
+              }}
+            />
+            <Button
+              type="primary"
+              disabled={!canCreate}
+              icon={<Plus size={16} />}
+              onClick={() => showModal()}
+            >
+              {t("createUser")}
+            </Button>
+          </ToolbarSurface>
+        }
+      />
 
-      <DataTable<SystemUser>
-        rowKey="id"
-        loading={usersQuery.isLoading || rolesQuery.isLoading}
-        dataSource={users}
-        pagination={{
-          current: page,
-          pageSize,
-          total: usersQuery.data?.total ?? 0,
-          showSizeChanger: true,
-        }}
-        onChange={(pagination) => {
-          setPage(pagination.current ?? 1)
-          setPageSize(pagination.pageSize ?? 20)
-        }}
-        title={() => (
+      <SectionPanel
+        title={t("userManagement")}
+        actions={
           <Input.Search
             allowClear
             className="max-w-sm"
@@ -207,110 +196,126 @@ function UsersRoute() {
               setPage(1)
             }}
           />
-        )}
-        columns={[
-          {
-            title: t("user"),
-            render: (_, record) => (
-              <Space>
-                <Avatar src={record.image}>{record.name.slice(0, 1)}</Avatar>
-                <span>{record.name}</span>
-              </Space>
-            ),
-          },
-          { title: t("email"), dataIndex: "email" },
-          {
-            title: t("role"),
-            dataIndex: "roles",
-            render: (value: SystemUser["roles"]) =>
-              value.length > 0 ? (
-                value.map((role) => <Tag key={role.id}>{role.name}</Tag>)
-              ) : (
-                <span className="ame-text-subtle">{t("unassigned")}</span>
+        }
+      >
+        <DataTable<SystemUser>
+          rowKey="id"
+          loading={usersQuery.isLoading || rolesQuery.isLoading}
+          dataSource={users}
+          pagination={{
+            current: page,
+            pageSize,
+            total: usersQuery.data?.total ?? 0,
+            showSizeChanger: true,
+          }}
+          onChange={(pagination) => {
+            setPage(pagination.current ?? 1)
+            setPageSize(pagination.pageSize ?? 20)
+          }}
+          columns={[
+            {
+              title: t("user"),
+              render: (_, record) => (
+                <Space>
+                  <Avatar src={record.image}>{record.name.slice(0, 1)}</Avatar>
+                  <span>{record.name}</span>
+                </Space>
               ),
-          },
-          {
-            title: t("status"),
-            dataIndex: "enabled",
-            width: 110,
-            render: (enabled, record) => (
-              <Switch
-                size="small"
-                checked={enabled}
-                disabled={record.builtIn || !canUpdate}
-                checkedChildren={t("enabled")}
-                unCheckedChildren={t("disabled")}
-                onChange={(checked) =>
-                  updateUser.mutate({
-                    id: record.id,
-                    body: { enabled: checked },
-                  })
-                }
-              />
-            ),
-          },
-          {
-            title: t("emailVerified"),
-            dataIndex: "emailVerified",
-            width: 110,
-            render: (verified) => (
-              <Tag color={verified ? "green" : "default"}>
-                {verified ? t("verified") : t("unverified")}
-              </Tag>
-            ),
-          },
-          {
-            title: t("operation"),
-            width: 150,
-            render: (_, record) => (
-              <Space>
-                <Tooltip title={t("edit")}>
-                  <Button
-                    type="text"
-                    disabled={!canUpdate}
-                    icon={<Pencil size={16} />}
-                    onClick={() => showModal(record)}
-                  />
-                </Tooltip>
-                <Tooltip title={t("resetPassword")}>
-                  <Button
-                    type="text"
-                    disabled={!canUpdate}
-                    icon={<KeyRound size={16} />}
-                    onClick={() => {
-                      setResetting(record)
-                      setPassword("")
-                    }}
-                  />
-                </Tooltip>
-                <Tooltip title={t("forceSignOut")}>
-                  <Popconfirm
-                    title={t("confirmRevokeSessions")}
-                    onConfirm={() => revokeSessions.mutate(record.id)}
-                    disabled={!canUpdate}
-                  >
-                    <Button type="text" disabled={!canUpdate} icon={<LogOut size={16} />} />
-                  </Popconfirm>
-                </Tooltip>
-                <Tooltip title={record.builtIn ? t("builtInAdminDeleteDisabled") : t("delete")}>
-                  <Popconfirm
-                    title={t("confirmDeleteUser")}
-                    onConfirm={() => remove(record.id)}
-                    disabled={record.builtIn || !canDelete}
-                  >
+            },
+            { title: t("email"), dataIndex: "email" },
+            {
+              title: t("role"),
+              dataIndex: "roles",
+              render: (value: SystemUser["roles"]) =>
+                value.length > 0 ? (
+                  value.map((role) => <Tag key={role.id}>{role.name}</Tag>)
+                ) : (
+                  <span className="ame-text-subtle">{t("unassigned")}</span>
+                ),
+            },
+            {
+              title: t("status"),
+              dataIndex: "enabled",
+              width: 110,
+              render: (enabled, record) => (
+                <Switch
+                  size="small"
+                  checked={enabled}
+                  disabled={record.builtIn || !canUpdate}
+                  checkedChildren={t("enabled")}
+                  unCheckedChildren={t("disabled")}
+                  onChange={(checked) =>
+                    updateUser.mutate({
+                      id: record.id,
+                      body: { enabled: checked },
+                    })
+                  }
+                />
+              ),
+            },
+            {
+              title: t("emailVerified"),
+              dataIndex: "emailVerified",
+              width: 110,
+              render: (verified) => (
+                <Tag color={verified ? "green" : "default"}>
+                  {verified ? t("verified") : t("unverified")}
+                </Tag>
+              ),
+            },
+            {
+              title: t("operation"),
+              width: 150,
+              render: (_, record) => (
+                <Space>
+                  <Tooltip title={t("edit")}>
                     <Button
                       type="text"
-                      danger
-                      disabled={record.builtIn || !canDelete}
-                      icon={<Trash2 size={16} />}
+                      disabled={!canUpdate}
+                      icon={<Pencil size={16} />}
+                      onClick={() => showModal(record)}
                     />
-                  </Popconfirm>
-                </Tooltip>
-              </Space>
-            ),
-          },
-        ]}
-      />
+                  </Tooltip>
+                  <Tooltip title={t("resetPassword")}>
+                    <Button
+                      type="text"
+                      disabled={!canUpdate}
+                      icon={<KeyRound size={16} />}
+                      onClick={() => {
+                        setResetting(record)
+                        setPassword("")
+                      }}
+                    />
+                  </Tooltip>
+                  <Tooltip title={t("forceSignOut")}>
+                    <Popconfirm
+                      title={t("confirmRevokeSessions")}
+                      onConfirm={() => revokeSessions.mutate(record.id)}
+                      disabled={!canUpdate}
+                    >
+                      <Button type="text" disabled={!canUpdate} icon={<LogOut size={16} />} />
+                    </Popconfirm>
+                  </Tooltip>
+                  <Tooltip title={record.builtIn ? t("builtInAdminDeleteDisabled") : t("delete")}>
+                    <Popconfirm
+                      title={t("confirmDeleteUser")}
+                      onConfirm={() => remove(record.id)}
+                      disabled={record.builtIn || !canDelete}
+                    >
+                      <Button
+                        type="text"
+                        danger
+                        disabled={record.builtIn || !canDelete}
+                        icon={<Trash2 size={16} />}
+                      />
+                    </Popconfirm>
+                  </Tooltip>
+                </Space>
+              ),
+            },
+          ]}
+        />
+      </SectionPanel>
 
       <Modal
         title={editing ? t("editUser") : t("createUser")}

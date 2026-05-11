@@ -1,17 +1,30 @@
 @import "tailwindcss";
 
 :root {
-  --ame-bg: #f1f5f9;
+  --ame-bg: #f5f7fb;
   --ame-page-bg: #f5f7fb;
   --ame-surface: #ffffff;
+  --ame-surface-raised: #f8fafc;
   --ame-text: #0f172a;
   --ame-text-muted: #475569;
   --ame-text-subtle: #64748b;
-  --ame-border: #e2e8f0;
-  --ame-hover: #f1f5f9;
+  --ame-border: #e5eaf2;
+  --ame-border-soft: #eef2f7;
+  --ame-hover: rgba(15, 23, 42, 0.04);
+  --ame-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  --ame-shadow-soft: 0 6px 18px rgba(15, 23, 42, 0.045);
+  --ame-ring: rgba(18, 99, 241, 0.14);
+  --ame-accent: #1263f1;
+  --ame-accent-strong: #0b52d8;
+  --ame-success: #16a34a;
+  --ame-warning: #f59e0b;
+  --ame-danger: #ef4444;
+  --ame-sidebar-bg: #ffffff;
+  --ame-sidebar-ink: #0f172a;
+  --ame-sidebar-muted: #64748b;
   --ame-login-bg:
-    linear-gradient(135deg, rgba(22, 163, 74, 0.12), transparent 34%),
-    linear-gradient(315deg, rgba(37, 99, 235, 0.12), transparent 36%), #f5f7fb;
+    linear-gradient(135deg, rgba(18, 99, 241, 0.1), transparent 36%),
+    linear-gradient(315deg, rgba(20, 184, 166, 0.1), transparent 34%), #f7f9fc;
 
   color-scheme: light dark;
   color: var(--ame-text);
@@ -26,30 +39,34 @@
 :root[data-theme="dark"] {
   --ame-bg: #020617;
   --ame-page-bg: #020617;
-  --ame-surface: #111827;
+  --ame-surface: #0f172a;
+  --ame-surface-raised: #111827;
   --ame-text: #f8fafc;
   --ame-text-muted: #cbd5e1;
   --ame-text-subtle: #94a3b8;
   --ame-border: #1e293b;
-  --ame-hover: #1e293b;
+  --ame-border-soft: #26354a;
+  --ame-hover: rgba(148, 163, 184, 0.12);
+  --ame-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+  --ame-shadow-soft: 0 8px 22px rgba(0, 0, 0, 0.18);
+  --ame-ring: rgba(56, 189, 248, 0.18);
+  --ame-accent: #38bdf8;
+  --ame-accent-strong: #0ea5e9;
+  --ame-sidebar-bg: #0f172a;
+  --ame-sidebar-ink: #f8fafc;
+  --ame-sidebar-muted: #94a3b8;
   --ame-login-bg:
     radial-gradient(circle at 20% 10%, rgba(22, 163, 74, 0.2), transparent 32%),
     radial-gradient(circle at 82% 84%, rgba(37, 99, 235, 0.22), transparent 34%), #020617;
 }
 
 @layer components {
-  .ame-page-title {
-    color: var(--ame-text);
-  }
-
-  .ame-page-description {
-    color: var(--ame-text-muted);
-  }
-
+  .ame-page-title,
   .ame-text {
     color: var(--ame-text);
   }
 
+  .ame-page-description,
   .ame-text-muted {
     color: var(--ame-text-muted);
   }
@@ -72,5 +89,479 @@
 
   .ame-hover-surface:hover {
     background-color: var(--ame-hover);
+  }
+
+  .ame-app-shell {
+    background: var(--ame-page-bg);
+  }
+
+  .ame-sidebar {
+    border-right: 1px solid var(--ame-border-soft);
+    background: var(--ame-sidebar-bg);
+  }
+
+  .ame-brand {
+    border-bottom: 1px solid var(--ame-border-soft);
+    color: var(--ame-sidebar-ink);
+  }
+
+  .ame-brand-mark {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    place-items: center;
+    border-radius: 8px;
+    background: var(--ame-accent);
+    color: #fff;
+  }
+
+  .ame-sidebar-status {
+    border-top: 1px solid var(--ame-border-soft);
+    color: var(--ame-sidebar-muted);
+  }
+
+  .ame-topbar {
+    border-bottom: 1px solid var(--ame-border-soft);
+    background: color-mix(in srgb, var(--ame-surface), transparent 8%);
+    backdrop-filter: blur(16px);
+  }
+
+  .ame-topbar-icon {
+    color: var(--ame-text-muted);
+  }
+
+  .ame-topbar-icon:hover {
+    border-color: color-mix(in srgb, var(--ame-accent), transparent 68%);
+    color: var(--ame-accent);
+  }
+
+  .ame-shell-user {
+    height: 42px;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+  }
+
+  .ame-content {
+    container-type: inline-size;
+    background: var(--ame-page-bg);
+  }
+
+  .ame-search-trigger {
+    width: min(360px, 36vw);
+    height: 36px;
+    justify-content: flex-start;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    color: var(--ame-text-subtle);
+  }
+
+  .ame-search-trigger:hover {
+    border-color: color-mix(in srgb, var(--ame-accent), transparent 72%);
+    color: var(--ame-text-muted);
+  }
+
+  .ame-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.05rem;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    box-shadow: var(--ame-shadow-soft);
+    padding: clamp(1rem, 2cqw, 1.25rem);
+  }
+
+  .ame-page-eyebrow {
+    margin-bottom: 0.35rem;
+    color: var(--ame-text-subtle);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .ame-page-title {
+    margin: 0;
+    color: var(--ame-text);
+    font-size: clamp(1.25rem, 2cqw, 1.68rem);
+    font-weight: 720;
+    letter-spacing: 0;
+    line-height: 1.15;
+  }
+
+  .ame-page-description {
+    margin: 0.45rem 0 0;
+    max-width: 68ch;
+    color: var(--ame-text-muted);
+    font-size: 0.875rem;
+    line-height: 1.65;
+  }
+
+  .ame-page-actions {
+    display: flex;
+    flex-shrink: 0;
+    align-self: stretch;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .ame-metric-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0;
+    overflow: hidden;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    box-shadow: var(--ame-shadow-soft);
+  }
+
+  .ame-metric-card {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    min-height: 86px;
+    border-right: 1px solid var(--ame-border-soft);
+    background: var(--ame-surface);
+    padding: 1rem;
+  }
+
+  .ame-metric-card:last-child {
+    border-right: 0;
+  }
+
+  .ame-metric-icon {
+    display: grid;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--ame-accent), transparent 88%);
+    color: var(--ame-accent);
+  }
+
+  .ame-metric-card[data-tone="green"] .ame-metric-icon {
+    background: rgba(20, 184, 166, 0.12);
+    color: #0f766e;
+  }
+
+  .ame-metric-card[data-tone="orange"] .ame-metric-icon {
+    background: rgba(249, 115, 22, 0.12);
+    color: #c2410c;
+  }
+
+  .ame-metric-card[data-tone="slate"] .ame-metric-icon {
+    background: rgba(100, 116, 139, 0.12);
+    color: var(--ame-text-muted);
+  }
+
+  .ame-metric-label {
+    color: var(--ame-text-subtle);
+    font-size: 0.78rem;
+    font-weight: 640;
+  }
+
+  .ame-metric-value {
+    margin-top: 0.2rem;
+    color: var(--ame-text);
+    font-size: 1.5rem;
+    font-weight: 760;
+    line-height: 1.1;
+  }
+
+  .ame-metric-delta {
+    margin-top: 0.24rem;
+    color: var(--ame-text-subtle);
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .ame-section-panel {
+    overflow: hidden;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    box-shadow: var(--ame-shadow-soft);
+  }
+
+  .ame-section-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--ame-border-soft);
+    background: var(--ame-surface);
+    padding: 0.82rem 0.95rem;
+  }
+
+  .ame-section-panel-header h2 {
+    margin: 0;
+    color: var(--ame-text);
+    font-size: 0.9rem;
+    font-weight: 720;
+  }
+
+  .ame-section-panel-body {
+    padding: 0.95rem;
+  }
+
+  .ame-toolbar-surface {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface-raised);
+    padding: 0.28rem;
+  }
+
+  .ame-status-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--ame-surface), var(--ame-hover) 50%);
+    color: var(--ame-text-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    padding: 0 0.6rem;
+  }
+
+  .ame-status-pill[data-tone="blue"] {
+    border-color: rgba(37, 99, 235, 0.22);
+    background: rgba(37, 99, 235, 0.08);
+    color: #1d4ed8;
+  }
+
+  .ame-status-pill[data-tone="green"] {
+    border-color: rgba(20, 184, 166, 0.24);
+    background: rgba(20, 184, 166, 0.08);
+    color: #0f766e;
+  }
+
+  .ame-status-pill[data-tone="orange"] {
+    border-color: rgba(249, 115, 22, 0.24);
+    background: rgba(249, 115, 22, 0.08);
+    color: #c2410c;
+  }
+
+  .ame-status-pill[data-tone="red"] {
+    border-color: rgba(220, 38, 38, 0.24);
+    background: rgba(220, 38, 38, 0.08);
+    color: #b91c1c;
+  }
+
+  .ame-empty-state {
+    display: grid;
+    min-height: 180px;
+    place-items: center;
+  }
+
+  .ame-elevated-card {
+    border-color: var(--ame-border-soft);
+    border-radius: 10px;
+  }
+
+  .ame-hero-panel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    box-shadow: var(--ame-shadow-soft);
+    padding: clamp(1rem, 2cqw, 1.5rem);
+    container-type: inline-size;
+  }
+
+  .ame-chat-card {
+    overflow: hidden;
+    border-color: var(--ame-border-soft);
+    border-radius: 10px;
+    box-shadow: var(--ame-shadow-soft);
+  }
+
+  .ame-ai-shell {
+    display: grid;
+    overflow: hidden;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+    box-shadow: var(--ame-shadow-soft);
+  }
+
+  .ame-ai-session-rail {
+    border-right: 1px solid var(--ame-border-soft);
+    background: var(--ame-surface);
+  }
+
+  .ame-ai-context-rail {
+    border-left: 1px solid var(--ame-border-soft);
+    background: var(--ame-surface);
+  }
+
+  .ame-ai-message-card {
+    max-width: 760px;
+    border: 1px solid var(--ame-border-soft);
+    border-radius: 10px;
+    background: var(--ame-surface);
+  }
+
+  .ame-card-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.85fr);
+    gap: 1rem;
+  }
+
+  .ame-card-grid-reverse {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.82fr) minmax(0, 1.5fr);
+    gap: 1rem;
+  }
+
+  .ame-bigscreen-shell {
+    position: relative;
+    height: 100%;
+    min-height: 620px;
+    overflow: hidden;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 0;
+    background:
+      radial-gradient(circle at 18% 18%, rgba(34, 211, 238, 0.16), transparent 34%),
+      radial-gradient(circle at 82% 72%, rgba(59, 130, 246, 0.18), transparent 32%),
+      #020617;
+  }
+
+  .ame-bigscreen-shell screen-fit {
+    width: 100%;
+    height: 100%;
+  }
+
+  .ame-digital-twin-screen {
+    position: relative;
+    overflow: hidden;
+    background: #020617;
+  }
+
+  .ame-digital-twin-screen::before {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    content: "";
+    background:
+      linear-gradient(rgba(148, 163, 184, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 163, 184, 0.055) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: linear-gradient(180deg, transparent, black 14%, black 86%, transparent);
+  }
+
+  .ame-twin-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(90deg, rgba(2, 6, 23, 0.92), transparent 28%, transparent 70%, rgba(2, 6, 23, 0.9)),
+      linear-gradient(180deg, rgba(2, 6, 23, 0.82), transparent 34%, rgba(2, 6, 23, 0.78));
+  }
+
+  .ame-twin-header {
+    position: absolute;
+    z-index: 2;
+    top: 34px;
+    left: 36px;
+    right: 36px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    color: white;
+  }
+
+  .ame-twin-panel {
+    position: absolute;
+    z-index: 2;
+    border: 1px solid rgba(103, 232, 249, 0.2);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(8, 47, 73, 0.4));
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    padding: 18px;
+    backdrop-filter: blur(14px);
+  }
+
+  .ame-hud-panel {
+    border: 1px solid rgba(103, 232, 249, 0.2);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.78), rgba(8, 47, 73, 0.4));
+    box-shadow:
+      0 24px 80px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+  }
+
+  .ame-hud-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid rgba(103, 232, 249, 0.14);
+    padding: 0 0 0.85rem;
+  }
+
+  .ame-hud-panel-header h2 {
+    margin: 0;
+    color: rgba(224, 242, 254, 0.94);
+    font-size: 1rem;
+    font-weight: 720;
+  }
+
+  @container (max-width: 760px) {
+    .ame-page-header {
+      flex-direction: column;
+    }
+
+    .ame-page-actions {
+      width: 100%;
+      align-self: auto;
+      justify-content: flex-start;
+    }
+
+    .ame-metric-strip,
+    .ame-card-grid,
+    .ame-card-grid-reverse {
+      grid-template-columns: 1fr;
+    }
+
+    .ame-metric-card {
+      border-right: 0;
+      border-bottom: 1px solid var(--ame-border-soft);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .ame-ai-shell {
+      grid-template-columns: 1fr !important;
+    }
+
+    .ame-ai-session-rail,
+    .ame-ai-context-rail {
+      border: 0;
+      border-bottom: 1px solid var(--ame-border-soft);
+    }
+
+    .ame-search-trigger {
+      width: 40px;
+      justify-content: center;
+    }
   }
 }
