@@ -73,7 +73,7 @@ bun run db:logs
 bun run db:down
 ```
 
-Docker Compose uses `ame-admin` as the project name, `db` as the container name, and `ame-admin_db` as the persistent volume. The PostgreSQL 18 image stores data under `/var/lib/postgresql`, which is the layout used by this project.
+Docker Compose uses `ame-admin` as the project name, `ame-admin-db` as the container name, and `ame-admin-data` as the persistent volume. The PostgreSQL 18 image stores data under `/var/lib/postgresql`, which is the layout used by this project.
 
 ## Development
 

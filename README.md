@@ -131,7 +131,7 @@ bun --filter @ame-admin/web build
 
 ## Database
 
-Local development uses Docker Compose from the server workspace. The compose project is named `ame-admin`, the database container is `db`, and the persistent volume is `ame-admin_db`.
+Local development uses Docker Compose from the server workspace. The compose project is named `ame-admin`, the database container is `ame-admin-db`, and the persistent volume is `ame-admin-data`.
 
 Useful server workspace commands:
 
