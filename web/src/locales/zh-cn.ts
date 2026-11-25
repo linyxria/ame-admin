@@ -106,6 +106,7 @@ export const zhCN = {
   aiInputPlaceholder: "输入你的问题，按 Enter 发送",
   aiRequestFailed: "AI 请求失败",
   map2dDescription: "展示示例运营点位、路线和区域。",
+  map2dWebglUnavailable: "当前浏览器无法使用 WebGL2，地图无法显示。",
   map3dDescription: "基于 Cesium 展示 3D 地理空间点位和吞吐量。",
   charts2dDescription: "基于 visx 和 D3 能力构建的 React 图表示例。",
   charts3dDescription: "基于 Three.js 的轻量 3D 图表示例。",

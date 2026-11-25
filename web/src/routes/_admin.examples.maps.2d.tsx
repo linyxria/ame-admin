@@ -2,8 +2,14 @@ import { Deck } from "@deck.gl/core"
 import { LineLayer, ScatterplotLayer } from "@deck.gl/layers"
 import { createFileRoute } from "@tanstack/react-router"
 import { Card, Space, Tag } from "antd"
-import maplibregl from "maplibre-gl"
+import {
+  GPUInitializationError,
+  Map as MapLibreMap,
+  NavigationControl,
+  setWorkerUrl,
+} from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
+import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url"
 import { useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { operationRegion, operationRoute, operationSites, operationsCenter } from "../lib/demo-geo"
@@ -17,6 +23,7 @@ function Map2dRoute() {
   const containerRef = useRef<HTMLDivElement | null>(null)
   const deckRef = useRef<HTMLDivElement | null>(null)
   const [selectedSite, setSelectedSite] = useState(operationSites[0])
+  const [mapUnavailable, setMapUnavailable] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || !deckRef.current) {
@@ -30,47 +37,60 @@ function Map2dRoute() {
       pitch: 0,
       bearing: 0,
     }
-    const deck = new Deck({
-      parent: deckRef.current,
-      initialViewState,
-      controller: false,
-      layers: [
-        new LineLayer({
-          id: "operation-flow",
-          data: operationRoute.slice(0, -1).map((point, index) => ({
-            source: point,
-            target: operationRoute[index + 1],
-          })),
-          getSourcePosition: (item) => item.source,
-          getTargetPosition: (item) => item.target,
-          getColor: [20, 184, 166, 210],
-          getWidth: 5,
-        }),
-        new ScatterplotLayer({
-          id: "operation-pulses",
-          data: operationSites,
-          getPosition: (item) => [item.longitude, item.latitude],
-          getRadius: (item) => item.throughput * 90,
-          getFillColor: (item) =>
-            item.status === "online" ? [37, 99, 235, 90] : [245, 158, 11, 110],
-          getLineColor: [255, 255, 255, 220],
-          lineWidthMinPixels: 1,
-          stroked: true,
-          pickable: true,
-          onClick: ({ object }) => {
-            if (object) {
-              setSelectedSite(object)
-            }
-          },
-        }),
-      ],
-    })
-    const map = new maplibregl.Map({
-      container: containerRef.current,
-      center: [initialViewState.longitude, initialViewState.latitude],
-      zoom: initialViewState.zoom,
-      style: "https://demotiles.maplibre.org/style.json",
-    })
+    setWorkerUrl(mapWorkerUrl)
+    let map: MapLibreMap | undefined
+    let deck: Deck
+    try {
+      map = new MapLibreMap({
+        container: containerRef.current,
+        center: [initialViewState.longitude, initialViewState.latitude],
+        zoom: initialViewState.zoom,
+        style: "https://demotiles.maplibre.org/style.json",
+      })
+      deck = new Deck({
+        parent: deckRef.current,
+        initialViewState,
+        controller: false,
+        layers: [
+          new LineLayer({
+            id: "operation-flow",
+            data: operationRoute.slice(0, -1).map((point, index) => ({
+              source: point,
+              target: operationRoute[index + 1],
+            })),
+            getSourcePosition: (item) => item.source,
+            getTargetPosition: (item) => item.target,
+            getColor: [20, 184, 166, 210],
+            getWidth: 5,
+          }),
+          new ScatterplotLayer({
+            id: "operation-pulses",
+            data: operationSites,
+            getPosition: (item) => [item.longitude, item.latitude],
+            getRadius: (item) => item.throughput * 90,
+            getFillColor: (item) =>
+              item.status === "online" ? [37, 99, 235, 90] : [245, 158, 11, 110],
+            getLineColor: [255, 255, 255, 220],
+            lineWidthMinPixels: 1,
+            stroked: true,
+            pickable: true,
+            onClick: ({ object }) => {
+              if (object) {
+                setSelectedSite(object)
+              }
+            },
+          }),
+        ],
+      })
+    } catch (error) {
+      map?.remove()
+      if (!(error instanceof GPUInitializationError)) {
+        throw error
+      }
+      setMapUnavailable(true)
+      return
+    }
+
     const syncDeckView = () => {
       const center = map.getCenter()
 
@@ -85,7 +105,7 @@ function Map2dRoute() {
       })
     }
 
-    map.addControl(new maplibregl.NavigationControl(), "top-right")
+    map.addControl(new NavigationControl(), "top-right")
     map.on("move", syncDeckView)
     map.on("load", () => {
       map.addSource("operations", {
@@ -162,8 +182,15 @@ function Map2dRoute() {
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
         <Card className="ame-elevated-card" styles={{ body: { padding: 0 } }}>
           <div className="relative h-155 min-h-96 overflow-hidden rounded-md">
-            <div ref={containerRef} className="absolute inset-0" />
+            <div ref={containerRef} className="h-full" />
             <div ref={deckRef} className="pointer-events-none absolute inset-0" />
+            <p
+              role="status"
+              aria-atomic="true"
+              className="ame-page-description pointer-events-none absolute inset-0 grid place-items-center px-6 text-center text-sm"
+            >
+              {mapUnavailable ? t("map2dWebglUnavailable") : null}
+            </p>
           </div>
         </Card>
         <Card className="ame-elevated-card" title={t("siteDetail")}>

@@ -18,7 +18,7 @@ The web workspace contains the React admin UI for AME Admin. It uses TanStack Ro
 Install dependencies from the repository root:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Start the API first, including the local database setup described in `../server/README.md`.
@@ -26,7 +26,7 @@ Start the API first, including the local database setup described in `../server/
 Then start the web development server:
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 The default web URL is:
@@ -57,16 +57,16 @@ Start and seed the backend first:
 
 ```bash
 cd ../server
-bun run db:up
-bun run db:setup
-bun run dev
+pnpm run db:up
+pnpm run db:setup
+pnpm run dev
 ```
 
 Start the frontend in a second terminal:
 
 ```bash
 cd ../web
-bun run dev
+pnpm run dev
 ```
 
 Default local administrator:
@@ -128,25 +128,25 @@ React Compiler is enabled. Avoid adding `memo`, `useMemo`, or `useCallback` only
 Start development:
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 Build for production:
 
 ```bash
-bun run build
+pnpm run build
 ```
 
 Preview the production build:
 
 ```bash
-bun run preview
+pnpm run preview
 ```
 
 Run repository-wide Biome checks from this workspace:
 
 ```bash
-bun run check
-bun run lint
-bun run format
+pnpm run check
+pnpm run lint
+pnpm run format
 ```

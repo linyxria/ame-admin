@@ -15,7 +15,7 @@ The server workspace contains the Elysia backend, Better Auth integration, Drizz
 Install dependencies from the repository root:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Create the local server environment file:
@@ -37,20 +37,20 @@ Local development uses Docker Compose so PostgreSQL stays isolated and easy to r
 Start PostgreSQL:
 
 ```bash
-bun run db:up
+pnpm run db:up
 ```
 
 Run migrations and seed the default administrator:
 
 ```bash
-bun run db:setup
+pnpm run db:setup
 ```
 
 Or run the steps separately:
 
 ```bash
-bun run db:migrate
-bun run db:seed
+pnpm run db:migrate
+pnpm run db:seed
 ```
 
 Default local administrator:
@@ -65,12 +65,12 @@ Update `ADMIN_EMAIL`, `ADMIN_PASSWORD`, and `ADMIN_NAME` in `server/.env` before
 Useful database commands:
 
 ```bash
-bun run db:generate
-bun run db:migrate
-bun run db:seed
-bun run db:studio
-bun run db:logs
-bun run db:down
+pnpm run db:generate
+pnpm run db:migrate
+pnpm run db:seed
+pnpm run db:studio
+pnpm run db:logs
+pnpm run db:down
 ```
 
 Docker Compose uses `ame-admin` as the project name, `ame-admin-db` as the container name, and `ame-admin-data` as the persistent volume. The PostgreSQL 18 image stores data under `/var/lib/postgresql`, which is the layout used by this project.
@@ -80,7 +80,7 @@ Docker Compose uses `ame-admin` as the project name, `ame-admin-db` as the conta
 Start the API server:
 
 ```bash
-bun run dev
+pnpm run dev
 ```
 
 The default server URL is:
@@ -143,13 +143,13 @@ The web workspace imports this type to build its typed API client. Keep this exp
 Run API type checking:
 
 ```bash
-bun run typecheck
+pnpm run typecheck
 ```
 
 Run repository-wide Biome checks from this workspace:
 
 ```bash
-bun run check
-bun run lint
-bun run format
+pnpm run check
+pnpm run lint
+pnpm run format
 ```

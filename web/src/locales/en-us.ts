@@ -109,6 +109,7 @@ export const enUS = {
   aiInputPlaceholder: "Ask a question and press Enter",
   aiRequestFailed: "AI request failed",
   map2dDescription: "View sample operation sites, routes, and regions.",
+  map2dWebglUnavailable: "WebGL2 is unavailable in this browser, so the map cannot be displayed.",
   map3dDescription: "View 3D geospatial sites and throughput with Cesium.",
   charts2dDescription: "React chart examples built with visx and D3 primitives.",
   charts3dDescription: "Lightweight 3D chart examples powered by Three.js.",

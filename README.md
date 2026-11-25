@@ -1,10 +1,11 @@
 # AME Admin
 
-AME Admin is a full-stack admin dashboard starter built with Bun workspaces. It pairs an Elysia API with a React/Vite web app, using PostgreSQL for persistence and end-to-end typed API calls through Eden Treaty.
+AME Admin is a full-stack admin dashboard starter built with pnpm workspaces. It pairs an Elysia API with a React/Vite web app, using PostgreSQL for persistence and end-to-end typed API calls through Eden Treaty.
 
 ## Stack
 
-- Runtime and package manager: Bun
+- Package manager: pnpm
+- Runtime: Bun for the API, Node.js for frontend tooling
 - API: Elysia, Better Auth, Drizzle ORM, PostgreSQL
 - Web: React, Vite, TanStack Router, TanStack Query, Ant Design, Tailwind CSS
 - API client: Eden Treaty, typed from the server `App` export
@@ -17,14 +18,14 @@ server - Elysia backend, database schema, migrations, and seed scripts
 web    - React admin UI
 ```
 
-The repository uses a single root `bun.lock`. Dependency installation and common commands should be run from the repository root unless you are working on a workspace-specific task.
+The repository uses a single root `pnpm-lock.yaml`. Dependency installation and common commands should be run from the repository root unless you are working on a workspace-specific task.
 
 ## Quick Start
 
-Install dependencies:
+Install pnpm 12, Node.js 24.11 or newer, Bun, and Docker with Compose. Then install dependencies:
 
 ```bash
-bun install
+pnpm install
 ```
 
 Create the server environment file:
@@ -36,18 +37,18 @@ cp server/.env.example server/.env
 Start PostgreSQL and initialize the database:
 
 ```bash
-bun run db:up
-bun run db:setup
+pnpm run db:up
+pnpm run db:setup
 ```
 
 Start the API and web app in separate terminals:
 
 ```bash
-bun run dev:server
+pnpm run dev:server
 ```
 
 ```bash
-bun run dev:web
+pnpm run dev:web
 ```
 
 Default local services:
@@ -89,44 +90,44 @@ VITE_API_URL=http://localhost:3000
 Run backend and frontend development servers:
 
 ```bash
-bun run dev:server
-bun run dev:web
+pnpm run dev:server
+pnpm run dev:web
 ```
 
 Build and type-check:
 
 ```bash
-bun run build:web
-bun run typecheck:server
+pnpm run build:web
+pnpm run typecheck:server
 ```
 
 Manage the local database:
 
 ```bash
-bun run db:up
-bun run db:setup
-bun run db:down
+pnpm run db:up
+pnpm run db:setup
+pnpm run db:down
 ```
 
 Run Biome checks:
 
 ```bash
-bun run check
-bun run lint
-bun run format
+pnpm run check
+pnpm run lint
+pnpm run format
 ```
 
 Apply safe formatting and lint fixes:
 
 ```bash
-bun run check:write
+pnpm run check:write
 ```
 
 You can also run workspace scripts directly:
 
 ```bash
-bun --filter @ame-admin/server dev
-bun --filter @ame-admin/web build
+pnpm --filter @ame-admin/server run dev
+pnpm --filter @ame-admin/web run build
 ```
 
 ## Database
@@ -136,11 +137,11 @@ Local development uses Docker Compose from the server workspace. The compose pro
 Useful server workspace commands:
 
 ```bash
-bun --filter @ame-admin/server db:logs
-bun --filter @ame-admin/server db:generate
-bun --filter @ame-admin/server db:migrate
-bun --filter @ame-admin/server db:seed
-bun --filter @ame-admin/server db:studio
+pnpm --filter @ame-admin/server run db:logs
+pnpm --filter @ame-admin/server run db:generate
+pnpm --filter @ame-admin/server run db:migrate
+pnpm --filter @ame-admin/server run db:seed
+pnpm --filter @ame-admin/server run db:studio
 ```
 
 The default `DATABASE_URL` already matches the Docker database:

@@ -47,10 +47,15 @@ ON CONFLICT ("id") DO UPDATE SET
   "updatedAt" = now();--> statement-breakpoint
 
 INSERT INTO "role_menu" ("roleId", "menuId", "actions")
-VALUES
-  ('role_admin', 'menu_dashboard', 'view,create,update,delete'),
-  ('role_admin', 'menu_dashboard_workbench', 'view,create,update,delete'),
-  ('role_admin', 'menu_dashboard_monitor', 'view,create,update,delete'),
-  ('role_admin', 'menu_dashboard_analytics', 'view,create,update,delete'),
-  ('role_admin', 'menu_ai', 'view,create,update,delete')
+SELECT "role"."id", "menu"."id", 'view,create,update,delete'
+FROM "role"
+CROSS JOIN "menu"
+WHERE "role"."id" = 'role_admin'
+  AND "menu"."id" IN (
+    'menu_dashboard',
+    'menu_dashboard_workbench',
+    'menu_dashboard_monitor',
+    'menu_dashboard_analytics',
+    'menu_ai'
+  )
 ON CONFLICT ("roleId", "menuId") DO UPDATE SET "actions" = excluded."actions";

@@ -2,23 +2,22 @@
   "name": "ame-admin",
   "private": true,
   "type": "module",
-  "workspaces": ["server", "web"],
+  "packageManager": "pnpm@12.23.0",
   "scripts": {
-    "dev:server": "bun --filter @ame-admin/server dev",
-    "dev:web": "bun --filter @ame-admin/web dev",
-    "build:web": "bun --filter @ame-admin/web build",
-    "typecheck:server": "bun --filter @ame-admin/server typecheck",
-    "db:up": "bun --filter @ame-admin/server db:up",
-    "db:down": "bun --filter @ame-admin/server db:down",
-    "db:setup": "bun --filter @ame-admin/server db:setup",
-    "test": "bun --filter @ame-admin/server test",
+    "dev:server": "pnpm --filter @ame-admin/server run dev",
+    "dev:web": "pnpm --filter @ame-admin/web run dev",
+    "build:web": "pnpm --filter @ame-admin/web run build",
+    "typecheck:server": "pnpm --filter @ame-admin/server run typecheck",
+    "db:up": "pnpm --filter @ame-admin/server run db:up",
+    "db:down": "pnpm --filter @ame-admin/server run db:down",
+    "db:setup": "pnpm --filter @ame-admin/server run db:setup",
+    "test": "pnpm --filter @ame-admin/server run test",
     "lint": "biome lint server web",
     "format": "biome format --write server web",
     "check": "biome check server web",
     "check:write": "biome check --write server web"
   },
-  "dependencies": {},
   "devDependencies": {
-    "@biomejs/biome": "^2.4.13"
+    "@biomejs/biome": "^2.6.8"
   }
 }

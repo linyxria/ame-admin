@@ -9,28 +9,28 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:seed": "bun run src/scripts/seed-admin.ts",
-    "db:setup": "bun run db:migrate && bun run db:seed",
+    "db:setup": "pnpm run db:migrate && pnpm run db:seed",
     "db:studio": "drizzle-kit studio",
     "test": "bun test",
-    "lint": "bun run --cwd .. lint",
-    "format": "bun run --cwd .. format",
-    "check": "bun run --cwd .. check",
+    "lint": "pnpm -w run lint",
+    "format": "pnpm -w run format",
+    "check": "pnpm -w run check",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@elysiajs/cors": "^1.4.2",
-    "better-auth": "^1.6.9",
-    "dotenv": "^17.4.2",
-    "drizzle-orm": "^0.45.2",
+    "@elysiajs/cors": "^1.4.3",
+    "better-auth": "^1.7.27",
+    "dotenv": "^18.0.10",
+    "drizzle-orm": "^0.45.4",
     "elysia": "latest",
-    "openai": "^6.37.0",
-    "pg": "^8.20.0"
+    "openai": "^7.63.0",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
-    "@types/pg": "^8.20.0",
+    "@types/pg": "^8.23.1",
     "bun-types": "latest",
-    "drizzle-kit": "^0.31.10",
-    "typescript": "^6.0.3"
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2"
   },
   "module": "src/index.js"
 }

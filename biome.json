@@ -1,12 +1,17 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.4.13/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
   "vcs": {
     "enabled": true,
     "clientKind": "git",
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**/*.{js,jsx,ts,tsx,json}", "!server/drizzle", "!web/src/route-tree.gen.ts"],
+    "includes": [
+      "**/*.{js,jsx,ts,tsx,json}",
+      "!**/.agents",
+      "!server/drizzle",
+      "!web/src/route-tree.gen.ts"
+    ],
     "ignoreUnknown": true
   },
   "formatter": {
@@ -36,7 +41,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "correctness": {
         "noUnusedImports": "error",
         "noUnusedVariables": "error",

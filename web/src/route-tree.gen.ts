@@ -9,52 +9,47 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LoginRouteImport } from './routes/login'
-import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AdminNotificationsRouteImport } from './routes/_admin.notifications'
-import { Route as AdminForbiddenRouteImport } from './routes/_admin.forbidden'
-import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
+import { Route as AdminRouteImport } from './routes/_admin'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as AdminAiRouteImport } from './routes/_admin.ai'
-import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
-import { Route as AdminSystemSettingsRouteImport } from './routes/_admin.system.settings'
-import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
-import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
-import { Route as AdminSystemAuditLogsRouteImport } from './routes/_admin.system.audit-logs'
-import { Route as AdminExamplesTableRouteImport } from './routes/_admin.examples.table'
-import { Route as AdminExamplesFormRouteImport } from './routes/_admin.examples.form'
-import { Route as AdminExamplesDigitalTwinRouteImport } from './routes/_admin.examples.digital-twin'
-import { Route as AdminDashboardWorkbenchRouteImport } from './routes/_admin.dashboard.workbench'
-import { Route as AdminDashboardMonitorRouteImport } from './routes/_admin.dashboard.monitor'
-import { Route as AdminDashboardAnalyticsRouteImport } from './routes/_admin.dashboard.analytics'
+import { Route as AdminDashboardRouteImport } from './routes/_admin.dashboard'
+import { Route as AdminForbiddenRouteImport } from './routes/_admin.forbidden'
+import { Route as AdminNotificationsRouteImport } from './routes/_admin.notifications'
 import { Route as AdminAccountSettingsRouteImport } from './routes/_admin.account.settings'
-import { Route as AdminExamplesMaps3dRouteImport } from './routes/_admin.examples.maps.3d'
-import { Route as AdminExamplesMaps2dRouteImport } from './routes/_admin.examples.maps.2d'
-import { Route as AdminExamplesCharts3dRouteImport } from './routes/_admin.examples.charts.3d'
+import { Route as AdminDashboardAnalyticsRouteImport } from './routes/_admin.dashboard.analytics'
+import { Route as AdminDashboardMonitorRouteImport } from './routes/_admin.dashboard.monitor'
+import { Route as AdminDashboardWorkbenchRouteImport } from './routes/_admin.dashboard.workbench'
+import { Route as AdminExamplesDigitalTwinRouteImport } from './routes/_admin.examples.digital-twin'
+import { Route as AdminExamplesFormRouteImport } from './routes/_admin.examples.form'
+import { Route as AdminExamplesTableRouteImport } from './routes/_admin.examples.table'
+import { Route as AdminSystemAuditLogsRouteImport } from './routes/_admin.system.audit-logs'
+import { Route as AdminSystemMenusRouteImport } from './routes/_admin.system.menus'
+import { Route as AdminSystemRolesRouteImport } from './routes/_admin.system.roles'
+import { Route as AdminSystemSettingsRouteImport } from './routes/_admin.system.settings'
+import { Route as AdminSystemUsersRouteImport } from './routes/_admin.system.users'
 import { Route as AdminExamplesCharts2dRouteImport } from './routes/_admin.examples.charts.2d'
+import { Route as AdminExamplesCharts3dRouteImport } from './routes/_admin.examples.charts.3d'
+import { Route as AdminExamplesMaps2dRouteImport } from './routes/_admin.examples.maps.2d'
+import { Route as AdminExamplesMaps3dRouteImport } from './routes/_admin.examples.maps.3d'
 
-const LoginRoute = LoginRouteImport.update({
-  id: '/login',
-  path: '/login',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/_admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminForbiddenRoute = AdminForbiddenRouteImport.update({
-  id: '/forbidden',
-  path: '/forbidden',
+const AdminAiRoute = AdminAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminDashboardRoute = AdminDashboardRouteImport.update({
@@ -62,55 +57,24 @@ const AdminDashboardRoute = AdminDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminAiRoute = AdminAiRouteImport.update({
-  id: '/ai',
-  path: '/ai',
+const AdminForbiddenRoute = AdminForbiddenRouteImport.update({
+  id: '/forbidden',
+  path: '/forbidden',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminSystemUsersRoute = AdminSystemUsersRouteImport.update({
-  id: '/system/users',
-  path: '/system/users',
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminSystemSettingsRoute = AdminSystemSettingsRouteImport.update({
-  id: '/system/settings',
-  path: '/system/settings',
+const AdminAccountSettingsRoute = AdminAccountSettingsRouteImport.update({
+  id: '/account/settings',
+  path: '/account/settings',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminSystemRolesRoute = AdminSystemRolesRouteImport.update({
-  id: '/system/roles',
-  path: '/system/roles',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSystemMenusRoute = AdminSystemMenusRouteImport.update({
-  id: '/system/menus',
-  path: '/system/menus',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSystemAuditLogsRoute = AdminSystemAuditLogsRouteImport.update({
-  id: '/system/audit-logs',
-  path: '/system/audit-logs',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminExamplesTableRoute = AdminExamplesTableRouteImport.update({
-  id: '/examples/table',
-  path: '/examples/table',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminExamplesFormRoute = AdminExamplesFormRouteImport.update({
-  id: '/examples/form',
-  path: '/examples/form',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminExamplesDigitalTwinRoute =
-  AdminExamplesDigitalTwinRouteImport.update({
-    id: '/examples/digital-twin',
-    path: '/examples/digital-twin',
-    getParentRoute: () => AdminRoute,
-  } as any)
-const AdminDashboardWorkbenchRoute = AdminDashboardWorkbenchRouteImport.update({
-  id: '/workbench',
-  path: '/workbench',
+const AdminDashboardAnalyticsRoute = AdminDashboardAnalyticsRouteImport.update({
+  id: '/analytics',
+  path: '/analytics',
   getParentRoute: () => AdminDashboardRoute,
 } as any)
 const AdminDashboardMonitorRoute = AdminDashboardMonitorRouteImport.update({
@@ -118,24 +82,55 @@ const AdminDashboardMonitorRoute = AdminDashboardMonitorRouteImport.update({
   path: '/monitor',
   getParentRoute: () => AdminDashboardRoute,
 } as any)
-const AdminDashboardAnalyticsRoute = AdminDashboardAnalyticsRouteImport.update({
-  id: '/analytics',
-  path: '/analytics',
+const AdminDashboardWorkbenchRoute = AdminDashboardWorkbenchRouteImport.update({
+  id: '/workbench',
+  path: '/workbench',
   getParentRoute: () => AdminDashboardRoute,
 } as any)
-const AdminAccountSettingsRoute = AdminAccountSettingsRouteImport.update({
-  id: '/account/settings',
-  path: '/account/settings',
+const AdminExamplesDigitalTwinRoute =
+  AdminExamplesDigitalTwinRouteImport.update({
+    id: '/examples/digital-twin',
+    path: '/examples/digital-twin',
+    getParentRoute: () => AdminRoute,
+  } as any)
+const AdminExamplesFormRoute = AdminExamplesFormRouteImport.update({
+  id: '/examples/form',
+  path: '/examples/form',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminExamplesMaps3dRoute = AdminExamplesMaps3dRouteImport.update({
-  id: '/examples/maps/3d',
-  path: '/examples/maps/3d',
+const AdminExamplesTableRoute = AdminExamplesTableRouteImport.update({
+  id: '/examples/table',
+  path: '/examples/table',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminExamplesMaps2dRoute = AdminExamplesMaps2dRouteImport.update({
-  id: '/examples/maps/2d',
-  path: '/examples/maps/2d',
+const AdminSystemAuditLogsRoute = AdminSystemAuditLogsRouteImport.update({
+  id: '/system/audit-logs',
+  path: '/system/audit-logs',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemMenusRoute = AdminSystemMenusRouteImport.update({
+  id: '/system/menus',
+  path: '/system/menus',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemRolesRoute = AdminSystemRolesRouteImport.update({
+  id: '/system/roles',
+  path: '/system/roles',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemSettingsRoute = AdminSystemSettingsRouteImport.update({
+  id: '/system/settings',
+  path: '/system/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSystemUsersRoute = AdminSystemUsersRouteImport.update({
+  id: '/system/users',
+  path: '/system/users',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExamplesCharts2dRoute = AdminExamplesCharts2dRouteImport.update({
+  id: '/examples/charts/2d',
+  path: '/examples/charts/2d',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminExamplesCharts3dRoute = AdminExamplesCharts3dRouteImport.update({
@@ -143,9 +138,14 @@ const AdminExamplesCharts3dRoute = AdminExamplesCharts3dRouteImport.update({
   path: '/examples/charts/3d',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminExamplesCharts2dRoute = AdminExamplesCharts2dRouteImport.update({
-  id: '/examples/charts/2d',
-  path: '/examples/charts/2d',
+const AdminExamplesMaps2dRoute = AdminExamplesMaps2dRouteImport.update({
+  id: '/examples/maps/2d',
+  path: '/examples/maps/2d',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminExamplesMaps3dRoute = AdminExamplesMaps3dRouteImport.update({
+  id: '/examples/maps/3d',
+  path: '/examples/maps/3d',
   getParentRoute: () => AdminRoute,
 } as any)
 
@@ -307,11 +307,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/login': {
-      id: '/login'
-      path: '/login'
-      fullPath: '/login'
-      preLoaderRoute: typeof LoginRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_admin': {
@@ -321,25 +321,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_admin/notifications': {
-      id: '/_admin/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AdminNotificationsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/forbidden': {
-      id: '/_admin/forbidden'
-      path: '/forbidden'
-      fullPath: '/forbidden'
-      preLoaderRoute: typeof AdminForbiddenRouteImport
+    '/_admin/ai': {
+      id: '/_admin/ai'
+      path: '/ai'
+      fullPath: '/ai'
+      preLoaderRoute: typeof AdminAiRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/dashboard': {
@@ -349,74 +342,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/ai': {
-      id: '/_admin/ai'
-      path: '/ai'
-      fullPath: '/ai'
-      preLoaderRoute: typeof AdminAiRouteImport
+    '/_admin/forbidden': {
+      id: '/_admin/forbidden'
+      path: '/forbidden'
+      fullPath: '/forbidden'
+      preLoaderRoute: typeof AdminForbiddenRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/system/users': {
-      id: '/_admin/system/users'
-      path: '/system/users'
-      fullPath: '/system/users'
-      preLoaderRoute: typeof AdminSystemUsersRouteImport
+    '/_admin/notifications': {
+      id: '/_admin/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/system/settings': {
-      id: '/_admin/system/settings'
-      path: '/system/settings'
-      fullPath: '/system/settings'
-      preLoaderRoute: typeof AdminSystemSettingsRouteImport
+    '/_admin/account/settings': {
+      id: '/_admin/account/settings'
+      path: '/account/settings'
+      fullPath: '/account/settings'
+      preLoaderRoute: typeof AdminAccountSettingsRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/system/roles': {
-      id: '/_admin/system/roles'
-      path: '/system/roles'
-      fullPath: '/system/roles'
-      preLoaderRoute: typeof AdminSystemRolesRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/system/menus': {
-      id: '/_admin/system/menus'
-      path: '/system/menus'
-      fullPath: '/system/menus'
-      preLoaderRoute: typeof AdminSystemMenusRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/system/audit-logs': {
-      id: '/_admin/system/audit-logs'
-      path: '/system/audit-logs'
-      fullPath: '/system/audit-logs'
-      preLoaderRoute: typeof AdminSystemAuditLogsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/examples/table': {
-      id: '/_admin/examples/table'
-      path: '/examples/table'
-      fullPath: '/examples/table'
-      preLoaderRoute: typeof AdminExamplesTableRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/examples/form': {
-      id: '/_admin/examples/form'
-      path: '/examples/form'
-      fullPath: '/examples/form'
-      preLoaderRoute: typeof AdminExamplesFormRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/examples/digital-twin': {
-      id: '/_admin/examples/digital-twin'
-      path: '/examples/digital-twin'
-      fullPath: '/examples/digital-twin'
-      preLoaderRoute: typeof AdminExamplesDigitalTwinRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/dashboard/workbench': {
-      id: '/_admin/dashboard/workbench'
-      path: '/workbench'
-      fullPath: '/dashboard/workbench'
-      preLoaderRoute: typeof AdminDashboardWorkbenchRouteImport
+    '/_admin/dashboard/analytics': {
+      id: '/_admin/dashboard/analytics'
+      path: '/analytics'
+      fullPath: '/dashboard/analytics'
+      preLoaderRoute: typeof AdminDashboardAnalyticsRouteImport
       parentRoute: typeof AdminDashboardRoute
     }
     '/_admin/dashboard/monitor': {
@@ -426,32 +377,74 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminDashboardMonitorRouteImport
       parentRoute: typeof AdminDashboardRoute
     }
-    '/_admin/dashboard/analytics': {
-      id: '/_admin/dashboard/analytics'
-      path: '/analytics'
-      fullPath: '/dashboard/analytics'
-      preLoaderRoute: typeof AdminDashboardAnalyticsRouteImport
+    '/_admin/dashboard/workbench': {
+      id: '/_admin/dashboard/workbench'
+      path: '/workbench'
+      fullPath: '/dashboard/workbench'
+      preLoaderRoute: typeof AdminDashboardWorkbenchRouteImport
       parentRoute: typeof AdminDashboardRoute
     }
-    '/_admin/account/settings': {
-      id: '/_admin/account/settings'
-      path: '/account/settings'
-      fullPath: '/account/settings'
-      preLoaderRoute: typeof AdminAccountSettingsRouteImport
+    '/_admin/examples/digital-twin': {
+      id: '/_admin/examples/digital-twin'
+      path: '/examples/digital-twin'
+      fullPath: '/examples/digital-twin'
+      preLoaderRoute: typeof AdminExamplesDigitalTwinRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/examples/maps/3d': {
-      id: '/_admin/examples/maps/3d'
-      path: '/examples/maps/3d'
-      fullPath: '/examples/maps/3d'
-      preLoaderRoute: typeof AdminExamplesMaps3dRouteImport
+    '/_admin/examples/form': {
+      id: '/_admin/examples/form'
+      path: '/examples/form'
+      fullPath: '/examples/form'
+      preLoaderRoute: typeof AdminExamplesFormRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/examples/maps/2d': {
-      id: '/_admin/examples/maps/2d'
-      path: '/examples/maps/2d'
-      fullPath: '/examples/maps/2d'
-      preLoaderRoute: typeof AdminExamplesMaps2dRouteImport
+    '/_admin/examples/table': {
+      id: '/_admin/examples/table'
+      path: '/examples/table'
+      fullPath: '/examples/table'
+      preLoaderRoute: typeof AdminExamplesTableRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/audit-logs': {
+      id: '/_admin/system/audit-logs'
+      path: '/system/audit-logs'
+      fullPath: '/system/audit-logs'
+      preLoaderRoute: typeof AdminSystemAuditLogsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/menus': {
+      id: '/_admin/system/menus'
+      path: '/system/menus'
+      fullPath: '/system/menus'
+      preLoaderRoute: typeof AdminSystemMenusRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/roles': {
+      id: '/_admin/system/roles'
+      path: '/system/roles'
+      fullPath: '/system/roles'
+      preLoaderRoute: typeof AdminSystemRolesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/settings': {
+      id: '/_admin/system/settings'
+      path: '/system/settings'
+      fullPath: '/system/settings'
+      preLoaderRoute: typeof AdminSystemSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/system/users': {
+      id: '/_admin/system/users'
+      path: '/system/users'
+      fullPath: '/system/users'
+      preLoaderRoute: typeof AdminSystemUsersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/examples/charts/2d': {
+      id: '/_admin/examples/charts/2d'
+      path: '/examples/charts/2d'
+      fullPath: '/examples/charts/2d'
+      preLoaderRoute: typeof AdminExamplesCharts2dRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/examples/charts/3d': {
@@ -461,11 +454,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminExamplesCharts3dRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/examples/charts/2d': {
-      id: '/_admin/examples/charts/2d'
-      path: '/examples/charts/2d'
-      fullPath: '/examples/charts/2d'
-      preLoaderRoute: typeof AdminExamplesCharts2dRouteImport
+    '/_admin/examples/maps/2d': {
+      id: '/_admin/examples/maps/2d'
+      path: '/examples/maps/2d'
+      fullPath: '/examples/maps/2d'
+      preLoaderRoute: typeof AdminExamplesMaps2dRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/examples/maps/3d': {
+      id: '/_admin/examples/maps/3d'
+      path: '/examples/maps/3d'
+      fullPath: '/examples/maps/3d'
+      preLoaderRoute: typeof AdminExamplesMaps3dRouteImport
       parentRoute: typeof AdminRoute
     }
   }
