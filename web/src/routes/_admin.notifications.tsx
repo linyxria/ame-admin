@@ -1,11 +1,14 @@
+import { Badge, Button, Stack } from "@mantine/core"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { App, Button, Space, Tag } from "antd"
 import { CheckCheck, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
 import { PageHeader, SectionPanel } from "../components/design-system"
+import { IconAction } from "../components/icon-action"
+import { showRequestError } from "../lib/request-notification"
 import {
   deleteNotificationMutationOptions,
   readAllNotificationsMutationOptions,
@@ -21,8 +24,7 @@ export const Route = createFileRoute("/_admin/notifications")({
 })
 
 function NotificationsRoute() {
-  const { message } = App.useApp()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const queryClient = useQueryClient()
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -33,26 +35,28 @@ function NotificationsRoute() {
   }
   const readAll = useMutation({
     ...readAllNotificationsMutationOptions(),
-    onSuccess: refresh,
+    onSuccess: async () => {
+      await refresh()
+      notifications.show({ color: "green", message: t("markedAllRead") })
+    },
+    onError: (error) => showRequestError(error, t("requestFailed")),
   })
   const remove = useMutation({
     ...deleteNotificationMutationOptions(),
     onSuccess: refresh,
+    onError: (error) => showRequestError(error, t("deleteFailed")),
   })
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         title={t("notificationCenter")}
         description={t("notificationsDescription")}
         actions={
           <Button
-            icon={<CheckCheck size={16} />}
+            leftSection={<CheckCheck size={16} />}
             loading={readAll.isPending}
-            onClick={async () => {
-              await readAll.mutateAsync()
-              message.success(t("markedAllRead"))
-            }}
+            onClick={() => readAll.mutate()}
           >
             {t("markAllRead")}
           </Button>
@@ -61,57 +65,63 @@ function NotificationsRoute() {
 
       <SectionPanel title={t("notificationCenter")}>
         <DataTable<NotificationItem>
-          rowKey="id"
-          loading={notificationsQuery.isLoading}
-          dataSource={notificationsQuery.data?.items ?? []}
+          loading={notificationsQuery.isFetching}
+          error={notificationsQuery.error}
+          rows={notificationsQuery.data?.items ?? []}
           pagination={{
-            current: page,
+            page,
             pageSize,
-            total: notificationsQuery.data?.total ?? 0,
-            showSizeChanger: true,
-          }}
-          onChange={(pagination) => {
-            setPage(pagination.current ?? 1)
-            setPageSize(pagination.pageSize ?? 20)
+            total: notificationsQuery.data?.total,
+            onPageChange: setPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size)
+              setPage(1)
+            },
           }}
           columns={[
             {
-              title: t("status"),
-              dataIndex: "readAt",
+              key: "status",
+              header: t("status"),
               width: 100,
-              render: (value) => (
-                <Tag color={value ? "default" : "blue"}>{value ? t("read") : t("unread")}</Tag>
+              cell: (item) => (
+                <Badge variant="light" color={item.readAt ? "gray" : "blue"}>
+                  {item.readAt ? t("read") : t("unread")}
+                </Badge>
               ),
             },
             {
-              title: t("type"),
-              dataIndex: "type",
+              key: "type",
+              header: t("type"),
               width: 100,
-              render: (value) => <Tag>{value}</Tag>,
+              cell: (item) => <Badge variant="light">{item.type}</Badge>,
             },
-            { title: t("title"), dataIndex: "title" },
-            { title: t("content"), dataIndex: "description", render: (value) => value || "-" },
+            { key: "title", header: t("title"), cell: (item) => item.title },
+            { key: "content", header: t("content"), cell: (item) => item.description || "–" },
             {
-              title: t("createdAt"),
-              dataIndex: "createdAt",
+              key: "createdAt",
+              header: t("createdAt"),
               width: 190,
-              render: (value) => new Date(value).toLocaleString(),
+              cell: (item) => new Date(item.createdAt).toLocaleString(i18n.language),
             },
             {
-              title: t("operation"),
+              key: "actions",
+              header: t("operation"),
               width: 90,
-              render: (_, record) => (
-                <Button
-                  type="text"
-                  danger
-                  icon={<Trash2 size={16} />}
-                  onClick={() => remove.mutate(record.id)}
-                />
+              cell: (item) => (
+                <IconAction
+                  label={t("delete")}
+                  confirmation={t("confirmDeleteNotification")}
+                  color="red"
+                  disabled={remove.isPending}
+                  onClick={() => remove.mutate(item.id)}
+                >
+                  <Trash2 size={16} />
+                </IconAction>
               ),
             },
           ]}
         />
       </SectionPanel>
-    </Space>
+    </Stack>
   )
 }

@@ -1,6 +1,6 @@
+import { Avatar, Badge, Button, Group, Indicator, Stack } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link, useRouteContext } from "@tanstack/react-router"
-import { Avatar, Badge, Button, Space, Tag } from "antd"
 import { ArrowRight, Bell, Clock3, Settings, User } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import {
@@ -36,15 +36,15 @@ function WorkbenchRoute() {
   const unreadTotal = notificationsQuery.data?.unreadTotal ?? 0
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         eyebrow="Overview"
         title={t("workbench")}
         description={t("workbenchDescription", { name: user.name })}
         status={<StatusPill tone="green">Live</StatusPill>}
         actions={
-          <Button type="primary" icon={<Bell size={16} />}>
-            <Link to="/notifications">{t("viewNotifications")}</Link>
+          <Button component={Link} to="/notifications" leftSection={<Bell size={16} />}>
+            {t("viewNotifications")}
           </Button>
         }
       />
@@ -52,9 +52,13 @@ function WorkbenchRoute() {
       <MetricStrip>
         <MetricCard
           icon={
-            <Badge count={unreadTotal} size="small">
+            <Indicator
+              disabled={!unreadTotal}
+              label={unreadTotal > 99 ? "99+" : unreadTotal}
+              size={16}
+            >
               <Bell size={20} />
-            </Badge>
+            </Indicator>
           }
           label={t("unreadNotifications")}
           value={unreadTotal}
@@ -63,7 +67,9 @@ function WorkbenchRoute() {
         />
         <MetricCard
           icon={
-            <Avatar size={28} src={user.image} icon={!user.image ? <User size={16} /> : null} />
+            <Avatar size={28} src={user.image} alt="">
+              <User size={16} />
+            </Avatar>
           }
           label={t("currentUser")}
           value={<span className="truncate">{user.name}</span>}
@@ -84,8 +90,13 @@ function WorkbenchRoute() {
           <SectionPanel
             title={t("quickAccess")}
             actions={
-              <Button type="link" icon={<ArrowRight size={15} />}>
-                <Link to="/account/settings">{t("userSettings")}</Link>
+              <Button
+                component={Link}
+                to="/account/settings"
+                variant="subtle"
+                rightSection={<ArrowRight size={15} />}
+              >
+                {t("userSettings")}
               </Button>
             }
           >
@@ -111,8 +122,8 @@ function WorkbenchRoute() {
           <SectionPanel
             title={t("latestNotifications")}
             actions={
-              <Button type="link">
-                <Link to="/notifications">{t("viewMore")}</Link>
+              <Button component={Link} to="/notifications" variant="subtle">
+                {t("viewMore")}
               </Button>
             }
           >
@@ -120,7 +131,7 @@ function WorkbenchRoute() {
               <div className="divide-y divide-(--ame-border)">
                 {notifications.map((item) => (
                   <div key={item.id} className="py-3 first:pt-0 last:pb-0">
-                    <Space className="w-full justify-between" align="start">
+                    <Group justify="space-between" align="flex-start" wrap="nowrap">
                       <div className="min-w-0">
                         <div className="ame-text truncate font-medium">{item.title}</div>
                         <div className="ame-text-muted mt-1 line-clamp-2 text-sm">
@@ -131,10 +142,10 @@ function WorkbenchRoute() {
                           {formatTime(item.createdAt)}
                         </div>
                       </div>
-                      <Tag color={item.readAt ? "default" : "blue"}>
+                      <Badge variant="light" color={item.readAt ? "gray" : "blue"}>
                         {item.readAt ? t("read") : t("unread")}
-                      </Tag>
-                    </Space>
+                      </Badge>
+                    </Group>
                   </div>
                 ))}
               </div>
@@ -144,6 +155,6 @@ function WorkbenchRoute() {
           </SectionPanel>
         </div>
       </div>
-    </Space>
+    </Stack>
   )
 }

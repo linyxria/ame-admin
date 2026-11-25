@@ -7,7 +7,7 @@ AME Admin is a full-stack admin dashboard starter built with pnpm workspaces. It
 - Package manager: pnpm
 - Runtime: Bun for the API, Node.js for frontend tooling
 - API: Elysia, Better Auth, Drizzle ORM, PostgreSQL
-- Web: React, Vite, TanStack Router, TanStack Query, Ant Design, Tailwind CSS
+- Web: React, Vite, TanStack Router, TanStack Query, Mantine, assistant-ui, Tailwind CSS
 - API client: Eden Treaty, typed from the server `App` export
 - Code quality: Biome for linting and formatting
 

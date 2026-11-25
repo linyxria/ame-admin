@@ -1,25 +1,29 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute } from "@tanstack/react-router"
 import {
-  App,
+  Badge,
   Button,
   Checkbox,
-  Form,
-  Input,
+  Group,
   Modal,
-  Popconfirm,
-  Space,
+  Stack,
   Switch,
-  Tag,
-  Tooltip,
+  Text,
+  Textarea,
+  TextInput,
   TreeSelect,
-} from "antd"
+} from "@mantine/core"
+import { isNotEmpty, useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { createFileRoute } from "@tanstack/react-router"
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
 import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
+import { FormActions } from "../components/form-actions"
+import { IconAction } from "../components/icon-action"
 import { getMenuTitle } from "../lib/menu-title"
+import { showRequestError } from "../lib/request-notification"
 import {
   createRoleMutationOptions,
   deleteRoleMutationOptions,
@@ -43,7 +47,7 @@ export const Route = createFileRoute("/_admin/system/roles")({
 type RoleForm = {
   name: string
   code: string
-  description?: string
+  description: string
   enabled: boolean
   menuIds: string[]
   permissions: { menuId: string; actions: string[] }[]
@@ -57,13 +61,10 @@ const actionOptions = [
 ]
 
 function RolesRoute() {
-  const [form] = Form.useForm<RoleForm>()
-  const { message } = App.useApp()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<Role | null>(null)
   const [open, setOpen] = useState(false)
-  const selectedMenuIds = Form.useWatch("menuIds", form) ?? []
 
   const rolesQuery = useQuery(rolesQueryOptions())
   const menusQuery = useQuery(menusQueryOptions())
@@ -73,6 +74,21 @@ function RolesRoute() {
   const canCreate = roleActions.includes("create")
   const canUpdate = roleActions.includes("update")
   const canDelete = roleActions.includes("delete")
+
+  const form = useForm<RoleForm>({
+    initialValues: {
+      name: "",
+      code: "",
+      description: "",
+      enabled: true,
+      menuIds: [],
+      permissions: [],
+    },
+    validate: {
+      name: isNotEmpty(t("enterRoleName")),
+      code: isNotEmpty(t("enterRoleCode")),
+    },
+  })
 
   const refresh = async () => {
     await Promise.all([
@@ -96,32 +112,27 @@ function RolesRoute() {
     onSuccess: refresh,
   })
 
-  const menuTree = (menusQuery.data ?? [])
-    .filter(
-      (item) =>
-        !item.parentId || !(menusQuery.data ?? []).some((parent) => parent.id === item.parentId),
-    )
+  const menus = menusQuery.data ?? []
+  const menuById = new Map(menus.map((item) => [item.id, item]))
+  const menuTree = menus
+    .filter((item) => !item.parentId || !menuById.has(item.parentId))
     .map((item) => ({
-      title: getMenuTitle(item, t),
+      label: getMenuTitle(item, t),
       value: item.id,
-      key: item.id,
-      children: (menusQuery.data ?? [])
+      children: menus
         .filter((child) => child.parentId === item.id)
-        .map((child) => ({
-          title: getMenuTitle(child, t),
-          value: child.id,
-          key: child.id,
-        })),
+        .map((child) => ({ label: getMenuTitle(child, t), value: child.id })),
     }))
 
   const showModal = (role?: Role) => {
     setEditing(role ?? null)
-    form.setFieldsValue(
+    form.clearErrors()
+    form.setValues(
       role
         ? {
             name: role.name,
             code: role.code,
-            description: role.description ?? undefined,
+            description: role.description ?? "",
             enabled: role.enabled,
             menuIds: role.menuIds,
             permissions: role.permissions,
@@ -131,18 +142,18 @@ function RolesRoute() {
     setOpen(true)
   }
 
-  const submit = async () => {
-    const values = await form.validateFields()
+  const submit = form.onSubmit(async (values) => {
     const body = {
       name: values.name,
       code: values.code,
-      description: values.description ?? null,
+      description: values.description || null,
       enabled: values.enabled,
-      menuIds: values.menuIds ?? [],
-      permissions: (values.menuIds ?? []).map((menuId) => ({
+      menuIds: values.menuIds,
+      permissions: values.menuIds.map((menuId) => ({
         menuId,
-        actions: values.permissions?.find((permission) => permission.menuId === menuId)
-          ?.actions ?? ["view"],
+        actions: values.permissions.find((permission) => permission.menuId === menuId)?.actions ?? [
+          "view",
+        ],
       })),
     }
 
@@ -152,39 +163,40 @@ function RolesRoute() {
       } else {
         await createRole.mutateAsync(body)
       }
-      message.success(t("saveSuccess"))
+      notifications.show({ color: "green", message: t("saveSuccess") })
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("saveFailed"))
+      showRequestError(error, t("saveFailed"))
     }
-  }
+  })
 
   const remove = async (id: string) => {
     try {
       await deleteRole.mutateAsync(id)
-      message.success(t("deleteSuccess"))
+      notifications.show({ color: "green", message: t("deleteSuccess") })
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("deleteFailed"))
+      showRequestError(error, t("deleteFailed"))
     }
   }
 
+  const saving = createRole.isPending || updateRole.isPending
+  const close = () => {
+    if (!saving) setOpen(false)
+  }
+
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         title={t("roleManagement")}
         description={t("rolesDescription")}
         actions={
           <ToolbarSurface>
+            <IconAction label={t("refresh")} onClick={() => void refresh()}>
+              <RotateCw size={16} />
+            </IconAction>
             <Button
-              icon={<RotateCw size={16} />}
-              onClick={() => {
-                void refresh()
-              }}
-            />
-            <Button
-              type="primary"
               disabled={!canCreate}
-              icon={<Plus size={16} />}
+              leftSection={<Plus size={16} />}
               onClick={() => showModal()}
             >
               {t("createRole")}
@@ -195,55 +207,54 @@ function RolesRoute() {
 
       <SectionPanel title={t("roleManagement")}>
         <DataTable<Role>
-          rowKey="id"
-          loading={rolesQuery.isLoading || menusQuery.isLoading}
-          dataSource={rolesQuery.data ?? []}
+          loading={rolesQuery.isFetching || menusQuery.isPending}
+          error={rolesQuery.error ?? menusQuery.error}
+          rows={rolesQuery.data ?? []}
           columns={[
-            { title: t("roleName"), dataIndex: "name" },
-            { title: t("roleCode"), dataIndex: "code", render: (code) => <Tag>{code}</Tag> },
-            { title: t("description"), dataIndex: "description", render: (value) => value || "-" },
+            { key: "name", header: t("roleName"), cell: (role) => role.name },
             {
-              title: t("status"),
-              dataIndex: "enabled",
-              render: (enabled) => (
-                <Tag color={enabled ? "green" : "default"}>
-                  {enabled ? t("enabled") : t("disabled")}
-                </Tag>
+              key: "code",
+              header: t("roleCode"),
+              cell: (role) => <Badge variant="light">{role.code}</Badge>,
+            },
+            {
+              key: "description",
+              header: t("description"),
+              cell: (role) => role.description || "–",
+            },
+            {
+              key: "status",
+              header: t("status"),
+              cell: (role) => (
+                <Badge variant="light" color={role.enabled ? "green" : "gray"}>
+                  {role.enabled ? t("enabled") : t("disabled")}
+                </Badge>
               ),
             },
+            { key: "menuTotal", header: t("menuTotal"), cell: (role) => role.menuIds.length },
             {
-              title: t("menuTotal"),
-              dataIndex: "menuIds",
-              render: (value: string[]) => value.length,
-            },
-            {
-              title: t("operation"),
-              width: 150,
-              render: (_, record) => (
-                <Space>
-                  <Tooltip title={t("edit")}>
-                    <Button
-                      type="text"
-                      disabled={!canUpdate}
-                      icon={<Pencil size={16} />}
-                      onClick={() => showModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title={record.builtIn ? t("builtInRoleDeleteDisabled") : t("delete")}>
-                    <Popconfirm
-                      title={t("confirmDeleteRole")}
-                      onConfirm={() => remove(record.id)}
-                      disabled={record.builtIn || !canDelete}
-                    >
-                      <Button
-                        type="text"
-                        danger
-                        disabled={record.builtIn || !canDelete}
-                        icon={<Trash2 size={16} />}
-                      />
-                    </Popconfirm>
-                  </Tooltip>
-                </Space>
+              key: "actions",
+              header: t("operation"),
+              width: 120,
+              cell: (role) => (
+                <Group gap={4} wrap="nowrap">
+                  <IconAction
+                    label={t("edit")}
+                    disabled={!canUpdate}
+                    onClick={() => showModal(role)}
+                  >
+                    <Pencil size={16} />
+                  </IconAction>
+                  <IconAction
+                    label={t(role.builtIn ? "builtInRoleDeleteDisabled" : "delete")}
+                    confirmation={t("confirmDeleteRole")}
+                    color="red"
+                    disabled={role.builtIn || !canDelete || deleteRole.isPending}
+                    onClick={() => void remove(role.id)}
+                  >
+                    <Trash2 size={16} />
+                  </IconAction>
+                </Group>
               ),
             },
           ]}
@@ -252,92 +263,87 @@ function RolesRoute() {
 
       <Modal
         title={editing ? t("editRole") : t("createRole")}
-        open={open}
-        onOk={submit}
-        onCancel={() => setOpen(false)}
-        destroyOnHidden
-        forceRender
+        opened={open}
+        onClose={close}
+        closeButtonProps={{ "aria-label": t("close"), disabled: saving }}
       >
-        <Form
-          form={form}
-          layout="vertical"
-          initialValues={{ enabled: true, menuIds: [], permissions: [] }}
-        >
-          <Form.Item
-            name="name"
-            label={t("roleName")}
-            rules={[{ required: true, message: t("enterRoleName") }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="code"
-            label={t("roleCode")}
-            rules={[{ required: true, message: t("enterRoleCode") }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item name="description" label={t("description")}>
-            <Input.TextArea rows={3} />
-          </Form.Item>
-          <Form.Item name="enabled" label={t("status")} valuePropName="checked">
-            <Switch checkedChildren={t("enabled")} unCheckedChildren={t("disabled")} />
-          </Form.Item>
-          <Form.Item name="menuIds" label={t("menuPermission")}>
-            <TreeSelect
-              treeCheckable
-              allowClear
-              showCheckedStrategy={TreeSelect.SHOW_PARENT}
-              treeData={menuTree}
+        <form onSubmit={submit}>
+          <Stack>
+            <TextInput
+              label={t("roleName")}
+              withAsterisk
+              data-autofocus
+              {...form.getInputProps("name")}
             />
-          </Form.Item>
-          <Form.Item label={t("actionPermission")} shouldUpdate>
-            {() => (
-              <Space orientation="vertical" className="w-full">
-                {selectedMenuIds.length ? (
-                  selectedMenuIds.map((menuId) => {
-                    const menu = menusQuery.data?.find((item) => item.id === menuId)
-                    const permissions = form.getFieldValue("permissions") ?? []
-                    const current = permissions.find(
-                      (permission: RoleForm["permissions"][number]) => permission.menuId === menuId,
-                    )
-
-                    return (
-                      <div
-                        key={menuId}
-                        className="ame-border flex items-center justify-between gap-4 rounded-md border px-3 py-2"
-                      >
-                        <span className="ame-text min-w-32">
-                          {menu ? getMenuTitle(menu, t) : menuId}
-                        </span>
-                        <Checkbox.Group
-                          options={actionOptions.map((item) => ({
-                            label: t(item.labelKey),
-                            value: item.value,
-                          }))}
-                          value={current?.actions ?? ["view"]}
-                          onChange={(actions) => {
-                            const next = permissions.filter(
-                              (permission: RoleForm["permissions"][number]) =>
-                                permission.menuId !== menuId,
-                            )
-                            form.setFieldValue("permissions", [
-                              ...next,
-                              { menuId, actions: actions.map(String) },
-                            ])
-                          }}
-                        />
-                      </div>
-                    )
-                  })
-                ) : (
-                  <span className="ame-text-subtle">{t("selectMenuBeforeActions")}</span>
+            <TextInput
+              label={t("roleCode")}
+              withAsterisk
+              spellCheck={false}
+              {...form.getInputProps("code")}
+            />
+            <Textarea label={t("description")} rows={3} {...form.getInputProps("description")} />
+            <Switch
+              label={t("status")}
+              onLabel={t("enabled")}
+              offLabel={t("disabled")}
+              {...form.getInputProps("enabled", { type: "checkbox" })}
+            />
+            <TreeSelect
+              label={t("menuPermission")}
+              mode="checkbox"
+              searchable
+              nothingFoundMessage={t("noData")}
+              clearable
+              clearButtonProps={{ "aria-label": t("clear") }}
+              checkedStrategy="parent"
+              data={menuTree}
+              value={form.values.menuIds}
+              onChange={(ids) => form.setFieldValue("menuIds", ids)}
+            />
+            <fieldset className="min-w-0">
+              <legend className="mb-2 text-sm font-medium">{t("actionPermission")}</legend>
+              <Stack gap="xs">
+                {!form.values.menuIds.length && (
+                  <Text size="sm" c="dimmed">
+                    {t("selectMenuBeforeActions")}
+                  </Text>
                 )}
-              </Space>
-            )}
-          </Form.Item>
-        </Form>
+                {form.values.menuIds.map((menuId) => {
+                  const menu = menuById.get(menuId)
+                  const permissions = form.values.permissions
+                  const current = permissions.find((permission) => permission.menuId === menuId)
+
+                  return (
+                    <Checkbox.Group
+                      key={menuId}
+                      label={menu ? getMenuTitle(menu, t) : menuId}
+                      className="ame-border rounded-md border px-3 py-2"
+                      value={current?.actions ?? ["view"]}
+                      onChange={(actions) =>
+                        form.setFieldValue("permissions", [
+                          ...permissions.filter((permission) => permission.menuId !== menuId),
+                          { menuId, actions },
+                        ])
+                      }
+                    >
+                      <Group gap="sm" mt={4}>
+                        {actionOptions.map((action) => (
+                          <Checkbox
+                            key={action.value}
+                            value={action.value}
+                            label={t(action.labelKey)}
+                          />
+                        ))}
+                      </Group>
+                    </Checkbox.Group>
+                  )
+                })}
+              </Stack>
+            </fieldset>
+            <FormActions onCancel={close} loading={saving} />
+          </Stack>
+        </form>
       </Modal>
-    </Space>
+    </Stack>
   )
 }

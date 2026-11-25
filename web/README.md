@@ -1,6 +1,6 @@
 # AME Admin Web
 
-The web workspace contains the React admin UI for AME Admin. It uses TanStack Router for file-based routing, TanStack Query for server state, Ant Design for application components, and Eden Treaty for type-safe calls to the Elysia API.
+The web workspace contains the React admin UI for AME Admin. It uses TanStack Router for file-based routing, TanStack Query for server state, Mantine for application components, assistant-ui for AI conversation, and Eden Treaty for type-safe calls to the Elysia API.
 
 ## Stack
 
@@ -9,7 +9,8 @@ The web workspace contains the React admin UI for AME Admin. It uses TanStack Ro
 - TanStack Query
 - Eden Treaty
 - Better Auth React client
-- Ant Design
+- Mantine
+- assistant-ui
 - Tailwind CSS
 - React Compiler
 
@@ -115,9 +116,9 @@ Authentication uses the Better Auth React client. Business API calls use Eden Tr
 
 ## Styling
 
-The UI combines Ant Design components with Tailwind CSS utility classes.
+Application controls use Mantine and layout utilities use Tailwind CSS. Mantine styles load in a named CSS layer between Tailwind's base and application styles. Light and dark appearance, brand color, and density are managed in the application theme provider.
 
-Ant Design component styles are injected by the library runtime. The app does not currently import `antd/dist/reset.css`; if a global reset becomes necessary later, handle CSS layer ordering deliberately.
+The AI conversation uses assistant-ui with the shared Eden Treaty client for the application SSE endpoint.
 
 ## React Notes
 
@@ -135,6 +136,12 @@ Build for production:
 
 ```bash
 pnpm run build
+```
+
+Run frontend tests:
+
+```bash
+pnpm run test
 ```
 
 Preview the production build:

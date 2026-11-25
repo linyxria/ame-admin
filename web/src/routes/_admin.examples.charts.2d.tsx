@@ -1,3 +1,4 @@
+import { Badge, Stack } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
 import { AxisBottom, AxisLeft } from "@visx/axis"
 import { LinearGradient } from "@visx/gradient"
@@ -5,7 +6,6 @@ import { Group } from "@visx/group"
 import { ParentSize } from "@visx/responsive"
 import { scaleBand, scaleLinear, scalePoint } from "@visx/scale"
 import { AreaClosed, Bar, LinePath } from "@visx/shape"
-import { Space, Tag } from "antd"
 import { useTranslation } from "react-i18next"
 import { MetricCard, MetricStrip, PageHeader, SectionPanel } from "../components/design-system"
 
@@ -146,7 +146,7 @@ function Charts2dRoute() {
   const { t } = useTranslation()
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader eyebrow="Examples" title={t("charts2d")} description={t("charts2dDescription")} />
       <MetricStrip>
         <MetricCard label={t("activeUsers")} value="12,846" delta="+4.2% vs 24h ago" tone="blue" />
@@ -179,13 +179,13 @@ function Charts2dRoute() {
           </div>
           <div className="flex flex-wrap gap-2">
             {channels.map((item) => (
-              <Tag key={item.label} color={item.color}>
+              <Badge variant="light" key={item.label} color={item.color}>
                 {item.label} · {item.value}%
-              </Tag>
+              </Badge>
             ))}
           </div>
         </SectionPanel>
       </div>
-    </Space>
+    </Stack>
   )
 }

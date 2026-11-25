@@ -12,9 +12,9 @@
 - Avoid CSS `calc` for subtracting sibling heights when `flex-1`, `min-h-0`, `shrink-0`, or grid tracks can express the layout.
 - Use CSS `calc` only for fixed-format canvases, third-party rendering surfaces, or constraints that flex/grid cannot express clearly.
 
-## Ant Design
+## UI Components
 
-- Before writing or changing Ant Design code, consult the official component documentation at `https://ant.design/llms-full.txt` or the relevant component page.
-- Use documented Ant Design APIs, semantic DOM hooks, and design tokens instead of internal DOM structure or private `.ant-*` selector overrides.
-- Prefer project-level wrappers or component props for shared behavior, such as tables, forms, layout, and feedback components.
-- Keep Ant Design usage aligned with React Compiler guidance: avoid memoization that is only for render optimization.
+- Use Mantine for application controls and assistant-ui primitives for conversation state and interactions. Consult their official documentation when adding or changing component behavior.
+- Configure shared component defaults and theme tokens through MantineProvider. Use documented Styles API selectors and CSS layers for overrides.
+- Use native Mantine form bindings and the shared table where applicable. Keep accessible names on icon buttons and labels on inputs.
+- Keep the conversation transport on the shared Eden Treaty client. Pass the assistant-ui abort signal through to the streaming request.

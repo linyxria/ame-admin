@@ -1,6 +1,7 @@
+import { Alert, Button, Card, Checkbox, PasswordInput, Stack, Text, TextInput } from "@mantine/core"
+import { hasLength, isEmail, useForm } from "@mantine/form"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { Alert, Button, Card, Checkbox, Form, Input, Typography } from "antd"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { signInEmailMutationOptions } from "../services/auth/mutations"
@@ -19,24 +20,7 @@ export const Route = createFileRoute("/login")({
   validateSearch: (search): LoginSearch => ({
     redirect: typeof search.redirect === "string" ? search.redirect : undefined,
   }),
-  // TODO: Redirecting here should reuse the cached session query.
-  // beforeLoad: async ({ context, search }) => {
-  //   const { data } = await context.queryClient.ensureQueryData(sessionQueryOptions())
-
-  //   if (data) {
-  //     throw redirect({
-  //       to: redirectTo(search.redirect),
-  //       replace: true,
-  //     })
-  //   }
-  // },
 })
-
-type AuthFormValues = {
-  email: string
-  password: string
-  rememberMe?: boolean
-}
 
 function LoginRoute() {
   const navigate = useNavigate()
@@ -46,14 +30,25 @@ function LoginRoute() {
   const [error, setError] = useState<string>()
   const signIn = useMutation(signInEmailMutationOptions())
 
-  const submit = async (values: AuthFormValues) => {
+  const form = useForm({
+    initialValues: { email: "", password: "", rememberMe: true },
+    validate: {
+      email: (value) => (value.trim() ? isEmail(t("enterValidEmail"))(value) : t("enterEmail")),
+      password: (value) =>
+        value
+          ? hasLength({ min: 8 }, t("passwordMinLength", { count: 8 }))(value)
+          : t("enterPassword"),
+    },
+  })
+
+  const submit = form.onSubmit(async (values) => {
     setError(undefined)
 
     const result = await signIn
       .mutateAsync({
         email: values.email,
         password: values.password,
-        rememberMe: values.rememberMe ?? true,
+        rememberMe: values.rememberMe,
       })
       .catch((error: unknown) => {
         setError(error instanceof Error ? error.message : t("loginFailed"))
@@ -71,7 +66,7 @@ function LoginRoute() {
 
     queryClient.removeQueries({ queryKey: sessionQueryKey })
     await navigate({ to: redirectTo(redirect), replace: true })
-  }
+  })
 
   return (
     <main className="grid min-h-screen place-items-center bg-(image:--ame-login-bg) p-8 max-[760px]:p-5">
@@ -84,47 +79,52 @@ function LoginRoute() {
         </div>
 
         <Card
-          className="w-full rounded-lg shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
-          styles={{ body: { display: "grid", gap: 20, padding: "clamp(22px, 4vw, 28px)" } }}
+          withBorder
+          className="w-full rounded-lg p-[clamp(22px,4vw,28px)] shadow-[0_18px_45px_rgba(15,23,42,0.12)]"
         >
-          <div>
-            <h2 className="ame-page-title mb-1 text-2xl font-semibold">{t("adminLogin")}</h2>
-            <Typography.Text type="secondary">{t("localDefaultAccount")}</Typography.Text>
-          </div>
+          <Stack gap="lg">
+            <div>
+              <h2 className="ame-page-title mb-1 text-2xl font-semibold">{t("adminLogin")}</h2>
+              <Text size="sm" c="dimmed">
+                {t("localDefaultAccount")}
+              </Text>
+            </div>
 
-          {error ? <Alert type="error" title={error} showIcon /> : null}
+            {error ? (
+              <Alert color="red" role="alert">
+                {error}
+              </Alert>
+            ) : null}
 
-          <Form layout="vertical" requiredMark={false} onFinish={submit}>
-            <Form.Item
-              name="email"
-              label={t("email")}
-              rules={[
-                { required: true, message: t("enterEmail") },
-                { type: "email", message: t("enterValidEmail") },
-              ]}
-            >
-              <Input autoComplete="email" placeholder="admin@example.com" size="large" />
-            </Form.Item>
-
-            <Form.Item
-              name="password"
-              label={t("password")}
-              rules={[
-                { required: true, message: t("enterPassword") },
-                { min: 8, message: t("passwordMinLength", { count: 8 }) },
-              ]}
-            >
-              <Input.Password autoComplete="current-password" size="large" />
-            </Form.Item>
-
-            <Form.Item name="rememberMe" valuePropName="checked" initialValue>
-              <Checkbox>{t("rememberMe")}</Checkbox>
-            </Form.Item>
-
-            <Button type="primary" htmlType="submit" size="large" block loading={signIn.isPending}>
-              {t("signIn")}
-            </Button>
-          </Form>
+            <form noValidate onSubmit={submit}>
+              <Stack gap="md">
+                <TextInput
+                  label={t("email")}
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="admin@example.com"
+                  size="md"
+                  {...form.getInputProps("email")}
+                />
+                <PasswordInput
+                  label={t("password")}
+                  name="password"
+                  autoComplete="current-password"
+                  size="md"
+                  visibilityToggleButtonProps={{ "aria-label": t("togglePasswordVisibility") }}
+                  {...form.getInputProps("password")}
+                />
+                <Checkbox
+                  label={t("rememberMe")}
+                  {...form.getInputProps("rememberMe", { type: "checkbox" })}
+                />
+                <Button type="submit" size="md" fullWidth loading={signIn.isPending}>
+                  {t("signIn")}
+                </Button>
+              </Stack>
+            </form>
+          </Stack>
         </Card>
       </section>
     </main>

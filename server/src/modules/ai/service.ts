@@ -1,6 +1,6 @@
 import { env } from "@/lib/env"
 import type { ChatBody } from "./model"
-import { createAiProvider } from "./provider"
+import { AiRefusalError, createAiProvider } from "./provider"
 
 const encoder = new TextEncoder()
 
@@ -12,10 +12,13 @@ export function isAiConfigured() {
   return Boolean(env.AI_API_KEY)
 }
 
-export function createChatStream(body: ChatBody) {
+export function createChatStream(body: ChatBody, requestSignal: AbortSignal) {
+  const cancelled = new AbortController()
+  const signal = AbortSignal.any([requestSignal, cancelled.signal])
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        signal.throwIfAborted()
         const provider = createAiProvider({
           provider: env.AI_PROVIDER,
           apiKey: env.AI_API_KEY,
@@ -25,20 +28,28 @@ export function createChatStream(body: ChatBody) {
 
         controller.enqueue(sse("meta", { provider: provider.name, model: env.AI_MODEL }))
 
-        for await (const content of provider.stream(body.messages)) {
+        for await (const content of provider.stream(body.messages, signal)) {
+          signal.throwIfAborted()
           controller.enqueue(sse("delta", { content }))
         }
 
+        signal.throwIfAborted()
         controller.enqueue(sse("done", {}))
       } catch (error) {
-        controller.enqueue(
-          sse("error", {
-            message: error instanceof Error ? error.message : "AI request failed.",
-          }),
-        )
+        if (!signal.aborted) {
+          controller.enqueue(
+            sse("error", {
+              message: error instanceof Error ? error.message : "AI request failed.",
+              reason: error instanceof AiRefusalError ? "refusal" : undefined,
+            }),
+          )
+        }
       } finally {
-        controller.close()
+        if (!cancelled.signal.aborted) controller.close()
       }
+    },
+    cancel(reason) {
+      cancelled.abort(reason)
     },
   })
 

@@ -1,4 +1,4 @@
-import { Empty, type EmptyProps, Space, type SpaceProps } from "antd"
+import { Group, type GroupProps, EmptyState as MantineEmptyState } from "@mantine/core"
 import type { ReactNode } from "react"
 
 export function PageHeader({
@@ -87,11 +87,11 @@ export function SectionPanel({
   )
 }
 
-export function ToolbarSurface({ children, ...props }: SpaceProps) {
+export function ToolbarSurface({ children, ...props }: GroupProps) {
   return (
-    <Space {...props} className={`ame-toolbar-surface ${props.className ?? ""}`.trim()}>
+    <Group gap="xs" {...props} className={`ame-toolbar-surface ${props.className ?? ""}`.trim()}>
       {children}
-    </Space>
+    </Group>
   )
 }
 
@@ -109,12 +109,8 @@ export function StatusPill({
   )
 }
 
-export function EmptyState(props: EmptyProps) {
-  return (
-    <div className="ame-empty-state">
-      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} {...props} />
-    </div>
-  )
+export function EmptyState({ description }: { description: ReactNode }) {
+  return <MantineEmptyState className="ame-empty-state" description={description} />
 }
 
 export function HudPanel({

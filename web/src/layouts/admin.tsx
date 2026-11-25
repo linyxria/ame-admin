@@ -1,18 +1,18 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Link, Outlet, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
-import type { MenuProps } from "antd"
 import {
+  ActionIcon,
   Avatar,
-  Breadcrumb,
+  Breadcrumbs,
   Button,
   Drawer,
-  Dropdown,
-  Layout,
+  Group,
   Menu,
-  Space,
+  NavLink,
+  Stack,
   Switch,
-  Typography,
-} from "antd"
+  Text,
+} from "@mantine/core"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Link, Outlet, useLocation, useRouteContext, useRouter } from "@tanstack/react-router"
 import {
   Bell,
   Bot,
@@ -30,7 +30,6 @@ import {
   MenuIcon,
   Monitor,
   Moon,
-  Palette,
   Radar,
   ScrollText,
   Settings,
@@ -40,13 +39,14 @@ import {
   User,
   Users,
 } from "lucide-react"
-import { useState } from "react"
+import { type ReactNode, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { GlobalSearch } from "../components/global-search"
 import { Notifications } from "../components/notifications"
 import { type Locale, locales } from "../i18n"
 import { exampleMenus, type NavigationEntry } from "../lib/examples"
 import { getMenuTitle } from "../lib/menu-title"
+import { showRequestError } from "../lib/request-notification"
 import { useThemeSettings } from "../lib/theme"
 import { signOutMutationOptions } from "../services/auth/mutations"
 import { sessionQueryKey } from "../services/auth/queries"
@@ -56,8 +56,6 @@ import {
   currentUserPermissionsQueryKey,
   settingsQueryOptions,
 } from "../services/system/queries"
-
-const { Header, Sider, Content } = Layout
 
 const iconMap = {
   audit: <ScrollText size={16} />,
@@ -90,6 +88,7 @@ export function AdminLayout() {
   const locale = locales.includes(i18n.language as Locale) ? (i18n.language as Locale) : "zh-CN"
   const { compact, mode, primaryColor, setCompact, setMode, setPrimaryColor } = useThemeSettings()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [navigationOpen, setNavigationOpen] = useState(false)
   const menusQuery = useQuery(currentUserMenusQueryOptions())
   const settingsQuery = useQuery(settingsQueryOptions())
   const signOutMutation = useMutation(signOutMutationOptions())
@@ -112,89 +111,6 @@ export function AdminLayout() {
     queryClient.removeQueries({ queryKey: currentUserPermissionsQueryKey })
   }
 
-  const userMenuItems: MenuProps["items"] = [
-    {
-      key: "profile",
-      disabled: true,
-      label: (
-        <div className="min-w-48 py-1">
-          <div className="ame-text font-medium">{user.name}</div>
-          <div className="ame-text-subtle mt-0.5 text-xs">{user.email}</div>
-        </div>
-      ),
-    },
-    {
-      type: "divider",
-    },
-    {
-      key: "user-settings",
-      icon: <User size={16} />,
-      label: <Link to="/account/settings">{t("userSettings")}</Link>,
-    },
-    {
-      key: "sign-out",
-      icon: <LogOut size={16} />,
-      label: t("signOut"),
-      onClick: signOut,
-    },
-  ]
-
-  const languageMenuItems: MenuProps["items"] = [
-    {
-      key: "zh-CN",
-      icon: locale === "zh-CN" ? <Check size={16} /> : <span className="w-4" />,
-      label: t("simplifiedChinese"),
-      onClick: () => void i18n.changeLanguage("zh-CN"),
-    },
-    {
-      key: "en-US",
-      icon: locale === "en-US" ? <Check size={16} /> : <span className="w-4" />,
-      label: t("english"),
-      onClick: () => void i18n.changeLanguage("en-US"),
-    },
-  ]
-
-  const menuItems: MenuProps["items"] = navigationMenus
-    .filter(
-      (item) =>
-        item.visible &&
-        (!item.parentId || !navigationMenus.some((parent) => parent.id === item.parentId)),
-    )
-    .map((item) => {
-      const children = navigationMenus.filter(
-        (child) => child.visible && child.parentId === item.id,
-      )
-
-      return {
-        key: item.path,
-        icon: item.icon ? iconMap[item.icon as keyof typeof iconMap] : <MenuIcon size={16} />,
-        label: children.length ? (
-          getMenuTitle(item, t)
-        ) : (
-          <Link to={item.path}>{getMenuTitle(item, t)}</Link>
-        ),
-        children: children.length
-          ? children.map((child) => ({
-              key: child.path,
-              icon: child.icon ? (
-                iconMap[child.icon as keyof typeof iconMap]
-              ) : (
-                <MenuIcon size={16} />
-              ),
-              label: <Link to={child.path}>{getMenuTitle(child, t)}</Link>,
-            }))
-          : undefined,
-      }
-    })
-
-  const defaultOpenKeys = navigationMenus
-    .filter((item) =>
-      navigationMenus.some(
-        (child) => child.parentId === item.id && child.path === location.pathname,
-      ),
-    )
-    .map((item) => item.path)
-
   const menuById = new Map(navigationMenus.map((item) => [item.id, item]))
   const activeMenu = navigationMenus
     .filter(
@@ -216,6 +132,7 @@ export function AdminLayout() {
         )
         .reverse()
         .map((item, index, items) => ({
+          key: item.id,
           title:
             index !== items.length - 1 &&
             !navigationMenus.some((child) => child.parentId === item.id) ? (
@@ -231,124 +148,286 @@ export function AdminLayout() {
     location.pathname === "/account/settings"
       ? [
           {
+            key: "workbench",
             title: (
               <Link to="/dashboard/workbench" className="ame-text-muted">
                 {t("workbench")}
               </Link>
             ),
           },
-          { title: t("userSettings") },
+          { key: "user-settings", title: t("userSettings") },
         ]
       : location.pathname === "/forbidden"
         ? [
             {
+              key: "workbench",
               title: (
                 <Link to="/dashboard/workbench" className="ame-text-muted">
                   {t("workbench")}
                 </Link>
               ),
             },
-            { title: t("forbidden") },
+            { key: "forbidden", title: t("forbidden") },
           ]
-        : [{ title: t("workbench") }]
+        : [{ key: "workbench", title: t("workbench") }]
   const breadcrumbItems = menuBreadcrumbItems ?? fallbackBreadcrumbItems
 
+  const navigation = (
+    <AdminNavigation
+      menus={navigationMenus}
+      pathname={location.pathname}
+      onNavigate={() => setNavigationOpen(false)}
+    />
+  )
+
   return (
-    <Layout className="ame-app-shell h-screen overflow-hidden max-[760px]:min-w-215">
-      <Sider className="ame-sidebar h-screen overflow-hidden" width={236} theme={mode}>
-        <div className="flex h-full min-h-0 flex-col">
-          <div className="ame-brand ame-text flex h-16 shrink-0 items-center gap-3 px-5 text-base font-bold">
-            <span className="ame-brand-mark text-sm font-black">AM</span>
-            <span className="truncate">{siteName}</span>
+    <div className="ame-app-shell flex h-dvh overflow-hidden">
+      <a
+        href="#main-content"
+        className="ame-surface sr-only z-10 rounded-md p-2 focus:not-sr-only focus:absolute focus:m-2"
+      >
+        {t("skipToContent")}
+      </a>
+      <aside className="ame-sidebar hidden w-59 shrink-0 flex-col md:flex">
+        <div className="ame-brand ame-text flex h-16 shrink-0 items-center gap-3 px-5 text-base font-bold">
+          <span className="ame-brand-mark text-sm font-black">AM</span>
+          <span className="truncate">{siteName}</span>
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">{navigation}</div>
+        <div className="ame-sidebar-status shrink-0 px-4 py-3 text-[11px] leading-5">
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            System Status
           </div>
-          <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-            <Menu
-              theme={mode}
-              mode="inline"
-              selectedKeys={[location.pathname]}
-              defaultOpenKeys={defaultOpenKeys}
-              items={menuItems}
-            />
-          </div>
-          <div className="ame-sidebar-status shrink-0 px-4 py-3 text-[11px] leading-5">
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              System Status
-            </div>
-            <div className="font-semibold text-emerald-300">All Systems Operational</div>
+          <div className="font-semibold text-emerald-700 dark:text-emerald-300">
+            All Systems Operational
           </div>
         </div>
-      </Sider>
-      <Layout className="min-h-0">
-        <Header className="ame-topbar flex shrink-0 items-center gap-3">
-          <Breadcrumb className="mr-auto min-w-0" items={breadcrumbItems} />
+      </aside>
+      <Drawer
+        title={siteName}
+        opened={navigationOpen}
+        onClose={() => setNavigationOpen(false)}
+        closeButtonProps={{ "aria-label": t("close") }}
+        size="xs"
+      >
+        {navigation}
+      </Drawer>
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <header className="ame-topbar flex h-16 shrink-0 items-center gap-2 px-3 md:gap-3 md:px-5">
+          <ActionIcon
+            className="md:hidden"
+            variant="subtle"
+            aria-label={t("navigation")}
+            onClick={() => setNavigationOpen(true)}
+          >
+            <MenuIcon size={18} />
+          </ActionIcon>
+          <nav className="mr-auto min-w-0 overflow-hidden" aria-label={t("breadcrumb")}>
+            <Breadcrumbs separatorMargin="xs" className="max-md:hidden">
+              {breadcrumbItems.map((item, index) => (
+                <span
+                  key={item.key}
+                  className="ame-text-muted truncate"
+                  aria-current={index === breadcrumbItems.length - 1 ? "page" : undefined}
+                >
+                  {item.title}
+                </span>
+              ))}
+            </Breadcrumbs>
+          </nav>
           <GlobalSearch menus={navigationMenus} />
           <Notifications />
-          <Button
-            type="text"
+          <ActionIcon
+            variant="subtle"
             className="ame-topbar-icon"
-            icon={mode === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+            aria-label={t("theme")}
+            aria-pressed={mode === "dark"}
             onClick={() => setMode(mode === "dark" ? "light" : "dark")}
-          />
-          <Dropdown
-            menu={{ items: languageMenuItems, selectedKeys: [locale] }}
-            placement="bottomRight"
           >
-            <Button type="text" className="ame-topbar-icon" icon={<Languages size={18} />} />
-          </Dropdown>
-          <Button
-            type="text"
+            {mode === "dark" ? <Moon size={18} /> : <Sun size={18} />}
+          </ActionIcon>
+          <Menu position="bottom-end">
+            <Menu.Target>
+              <ActionIcon variant="subtle" className="ame-topbar-icon" aria-label={t("language")}>
+                <Languages size={18} />
+              </ActionIcon>
+            </Menu.Target>
+            <Menu.Dropdown>
+              {locales.map((language) => (
+                <Menu.Item
+                  key={language}
+                  leftSection={locale === language ? <Check size={16} /> : <span className="w-4" />}
+                  onClick={() => void i18n.changeLanguage(language)}
+                >
+                  {language === "zh-CN" ? t("simplifiedChinese") : t("english")}
+                </Menu.Item>
+              ))}
+            </Menu.Dropdown>
+          </Menu>
+          <ActionIcon
+            variant="subtle"
             className="ame-topbar-icon"
-            icon={<Settings size={18} />}
+            aria-label={t("appearance")}
             onClick={() => setSettingsOpen(true)}
-          />
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
-            <Button type="link" className="ame-shell-user px-2">
-              <Space size={10}>
-                <Avatar src={user.image} icon={!user.image ? <User size={16} /> : undefined} />
-                <span className="flex flex-col items-start leading-tight">
-                  <Typography.Text strong className="max-w-40 truncate">
-                    {user.name}
-                  </Typography.Text>
-                  <span className="ame-text-subtle max-w-40 truncate text-xs">{user.email}</span>
-                </span>
-                <ChevronDown size={14} className="ame-text-subtle" />
-              </Space>
-            </Button>
-          </Dropdown>
+          >
+            <Settings size={18} />
+          </ActionIcon>
+          <Menu position="bottom-end">
+            <Menu.Target>
+              <Button
+                variant="subtle"
+                className="ame-shell-user px-2"
+                aria-label={t("userSettings")}
+              >
+                <Group gap={10} wrap="nowrap">
+                  <Avatar size={28} src={user.image} alt="">
+                    <User size={16} />
+                  </Avatar>
+                  <span className="hidden flex-col items-start leading-tight lg:flex">
+                    <span className="ame-text max-w-40 truncate font-semibold">{user.name}</span>
+                    <span className="ame-text-subtle max-w-40 truncate text-xs">{user.email}</span>
+                  </span>
+                  <ChevronDown size={14} className="ame-text-subtle" />
+                </Group>
+              </Button>
+            </Menu.Target>
+            <Menu.Dropdown>
+              <Menu.Label>
+                <Text size="sm" fw={600}>
+                  {user.name}
+                </Text>
+                <Text size="xs" c="dimmed">
+                  {user.email}
+                </Text>
+              </Menu.Label>
+              <Menu.Divider />
+              <Menu.Item component={Link} to="/account/settings" leftSection={<User size={16} />}>
+                {t("userSettings")}
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<LogOut size={16} />}
+                disabled={signOutMutation.isPending}
+                onClick={() =>
+                  void signOut().catch((error) => showRequestError(error, t("requestFailed")))
+                }
+              >
+                {t("signOut")}
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
           <Drawer
             title={t("appearance")}
-            open={settingsOpen}
+            position="right"
+            opened={settingsOpen}
             onClose={() => setSettingsOpen(false)}
+            closeButtonProps={{ "aria-label": t("close") }}
           >
-            <div className="flex flex-col gap-5">
-              <div className="flex items-center justify-between gap-4">
-                <Space size={10}>
-                  <Palette size={18} />
-                  <Typography.Text>{t("primaryColor")}</Typography.Text>
-                </Space>
+            <Stack>
+              <Group justify="space-between">
+                <label htmlFor="primary-color">{t("primaryColor")}</label>
                 <input
-                  aria-label={t("primaryColor")}
+                  id="primary-color"
                   type="color"
                   value={primaryColor}
-                  onChange={(event) => setPrimaryColor(event.target.value)}
+                  onChange={(event) => setPrimaryColor(event.currentTarget.value)}
                   className="ame-border h-8 w-11 cursor-pointer rounded border bg-transparent p-0.5"
                 />
-              </div>
-              <div className="flex items-center justify-between gap-4">
-                <Space size={10}>
-                  <Settings size={18} />
-                  <Typography.Text>{t("compactMode")}</Typography.Text>
-                </Space>
-                <Switch checked={compact} onChange={setCompact} />
-              </div>
-            </div>
+              </Group>
+              <Switch
+                label={t("compactMode")}
+                checked={compact}
+                onChange={(event) => setCompact(event.currentTarget.checked)}
+              />
+            </Stack>
           </Drawer>
-        </Header>
-        <Content className="ame-content ame-page-bg min-h-0 overflow-auto p-5">
+        </header>
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="ame-content ame-page-bg min-h-0 flex-1 overflow-auto p-3 md:p-5"
+        >
           <Outlet />
-        </Content>
-      </Layout>
-    </Layout>
+        </main>
+      </div>
+    </div>
+  )
+}
+
+function AdminNavigation({
+  menus,
+  pathname,
+  onNavigate,
+}: {
+  menus: NavigationEntry[]
+  pathname: string
+  onNavigate: () => void
+}) {
+  const { t } = useTranslation()
+  const [manualExpansion, setManualExpansion] = useState<Record<string, boolean>>({})
+  const [previousPathname, setPreviousPathname] = useState(pathname)
+  if (previousPathname !== pathname) {
+    setPreviousPathname(pathname)
+    // A manual collapse applies until the next navigation.
+    setManualExpansion((groups) =>
+      Object.fromEntries(Object.entries(groups).filter(([, opened]) => opened)),
+    )
+  }
+  const menuIds = new Set(menus.map((item) => item.id))
+  const visible = menus.filter((item) => item.visible)
+
+  function iconFor(item: NavigationEntry): ReactNode {
+    return iconMap[item.icon as keyof typeof iconMap] ?? <MenuIcon size={16} />
+  }
+
+  return (
+    <nav aria-label={t("navigation")} className="px-2 py-2">
+      {visible
+        .filter((item) => !item.parentId || !menuIds.has(item.parentId))
+        .map((item) => {
+          const children = visible.filter((child) => child.parentId === item.id)
+
+          if (!children.length) {
+            return (
+              <NavLink
+                component={Link}
+                key={item.id}
+                to={item.path}
+                label={getMenuTitle(item, t)}
+                leftSection={iconFor(item)}
+                active={item.path === pathname}
+                onClick={onNavigate}
+              />
+            )
+          }
+
+          const childActive = children.some((child) => child.path === pathname)
+          return (
+            <NavLink
+              component="button"
+              type="button"
+              key={item.id}
+              label={getMenuTitle(item, t)}
+              leftSection={iconFor(item)}
+              opened={manualExpansion[item.id] ?? childActive}
+              onChange={(opened) =>
+                setManualExpansion((groups) => ({ ...groups, [item.id]: opened }))
+              }
+            >
+              {children.map((child) => (
+                <NavLink
+                  component={Link}
+                  key={child.id}
+                  to={child.path}
+                  label={getMenuTitle(child, t)}
+                  leftSection={iconFor(child)}
+                  active={child.path === pathname}
+                  onClick={onNavigate}
+                />
+              ))}
+            </NavLink>
+          )
+        })}
+    </nav>
   )
 }

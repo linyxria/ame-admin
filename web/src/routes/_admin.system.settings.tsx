@@ -1,9 +1,23 @@
+import {
+  Alert,
+  Button,
+  Group,
+  Loader,
+  NativeSelect,
+  NumberInput,
+  Stack,
+  Switch,
+  TextInput,
+} from "@mantine/core"
+import { isNotEmpty, useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { App, Button, Form, Input, Select, Space, Switch } from "antd"
+import { useEffect, useEffectEvent } from "react"
 import { useTranslation } from "react-i18next"
 import { PageHeader, SectionPanel } from "../components/design-system"
-import { type SettingsInput, updateSettingsMutationOptions } from "../services/system/mutations"
+import { showRequestError } from "../lib/request-notification"
+import { updateSettingsMutationOptions } from "../services/system/mutations"
 import {
   currentUserPermissionsQueryOptions,
   type SystemSetting,
@@ -15,126 +29,172 @@ export const Route = createFileRoute("/_admin/system/settings")({
   component: SystemSettingsRoute,
 })
 
-type SettingsForm = {
+function SystemSettingsRoute() {
+  const { t } = useTranslation()
+  const settings = useQuery(settingsQueryOptions())
+  const permissions = useQuery(currentUserPermissionsQueryOptions())
+  const canUpdate =
+    permissions.data
+      ?.find((item) => item.path === "/system/settings")
+      ?.actions.includes("update") ?? false
+
+  return (
+    <Stack gap="lg">
+      <PageHeader title={t("systemSettings")} description={t("settingsDescription")} />
+      <SectionPanel title={t("systemSettings")}>
+        {settings.isError && (
+          <Alert color="red" role="alert">
+            {t("requestFailed")}
+          </Alert>
+        )}
+        {settings.isPending && <Loader size="sm" aria-label={t("loading")} />}
+        {settings.data && (
+          <SettingsForm
+            settings={settings.data}
+            canUpdate={canUpdate}
+            isRefetchError={settings.isRefetchError}
+          />
+        )}
+      </SectionPanel>
+    </Stack>
+  )
+}
+
+type SettingsValues = {
   siteName: string
   defaultLanguage: string
-  passwordMinLength: number
+  passwordMinLength: number | string
   allowPublicSignUp: boolean
 }
 
-function getSetting(items: SystemSetting[] | null, key: string) {
-  return items?.find((item) => item.key === key)?.value
+const settingLabels = {
+  siteName: "siteName",
+  defaultLanguage: "defaultLanguage",
+  passwordMinLength: "passwordMinLengthSetting",
+  allowPublicSignUp: "allowPublicSignUp",
+} as const satisfies Record<keyof SettingsValues, string>
+
+const settingKeys = Object.keys(settingLabels) as (keyof SettingsValues)[]
+const settingDefaults = {
+  defaultLanguage: "en-US",
+  passwordMinLength: 8,
+  allowPublicSignUp: false,
 }
 
-function SystemSettingsRoute() {
-  const [form] = Form.useForm<SettingsForm>()
-  const { message } = App.useApp()
+function readSettings(
+  settings: Pick<SystemSetting, "key" | "value">[],
+  fallback: SettingsValues,
+): SettingsValues {
+  const values = new Map(settings.map(({ key, value }) => [key, value]))
+  const passwordMinLength = values.get("passwordMinLength")
+  const allowPublicSignUp = values.get("allowPublicSignUp")
+  return {
+    siteName: values.get("siteName") ?? fallback.siteName,
+    defaultLanguage: values.get("defaultLanguage") ?? fallback.defaultLanguage,
+    passwordMinLength:
+      passwordMinLength === undefined ? fallback.passwordMinLength : Number(passwordMinLength),
+    allowPublicSignUp:
+      allowPublicSignUp === undefined ? fallback.allowPublicSignUp : allowPublicSignUp === "true",
+  }
+}
+
+function SettingsForm({
+  settings,
+  canUpdate,
+  isRefetchError,
+}: {
+  settings: SystemSetting[]
+  canUpdate: boolean
+  isRefetchError: boolean
+}) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
-  const settingsQuery = useQuery(settingsQueryOptions())
-  const permissionsQuery = useQuery(currentUserPermissionsQueryOptions())
-  const canUpdate =
-    permissionsQuery.data
-      ?.find((item) => item.path === "/system/settings")
-      ?.actions.includes("update") ?? false
-  const updateSettings = useMutation({
-    ...updateSettingsMutationOptions(),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
-      message.success(t("saveSuccess"))
+  const defaultSiteName = t("appName")
+  const form = useForm({
+    initialValues: readSettings(settings, { ...settingDefaults, siteName: defaultSiteName }),
+    validate: {
+      siteName: isNotEmpty(t("requiredField")),
+      passwordMinLength: (value) =>
+        Number.isInteger(Number(value)) && Number(value) >= 8 ? null : t("minNumber", { min: 8 }),
     },
   })
-  const settings = settingsQuery.data ?? []
-  const initialValues = {
-    siteName: getSetting(settings, "siteName") ?? t("appName"),
-    defaultLanguage: getSetting(settings, "defaultLanguage") ?? "en-US",
-    passwordMinLength: Number(getSetting(settings, "passwordMinLength") ?? 8),
-    allowPublicSignUp: getSetting(settings, "allowPublicSignUp") === "true",
-  }
+  const updateSettings = useMutation({
+    ...updateSettingsMutationOptions(),
+    onSuccess: async (_result, { items }) => {
+      form.resetDirty(readSettings(items, form.getInitialValues()))
+      await queryClient.invalidateQueries({ queryKey: settingsQueryKey })
+      notifications.show({ color: "green", message: t("saveSuccess") })
+    },
+    onError: (error) => showRequestError(error, t("saveFailed")),
+  })
 
-  const submit = async () => {
-    const values = await form.validateFields()
-    const body: SettingsInput = {
-      items: [
-        { key: "siteName", value: values.siteName, description: t("siteName") },
-        {
-          key: "defaultLanguage",
-          value: values.defaultLanguage,
-          description: t("defaultLanguage"),
-        },
-        {
-          key: "passwordMinLength",
-          value: String(values.passwordMinLength),
-          description: t("passwordMinLengthSetting"),
-        },
-        {
-          key: "allowPublicSignUp",
-          value: String(values.allowPublicSignUp),
-          description: t("allowPublicSignUp"),
-        },
-      ],
+  const syncSavedSettings = useEffectEvent((fields: SettingsValues) => {
+    for (const key of settingKeys) {
+      if (!form.isDirty(key) && form.getValues()[key] !== fields[key]) {
+        form.setFieldValue(key, fields[key])
+      }
     }
-    await updateSettings.mutateAsync(body)
-  }
+    form.resetDirty(fields)
+  })
+  useEffect(() => {
+    if (!updateSettings.isPending && !isRefetchError) {
+      syncSavedSettings(readSettings(settings, { ...settingDefaults, siteName: defaultSiteName }))
+    }
+  }, [settings, defaultSiteName, updateSettings.isPending, isRefetchError])
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
-      <PageHeader title={t("systemSettings")} description={t("settingsDescription")} />
+    <form
+      className="max-w-2xl"
+      onSubmit={form.onSubmit((fields) => {
+        if (!canUpdate || updateSettings.isPending) return
 
-      <SectionPanel title={t("systemSettings")}>
-        <Form
-          form={form}
-          layout="vertical"
-          className="max-w-2xl"
-          initialValues={initialValues}
-          key={settings.map((item) => `${item.key}:${item.value}`).join("|")}
-        >
-          <Form.Item name="siteName" label={t("siteName")} rules={[{ required: true }]}>
-            <Input disabled={!canUpdate} />
-          </Form.Item>
-          <Form.Item
-            name="defaultLanguage"
-            label={t("defaultLanguage")}
-            rules={[{ required: true }]}
+        const items = settingKeys
+          .filter((key) => form.isDirty(key))
+          .map((key) => ({ key, value: String(fields[key]), description: t(settingLabels[key]) }))
+        if (items.length) updateSettings.mutate({ items })
+      })}
+    >
+      <Stack>
+        <TextInput
+          label={t("siteName")}
+          disabled={!canUpdate}
+          withAsterisk
+          {...form.getInputProps("siteName")}
+        />
+        <NativeSelect
+          label={t("defaultLanguage")}
+          disabled={!canUpdate}
+          data={[
+            { label: t("simplifiedChinese"), value: "zh-CN" },
+            { label: t("english"), value: "en-US" },
+          ]}
+          {...form.getInputProps("defaultLanguage")}
+        />
+        <NumberInput
+          label={t("passwordMinLengthSetting")}
+          min={8}
+          allowDecimal={false}
+          disabled={!canUpdate}
+          withAsterisk
+          {...form.getInputProps("passwordMinLength")}
+        />
+        <Switch
+          label={t("allowPublicSignUp")}
+          disabled={!canUpdate}
+          onLabel={t("allowed")}
+          offLabel={t("blocked")}
+          {...form.getInputProps("allowPublicSignUp", { type: "checkbox" })}
+        />
+        <Group>
+          <Button
+            type="submit"
+            disabled={!canUpdate || !form.isDirty()}
+            loading={updateSettings.isPending}
           >
-            <Select
-              disabled={!canUpdate}
-              options={[
-                { label: t("simplifiedChinese"), value: "zh-CN" },
-                { label: t("english"), value: "en-US" },
-              ]}
-            />
-          </Form.Item>
-          <Form.Item
-            name="passwordMinLength"
-            label={t("passwordMinLengthSetting")}
-            rules={[{ required: true }]}
-          >
-            <Input type="number" min={8} disabled={!canUpdate} />
-          </Form.Item>
-          <Form.Item
-            name="allowPublicSignUp"
-            label={t("allowPublicSignUp")}
-            valuePropName="checked"
-          >
-            <Switch
-              disabled={!canUpdate}
-              checkedChildren={t("allowed")}
-              unCheckedChildren={t("blocked")}
-            />
-          </Form.Item>
-          <Form.Item>
-            <Button
-              type="primary"
-              disabled={!canUpdate}
-              loading={updateSettings.isPending}
-              onClick={submit}
-            >
-              {t("save")}
-            </Button>
-          </Form.Item>
-        </Form>
-      </SectionPanel>
-    </Space>
+            {t("save")}
+          </Button>
+        </Group>
+      </Stack>
+    </form>
   )
 }

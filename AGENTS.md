@@ -4,7 +4,7 @@
 
 - For any task that touches `web/`, read `web/AGENTS.md` before planning or editing.
 - For any task that touches `server/`, read `server/AGENTS.md` before planning or editing when that file exists.
-- For tasks involving frontend UI, Ant Design, React, accessibility, or frontend performance under `web/`, read the relevant skill files under `web/.agents/skills/` before planning or editing.
+- For tasks involving frontend UI, Mantine, React, accessibility, or frontend performance under `web/`, read the relevant skill files under `web/.agents/skills/` before planning or editing.
 - For tasks involving backend architecture, API design, database work, authentication, authorization, or server performance under `server/`, read the relevant skill files under `server/.agents/skills/` before planning or editing when that directory exists.
 - Treat directory-local `AGENTS.md` and `.agents/skills/*/SKILL.md` files as canonical for that directory. Do not duplicate their full contents in this root file.
 

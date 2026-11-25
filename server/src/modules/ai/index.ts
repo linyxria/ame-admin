@@ -10,12 +10,12 @@ export const aiRoutes = new Elysia({ name: "ai", prefix: "/ai" })
   .model(aiModels)
   .post(
     "/chat",
-    ({ body, status }) => {
+    ({ body, request, status }) => {
       if (!isAiConfigured()) {
         return status(503, { message: "AI_API_KEY is not configured." })
       }
 
-      return createChatStream(body)
+      return createChatStream(body, request.signal)
     },
     { auth: true, menu: "/ai", body: "Ai.ChatBody" },
   )

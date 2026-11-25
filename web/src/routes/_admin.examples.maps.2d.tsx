@@ -1,7 +1,7 @@
 import { Deck } from "@deck.gl/core"
 import { LineLayer, ScatterplotLayer } from "@deck.gl/layers"
+import { Badge, Card, Stack, Text } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { Card, Space, Tag } from "antd"
 import {
   GPUInitializationError,
   Map as MapLibreMap,
@@ -174,13 +174,13 @@ function Map2dRoute() {
   }, [])
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <div>
         <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("map2d")}</h1>
         <p className="ame-page-description text-sm">{t("map2dDescription")}</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
-        <Card className="ame-elevated-card" styles={{ body: { padding: 0 } }}>
+        <Card className="ame-elevated-card" p={0} withBorder>
           <div className="relative h-155 min-h-96 overflow-hidden rounded-md">
             <div ref={containerRef} className="h-full" />
             <div ref={deckRef} className="pointer-events-none absolute inset-0" />
@@ -193,21 +193,24 @@ function Map2dRoute() {
             </p>
           </div>
         </Card>
-        <Card className="ame-elevated-card" title={t("siteDetail")}>
-          <Space orientation="vertical" className="w-full">
+        <Card withBorder className="ame-elevated-card">
+          <Text component="h2" fw={600} mb="sm">
+            {t("siteDetail")}
+          </Text>
+          <Stack gap="xs">
             <div className="text-lg font-semibold">{selectedSite.name}</div>
-            <Tag color={selectedSite.status === "online" ? "green" : "gold"}>
+            <Badge variant="light" color={selectedSite.status === "online" ? "green" : "yellow"}>
               {selectedSite.status}
-            </Tag>
+            </Badge>
             <div className="ame-text-muted">
               {t("throughput")}: {selectedSite.throughput}%
             </div>
             <div className="ame-text-subtle text-sm">
               {selectedSite.longitude.toFixed(4)}, {selectedSite.latitude.toFixed(4)}
             </div>
-          </Space>
+          </Stack>
         </Card>
       </div>
-    </Space>
+    </Stack>
   )
 }

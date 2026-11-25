@@ -1,24 +1,28 @@
+import {
+  Avatar,
+  Badge,
+  Button,
+  Group,
+  Modal,
+  MultiSelect,
+  PasswordInput,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from "@mantine/core"
+import { isEmail, isNotEmpty, useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import {
-  App,
-  Avatar,
-  Button,
-  Form,
-  Input,
-  Modal,
-  Popconfirm,
-  Select,
-  Space,
-  Switch,
-  Tag,
-  Tooltip,
-} from "antd"
 import { KeyRound, LogOut, Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
 import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
+import { FormActions } from "../components/form-actions"
+import { IconAction } from "../components/icon-action"
+import { showRequestError } from "../lib/request-notification"
 import {
   createUserMutationOptions,
   deleteUserMutationOptions,
@@ -45,13 +49,11 @@ export const Route = createFileRoute("/_admin/system/users")({
 type UserForm = {
   name: string
   email: string
-  password?: string
+  password: string
   roleIds: string[]
 }
 
 function UsersRoute() {
-  const [form] = Form.useForm<UserForm>()
-  const { message } = App.useApp()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<SystemUser | null>(null)
@@ -60,7 +62,6 @@ function UsersRoute() {
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [resetting, setResetting] = useState<SystemUser | null>(null)
-  const [password, setPassword] = useState("")
   const listParams = { page, pageSize, keyword }
 
   const usersQuery = useQuery(usersQueryOptions(listParams))
@@ -76,6 +77,27 @@ function UsersRoute() {
   const passwordMinLength = Number(
     settingsQuery.data?.find((item) => item.key === "passwordMinLength")?.value ?? 8,
   )
+
+  const form = useForm<UserForm>({
+    initialValues: { name: "", email: "", password: "", roleIds: [] },
+    validate: {
+      name: isNotEmpty(t("enterName")),
+      email: isEmail(t("enterValidEmail")),
+      password: (value) =>
+        !editing && value.length < passwordMinLength
+          ? t("passwordMinLength", { count: passwordMinLength })
+          : null,
+    },
+  })
+  const resetForm = useForm({
+    initialValues: { password: "" },
+    validate: {
+      password: (value) =>
+        value.length < passwordMinLength
+          ? t("passwordMinLength", { count: passwordMinLength })
+          : null,
+    },
+  })
 
   const refresh = async () => {
     await Promise.all([
@@ -105,15 +127,18 @@ function UsersRoute() {
   const revokeSessions = useMutation({
     ...revokeUserSessionsMutationOptions(),
     onSuccess: refresh,
+    onError: (error) => showRequestError(error, t("requestFailed")),
   })
 
   const showModal = (user?: SystemUser) => {
     setEditing(user ?? null)
-    form.setFieldsValue(
+    form.clearErrors()
+    form.setValues(
       user
         ? {
             name: user.name,
             email: user.email,
+            password: "",
             roleIds: user.roles.map((role) => role.id),
           }
         : { name: "", email: "", password: "", roleIds: [] },
@@ -121,9 +146,7 @@ function UsersRoute() {
     setOpen(true)
   }
 
-  const submit = async () => {
-    const values = await form.validateFields()
-
+  const submit = form.onSubmit(async (values) => {
     try {
       if (editing) {
         await updateUser.mutateAsync({
@@ -131,50 +154,54 @@ function UsersRoute() {
           body: {
             name: values.name,
             email: values.email,
-            roleIds: values.roleIds ?? [],
+            roleIds: values.roleIds,
           },
         })
       } else {
         await createUser.mutateAsync({
           name: values.name,
           email: values.email,
-          password: values.password ?? "",
-          roleIds: values.roleIds ?? [],
+          password: values.password,
+          roleIds: values.roleIds,
         })
       }
-      message.success(t("saveSuccess"))
+      notifications.show({ color: "green", message: t("saveSuccess") })
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("saveFailed"))
+      showRequestError(error, t("saveFailed"))
     }
-  }
+  })
 
   const remove = async (id: string) => {
     try {
       await deleteUser.mutateAsync(id)
-      message.success(t("deleteSuccess"))
+      notifications.show({ color: "green", message: t("deleteSuccess") })
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("deleteFailed"))
+      showRequestError(error, t("deleteFailed"))
     }
   }
 
+  const saving = createUser.isPending || updateUser.isPending
+  const closeUser = () => {
+    if (!saving) setOpen(false)
+  }
+  const closeReset = () => {
+    if (!resetPassword.isPending) setResetting(null)
+  }
+
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         title={t("userManagement")}
         description={t("usersDescription")}
         actions={
           <ToolbarSurface>
+            <IconAction label={t("refresh")} onClick={() => void refresh()}>
+              <RotateCw size={16} />
+            </IconAction>
             <Button
-              icon={<RotateCw size={16} />}
-              onClick={() => {
-                void refresh()
-              }}
-            />
-            <Button
-              type="primary"
               disabled={!canCreate}
-              icon={<Plus size={16} />}
+              leftSection={<Plus size={16} />}
               onClick={() => showModal()}
             >
               {t("createUser")}
@@ -186,131 +213,136 @@ function UsersRoute() {
       <SectionPanel
         title={t("userManagement")}
         actions={
-          <Input.Search
-            allowClear
+          <TextInput
+            type="search"
+            aria-label={t("searchNameOrEmail")}
             className="max-w-sm"
             placeholder={t("searchNameOrEmail")}
             value={keyword}
             onChange={(event) => {
-              setKeyword(event.target.value)
+              setKeyword(event.currentTarget.value)
               setPage(1)
             }}
           />
         }
       >
         <DataTable<SystemUser>
-          rowKey="id"
-          loading={usersQuery.isLoading || rolesQuery.isLoading}
-          dataSource={users}
+          loading={usersQuery.isFetching || rolesQuery.isPending}
+          error={usersQuery.error ?? rolesQuery.error}
+          rows={users}
           pagination={{
-            current: page,
+            page,
             pageSize,
-            total: usersQuery.data?.total ?? 0,
-            showSizeChanger: true,
-          }}
-          onChange={(pagination) => {
-            setPage(pagination.current ?? 1)
-            setPageSize(pagination.pageSize ?? 20)
+            total: usersQuery.data?.total,
+            onPageChange: setPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size)
+              setPage(1)
+            },
           }}
           columns={[
             {
-              title: t("user"),
-              render: (_, record) => (
-                <Space>
-                  <Avatar src={record.image}>{record.name.slice(0, 1)}</Avatar>
+              key: "user",
+              header: t("user"),
+              cell: (record) => (
+                <Group gap="xs" wrap="nowrap">
+                  <Avatar src={record.image} alt="">
+                    {record.name.slice(0, 1)}
+                  </Avatar>
                   <span>{record.name}</span>
-                </Space>
+                </Group>
               ),
             },
-            { title: t("email"), dataIndex: "email" },
+            { key: "email", header: t("email"), cell: (record) => record.email },
             {
-              title: t("role"),
-              dataIndex: "roles",
-              render: (value: SystemUser["roles"]) =>
-                value.length > 0 ? (
-                  value.map((role) => <Tag key={role.id}>{role.name}</Tag>)
+              key: "roles",
+              header: t("role"),
+              cell: (record) =>
+                record.roles.length ? (
+                  <Group gap={4}>
+                    {record.roles.map((role) => (
+                      <Badge key={role.id} variant="light">
+                        {role.name}
+                      </Badge>
+                    ))}
+                  </Group>
                 ) : (
-                  <span className="ame-text-subtle">{t("unassigned")}</span>
+                  <Text size="sm" c="dimmed">
+                    {t("unassigned")}
+                  </Text>
                 ),
             },
             {
-              title: t("status"),
-              dataIndex: "enabled",
+              key: "status",
+              header: t("status"),
               width: 110,
-              render: (enabled, record) => (
+              cell: (record) => (
                 <Switch
-                  size="small"
-                  checked={enabled}
-                  disabled={record.builtIn || !canUpdate}
-                  checkedChildren={t("enabled")}
-                  unCheckedChildren={t("disabled")}
-                  onChange={(checked) =>
-                    updateUser.mutate({
-                      id: record.id,
-                      body: { enabled: checked },
-                    })
+                  checked={record.enabled}
+                  disabled={record.builtIn || !canUpdate || updateUser.isPending}
+                  aria-label={`${record.name} · ${t("status")}`}
+                  onLabel={t("enabled")}
+                  offLabel={t("disabled")}
+                  onChange={(event) =>
+                    updateUser.mutate(
+                      { id: record.id, body: { enabled: event.currentTarget.checked } },
+                      { onError: (error) => showRequestError(error, t("saveFailed")) },
+                    )
                   }
                 />
               ),
             },
             {
-              title: t("emailVerified"),
-              dataIndex: "emailVerified",
+              key: "verified",
+              header: t("emailVerified"),
               width: 110,
-              render: (verified) => (
-                <Tag color={verified ? "green" : "default"}>
-                  {verified ? t("verified") : t("unverified")}
-                </Tag>
+              cell: (record) => (
+                <Badge variant="light" color={record.emailVerified ? "green" : "gray"}>
+                  {record.emailVerified ? t("verified") : t("unverified")}
+                </Badge>
               ),
             },
             {
-              title: t("operation"),
+              key: "actions",
+              header: t("operation"),
               width: 150,
-              render: (_, record) => (
-                <Space>
-                  <Tooltip title={t("edit")}>
-                    <Button
-                      type="text"
-                      disabled={!canUpdate}
-                      icon={<Pencil size={16} />}
-                      onClick={() => showModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title={t("resetPassword")}>
-                    <Button
-                      type="text"
-                      disabled={!canUpdate}
-                      icon={<KeyRound size={16} />}
-                      onClick={() => {
-                        setResetting(record)
-                        setPassword("")
-                      }}
-                    />
-                  </Tooltip>
-                  <Tooltip title={t("forceSignOut")}>
-                    <Popconfirm
-                      title={t("confirmRevokeSessions")}
-                      onConfirm={() => revokeSessions.mutate(record.id)}
-                      disabled={!canUpdate}
-                    >
-                      <Button type="text" disabled={!canUpdate} icon={<LogOut size={16} />} />
-                    </Popconfirm>
-                  </Tooltip>
-                  <Tooltip title={record.builtIn ? t("builtInAdminDeleteDisabled") : t("delete")}>
-                    <Popconfirm
-                      title={t("confirmDeleteUser")}
-                      onConfirm={() => remove(record.id)}
-                      disabled={record.builtIn || !canDelete}
-                    >
-                      <Button
-                        type="text"
-                        danger
-                        disabled={record.builtIn || !canDelete}
-                        icon={<Trash2 size={16} />}
-                      />
-                    </Popconfirm>
-                  </Tooltip>
-                </Space>
+              cell: (record) => (
+                <Group gap={4} wrap="nowrap">
+                  <IconAction
+                    label={t("edit")}
+                    disabled={!canUpdate}
+                    onClick={() => showModal(record)}
+                  >
+                    <Pencil size={16} />
+                  </IconAction>
+                  <IconAction
+                    label={t("resetPassword")}
+                    disabled={!canUpdate}
+                    onClick={() => {
+                      resetForm.reset()
+                      setResetting(record)
+                    }}
+                  >
+                    <KeyRound size={16} />
+                  </IconAction>
+                  <IconAction
+                    label={t("forceSignOut")}
+                    confirmation={t("confirmRevokeSessions")}
+                    disabled={!canUpdate || revokeSessions.isPending}
+                    onClick={() => revokeSessions.mutate(record.id)}
+                  >
+                    <LogOut size={16} />
+                  </IconAction>
+                  <IconAction
+                    label={t(record.builtIn ? "builtInAdminDeleteDisabled" : "delete")}
+                    confirmation={t("confirmDeleteUser")}
+                    color="red"
+                    disabled={record.builtIn || !canDelete || deleteUser.isPending}
+                    onClick={() => void remove(record.id)}
+                  >
+                    <Trash2 size={16} />
+                  </IconAction>
+                </Group>
               ),
             },
           ]}
@@ -319,82 +351,73 @@ function UsersRoute() {
 
       <Modal
         title={editing ? t("editUser") : t("createUser")}
-        open={open}
-        onOk={submit}
-        onCancel={() => setOpen(false)}
-        destroyOnHidden
-        forceRender
+        opened={open}
+        onClose={closeUser}
+        closeButtonProps={{ "aria-label": t("close"), disabled: saving }}
       >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label={t("name")}
-            rules={[{ required: true, message: t("enterName") }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="email"
-            label={t("email")}
-            rules={[{ required: true, type: "email", message: t("enterValidEmail") }]}
-          >
-            <Input />
-          </Form.Item>
-          {!editing ? (
-            <Form.Item
-              name="password"
-              label={t("initialPassword")}
-              rules={[
-                {
-                  required: true,
-                  min: passwordMinLength,
-                  message: t("passwordMinLength", { count: passwordMinLength }),
-                },
-              ]}
-            >
-              <Input.Password />
-            </Form.Item>
-          ) : null}
-          <Form.Item name="roleIds" label={t("role")}>
-            <Select
-              mode="multiple"
-              options={(rolesQuery.data ?? []).map((role) => ({
-                label: role.name,
-                value: role.id,
-              }))}
+        <form noValidate onSubmit={submit}>
+          <Stack>
+            <TextInput
+              label={t("name")}
+              data-autofocus
+              withAsterisk
+              {...form.getInputProps("name")}
             />
-          </Form.Item>
-        </Form>
+            <TextInput
+              label={t("email")}
+              type="email"
+              withAsterisk
+              {...form.getInputProps("email")}
+            />
+            {!editing && (
+              <PasswordInput
+                label={t("initialPassword")}
+                autoComplete="new-password"
+                withAsterisk
+                visibilityToggleButtonProps={{ "aria-label": t("togglePasswordVisibility") }}
+                {...form.getInputProps("password")}
+              />
+            )}
+            <MultiSelect
+              label={t("role")}
+              data={(rolesQuery.data ?? []).map((role) => ({ label: role.name, value: role.id }))}
+              {...form.getInputProps("roleIds")}
+            />
+            <FormActions onCancel={closeUser} loading={saving} />
+          </Stack>
+        </form>
       </Modal>
       <Modal
         title={`${t("resetPassword")} · ${resetting?.name ?? ""}`}
-        open={Boolean(resetting)}
-        okButtonProps={{ loading: resetPassword.isPending }}
-        onCancel={() => setResetting(null)}
-        onOk={async () => {
-          if (!resetting) {
-            return
-          }
-          if (password.length < passwordMinLength) {
-            message.error(t("passwordMinLength", { count: passwordMinLength }))
-            return
-          }
-          try {
-            await resetPassword.mutateAsync({ id: resetting.id, nextPassword: password })
-            message.success(t("passwordResetSuccess"))
-            setResetting(null)
-          } catch (error) {
-            message.error(error instanceof Error ? error.message : t("resetPasswordFailed"))
-          }
-        }}
+        opened={Boolean(resetting)}
+        onClose={closeReset}
+        closeButtonProps={{ "aria-label": t("close"), disabled: resetPassword.isPending }}
       >
-        <Input.Password
-          value={password}
-          minLength={passwordMinLength}
-          placeholder={t("newTemporaryPassword")}
-          onChange={(event) => setPassword(event.target.value)}
-        />
+        <form
+          onSubmit={resetForm.onSubmit(async ({ password }) => {
+            if (!resetting) return
+            try {
+              await resetPassword.mutateAsync({ id: resetting.id, nextPassword: password })
+              notifications.show({ color: "green", message: t("passwordResetSuccess") })
+              setResetting(null)
+            } catch (error) {
+              showRequestError(error, t("resetPasswordFailed"))
+            }
+          })}
+        >
+          <Stack>
+            <PasswordInput
+              label={t("newTemporaryPassword")}
+              autoComplete="new-password"
+              data-autofocus
+              withAsterisk
+              visibilityToggleButtonProps={{ "aria-label": t("togglePasswordVisibility") }}
+              {...resetForm.getInputProps("password")}
+            />
+            <FormActions onCancel={closeReset} loading={resetPassword.isPending} />
+          </Stack>
+        </form>
       </Modal>
-    </Space>
+    </Stack>
   )
 }

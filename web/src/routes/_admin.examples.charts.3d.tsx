@@ -1,6 +1,6 @@
+import { Badge, Card, Group, Stack, Text } from "@mantine/core"
 import { Canvas } from "@react-three/fiber"
 import { createFileRoute } from "@tanstack/react-router"
-import { Card, Space, Tag } from "antd"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 
@@ -53,15 +53,17 @@ function Charts3dRoute() {
   const [rotation, setRotation] = useState(0)
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <div>
         <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("charts3d")}</h1>
         <p className="ame-page-description text-sm">{t("charts3dDescription")}</p>
       </div>
-      <Card
-        title={t("threeDimensionalBars")}
-        extra={
-          <Space>
+      <Card withBorder>
+        <Group justify="space-between" mb="md">
+          <Text component="h2" fw={600}>
+            {t("threeDimensionalBars")}
+          </Text>
+          <Group gap="xs">
             <button
               type="button"
               className="ame-border rounded-md border px-3 py-1 text-sm"
@@ -76,9 +78,8 @@ function Charts3dRoute() {
             >
               {t("rotateRight")}
             </button>
-          </Space>
-        }
-      >
+          </Group>
+        </Group>
         <div className="h-[560px] min-h-96 overflow-hidden rounded-md bg-slate-950">
           <Canvas camera={{ position: [5, 5, 8], fov: 45 }}>
             <ChartScene rotation={rotation} />
@@ -87,11 +88,11 @@ function Charts3dRoute() {
       </Card>
       <div className="flex flex-wrap gap-2">
         {bars.map((item) => (
-          <Tag key={item.label} color={item.color}>
+          <Badge variant="light" key={item.label} color={item.color}>
             {item.label} · {item.value.toFixed(1)}
-          </Tag>
+          </Badge>
         ))}
       </div>
-    </Space>
+    </Stack>
   )
 }

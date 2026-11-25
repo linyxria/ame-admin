@@ -1,11 +1,12 @@
+import { Badge, Stack, TextInput } from "@mantine/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Button, Input, Space, Tag } from "antd"
 import { RotateCw } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
 import { PageHeader, SectionPanel } from "../components/design-system"
+import { IconAction } from "../components/icon-action"
 import { type AuditLog, auditLogsQueryOptions } from "../services/system/queries"
 
 export const Route = createFileRoute("/_admin/system/audit-logs")({
@@ -13,7 +14,7 @@ export const Route = createFileRoute("/_admin/system/audit-logs")({
 })
 
 function AuditLogsRoute() {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [keyword, setKeyword] = useState("")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -21,83 +22,89 @@ function AuditLogsRoute() {
   const auditLogsQuery = useQuery(auditLogsQueryOptions(listParams))
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         title={t("auditLogs")}
         description={t("auditLogsDescription")}
         actions={
-          <Button
-            icon={<RotateCw size={16} />}
-            onClick={() => {
-              void auditLogsQuery.refetch()
-            }}
-          />
+          <IconAction label={t("refresh")} onClick={() => void auditLogsQuery.refetch()}>
+            <RotateCw size={16} />
+          </IconAction>
         }
       />
 
       <SectionPanel
         title={t("auditLogs")}
         actions={
-          <Input.Search
-            allowClear
+          <TextInput
+            type="search"
+            aria-label={t("searchAuditLogs")}
             className="max-w-sm"
             placeholder={t("searchAuditLogs")}
             value={keyword}
             onChange={(event) => {
-              setKeyword(event.target.value)
+              setKeyword(event.currentTarget.value)
               setPage(1)
             }}
           />
         }
       >
         <DataTable<AuditLog>
-          rowKey="id"
-          loading={auditLogsQuery.isLoading}
-          dataSource={auditLogsQuery.data?.items ?? []}
+          loading={auditLogsQuery.isFetching}
+          error={auditLogsQuery.error}
+          rows={auditLogsQuery.data?.items ?? []}
           pagination={{
-            current: page,
+            page,
             pageSize,
-            total: auditLogsQuery.data?.total ?? 0,
-            showSizeChanger: true,
-          }}
-          onChange={(pagination) => {
-            setPage(pagination.current ?? 1)
-            setPageSize(pagination.pageSize ?? 20)
+            total: auditLogsQuery.data?.total,
+            onPageChange: setPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size)
+              setPage(1)
+            },
           }}
           columns={[
             {
-              title: t("createdAt"),
-              dataIndex: "createdAt",
+              key: "createdAt",
+              header: t("createdAt"),
               width: 190,
-              render: (value) => new Date(value).toLocaleString(),
+              cell: (record) => new Date(record.createdAt).toLocaleString(i18n.language),
             },
             {
-              title: t("actor"),
-              render: (_, record) => (
+              key: "actor",
+              header: t("actor"),
+              cell: (record) => (
                 <div>
-                  <div>{record.actorName ?? "-"}</div>
-                  <div className="ame-text-subtle text-xs">{record.actorEmail ?? "-"}</div>
+                  <div>{record.actorName ?? "–"}</div>
+                  <div className="ame-text-subtle text-xs">{record.actorEmail ?? "–"}</div>
                 </div>
               ),
             },
             {
-              title: t("action"),
-              dataIndex: "action",
+              key: "action",
+              header: t("action"),
               width: 140,
-              render: (value) => <Tag>{value}</Tag>,
+              cell: (record) => <Badge variant="light">{record.action}</Badge>,
             },
-            { title: t("resource"), dataIndex: "resource", width: 120 },
-            { title: t("summary"), dataIndex: "summary" },
             {
-              title: t("detail"),
-              dataIndex: "detail",
-              render: (value) => (
-                <pre className="m-0 max-w-md truncate text-xs">{value ? String(value) : "-"}</pre>
+              key: "resource",
+              header: t("resource"),
+              width: 120,
+              cell: (record) => record.resource,
+            },
+            { key: "summary", header: t("summary"), cell: (record) => record.summary },
+            {
+              key: "detail",
+              header: t("detail"),
+              cell: (record) => (
+                <pre className="m-0 max-w-md truncate text-xs">
+                  {record.detail ? String(record.detail) : "–"}
+                </pre>
               ),
             },
           ]}
         />
       </SectionPanel>
-    </Space>
+    </Stack>
   )
 }

@@ -1,5 +1,5 @@
+import { Badge, Group, Progress, Stack } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { Progress, Space, Tag } from "antd"
 import { useTranslation } from "react-i18next"
 import { MetricCard, MetricStrip, PageHeader, SectionPanel } from "../components/design-system"
 
@@ -18,7 +18,7 @@ function AnalyticsRoute() {
   const { t } = useTranslation()
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         eyebrow="Insights"
         title={t("analytics")}
@@ -44,17 +44,17 @@ function AnalyticsRoute() {
           {funnel.map((item) => (
             <div key={item.label}>
               <div className="mb-2 flex items-center justify-between gap-3">
-                <Space>
-                  <Tag>{item.label}</Tag>
+                <Group gap="xs">
+                  <Badge variant="light">{item.label}</Badge>
                   <span className="ame-text font-medium">{item.value.toLocaleString()}</span>
-                </Space>
+                </Group>
                 <span className="ame-text-subtle text-sm">{item.percent}%</span>
               </div>
-              <Progress percent={item.percent} showInfo={false} />
+              <Progress value={item.percent} aria-label={item.label} />
             </div>
           ))}
         </div>
       </SectionPanel>
-    </Space>
+    </Stack>
   )
 }

@@ -1,4 +1,9 @@
-import { createContext, type ReactNode, useContext, useLayoutEffect, useState } from "react"
+import { generateColors } from "@mantine/colors-generator"
+import { createTheme, MantineProvider } from "@mantine/core"
+import { ModalsProvider } from "@mantine/modals"
+import { Notifications } from "@mantine/notifications"
+import { createContext, type ReactNode, useContext, useState } from "react"
+import { useTranslation } from "react-i18next"
 
 export type ThemeMode = "light" | "dark"
 
@@ -23,27 +28,51 @@ const defaultTheme: ThemeSettings = {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 function readTheme(): ThemeSettings {
-  const saved = localStorage.getItem("ame-theme")
-
-  if (!saved) {
-    return defaultTheme
-  }
-
   try {
-    return { ...defaultTheme, ...JSON.parse(saved) }
+    const saved = JSON.parse(localStorage.getItem("ame-theme") ?? "null")
+
+    return {
+      mode: saved?.mode === "dark" ? "dark" : "light",
+      primaryColor: /^#[0-9a-f]{6}$/i.test(saved?.primaryColor)
+        ? saved.primaryColor
+        : defaultTheme.primaryColor,
+      compact: saved?.compact === true,
+    }
   } catch {
     return defaultTheme
   }
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [settings, setSettings] = useState<ThemeSettings>(readTheme)
+  const { t } = useTranslation()
+  const [settings, setSettings] = useState(readTheme)
+  const size = settings.compact ? "xs" : "sm"
+  const control = { defaultProps: { size } }
+  const theme = createTheme({
+    colors: { brand: generateColors(settings.primaryColor) },
+    primaryColor: "brand",
+    autoContrast: true,
+    respectReducedMotion: true,
+    defaultRadius: "md",
+    fontFamily:
+      "Aptos, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif",
+    components: {
+      ActionIcon: control,
+      Button: control,
+      MultiSelect: control,
+      NativeSelect: control,
+      NumberInput: control,
+      PasswordInput: control,
+      Select: control,
+      Switch: control,
+      Table: { defaultProps: { horizontalSpacing: size, verticalSpacing: size } },
+      TextInput: control,
+      Textarea: control,
+      TreeSelect: control,
+    },
+  })
 
-  useLayoutEffect(() => {
-    document.documentElement.dataset.theme = settings.mode
-  }, [settings.mode])
-
-  const update = (nextSettings: ThemeSettings) => {
+  function update(nextSettings: ThemeSettings) {
     localStorage.setItem("ame-theme", JSON.stringify(nextSettings))
     setSettings(nextSettings)
   }
@@ -57,7 +86,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         setCompact: (compact) => update({ ...settings, compact }),
       }}
     >
-      {children}
+      <MantineProvider theme={theme} forceColorScheme={settings.mode}>
+        <ModalsProvider modalProps={{ closeButtonProps: { "aria-label": t("close") } }}>
+          <Notifications position="top-right" />
+          {children}
+        </ModalsProvider>
+      </MantineProvider>
     </ThemeContext>
   )
 }

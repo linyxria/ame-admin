@@ -1,5 +1,5 @@
+import { Button, Group } from "@mantine/core"
 import { Link } from "@tanstack/react-router"
-import { Button, Space } from "antd"
 import { ArrowLeft, Home } from "lucide-react"
 import type { ReactNode } from "react"
 
@@ -28,14 +28,18 @@ export function ErrorState({
         </div>
         <h1 className="ame-page-title mt-6 text-3xl font-semibold">{title}</h1>
         <p className="ame-page-description mx-auto mt-3 max-w-lg text-base">{description}</p>
-        <Space className="mt-8" wrap>
-          <Button type="primary" icon={<Home size={16} />}>
-            <Link to={primaryTo}>{primaryText}</Link>
+        <Group className="mt-8" justify="center">
+          <Button component={Link} to={primaryTo} leftSection={<Home size={16} />}>
+            {primaryText}
           </Button>
-          <Button icon={<ArrowLeft size={16} />} onClick={() => globalThis.history.back()}>
+          <Button
+            variant="default"
+            leftSection={<ArrowLeft size={16} />}
+            onClick={() => globalThis.history.back()}
+          >
             {secondaryText}
           </Button>
-        </Space>
+        </Group>
       </div>
     </div>
   )

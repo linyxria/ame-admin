@@ -21,9 +21,12 @@ function readLocale(): Locale {
   return locales.includes(saved as Locale) ? (saved as Locale) : "en-US"
 }
 
+const initialLocale = readLocale()
+document.documentElement.lang = initialLocale
+
 void i18n.use(initReactI18next).init({
   resources,
-  lng: readLocale(),
+  lng: initialLocale,
   fallbackLng: "en-US",
   interpolation: {
     escapeValue: false,
@@ -32,6 +35,7 @@ void i18n.use(initReactI18next).init({
 
 i18n.on("languageChanged", (language) => {
   if (locales.includes(language as Locale)) {
+    document.documentElement.lang = language
     localStorage.setItem("ame-locale", language)
   }
 })

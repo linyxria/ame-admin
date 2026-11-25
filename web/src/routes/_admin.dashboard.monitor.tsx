@@ -1,5 +1,5 @@
+import { Progress, Stack } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { Progress, Space } from "antd"
 import { Activity, Cpu, Database, Server } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import {
@@ -24,7 +24,7 @@ function MonitorRoute() {
   const { t } = useTranslation()
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         eyebrow="Operations"
         title={t("monitor")}
@@ -52,14 +52,24 @@ function MonitorRoute() {
                   {service.status}
                 </StatusPill>
               </div>
-              <div className="ame-text-subtle mt-3 text-sm">
-                {t("latency")}: {service.latency}ms
+              <div className="ame-text-subtle mt-3 flex flex-wrap justify-between gap-x-3 text-sm">
+                <span>
+                  {t("latency")}: {service.latency}ms
+                </span>
+                <span>
+                  {t("serviceLoad")}: {service.load}%
+                </span>
               </div>
-              <Progress className="mt-2" percent={service.load} size="small" />
+              <Progress
+                className="mt-2"
+                value={service.load}
+                size="sm"
+                aria-label={`${service.name} · ${t("serviceLoad")}`}
+              />
             </div>
           ))}
         </div>
       </SectionPanel>
-    </Space>
+    </Stack>
   )
 }

@@ -1,312 +1,244 @@
-import { Bubble, type BubbleItemType, Sender } from "@ant-design/x"
+import {
+  AssistantRuntimeProvider,
+  AuiIf,
+  type ChatModelAdapter,
+  ComposerPrimitive,
+  ErrorPrimitive,
+  MessagePrimitive,
+  ThreadPrimitive,
+  useAui,
+  useLocalRuntime,
+} from "@assistant-ui/react"
+import { ActionIcon, Avatar, Badge, Button, Group, Loader, Stack, Text } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { App, Avatar, Button, Space, Tag } from "antd"
-import { Bot, BrainCircuit, Cpu, DatabaseZap, FileText, Plus, Sparkles, User } from "lucide-react"
-import type { ReactNode } from "react"
-import { useState } from "react"
+import { ArrowUp, Bot, Cpu, Plus, Square, User } from "lucide-react"
+import { type MouseEvent, useCallback, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
-import { StatusPill } from "../components/design-system"
-import { API_URL } from "../lib/config"
+import { PageHeader } from "../components/design-system"
+import { api } from "../lib/api"
+import { readChatStream } from "../lib/chat-stream"
+import { getRequestErrorMessage } from "../lib/request-notification"
 
 export const Route = createFileRoute("/_admin/ai")({
   component: AiRoute,
 })
 
-type ChatMessage = {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  loading?: boolean
-}
-
-function parseSseChunk(buffer: string) {
-  const events = buffer.split("\n\n")
-  const rest = events.pop() ?? ""
-
-  return {
-    rest,
-    events: events
-      .map((event) => {
-        const type = event
-          .split("\n")
-          .find((line) => line.startsWith("event: "))
-          ?.slice(7)
-        const data = event
-          .split("\n")
-          .filter((line) => line.startsWith("data: "))
-          .map((line) => line.slice(6))
-          .join("\n")
-
-        return type && data ? { type, data } : null
-      })
-      .filter((event): event is { type: string; data: string } => Boolean(event)),
-  }
-}
-
 function AiRoute() {
-  const { message } = App.useApp()
   const { t } = useTranslation()
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [providerMeta, setProviderMeta] = useState<{ provider: string; model: string } | null>(null)
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: crypto.randomUUID(),
-      role: "assistant",
-      content: t("aiWelcome"),
-    },
-  ])
-
-  const items: BubbleItemType[] = messages.map((item) => ({
-    key: item.id,
-    role: item.role,
-    content: item.content,
-    loading: item.loading,
-  }))
-
-  const send = async (value: string) => {
-    const content = value.trim()
-
-    if (!content || loading) {
-      return
-    }
-
-    const userMessage: ChatMessage = { id: crypto.randomUUID(), role: "user", content }
-    const assistantId = crypto.randomUUID()
-    const assistantMessage: ChatMessage = {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      loading: true,
-    }
-    const nextMessages = messages.concat(userMessage, assistantMessage)
-
-    setMessages(nextMessages)
-    setInput("")
-    setLoading(true)
-
-    try {
-      const response = await fetch(`${API_URL}/api/ai/chat`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: nextMessages
-            .filter((item) => item.content)
-            .map((item) => ({ role: item.role, content: item.content })),
-        }),
+  const [provider, setProvider] = useState<{ provider: string; model: string }>()
+  const adapter: ChatModelAdapter = {
+    async *run({ messages, abortSignal }) {
+      const history = messages.flatMap((message) => {
+        if (message.role !== "user" && message.role !== "assistant") return []
+        const content = message.content
+          .map((part) => (part.type === "text" ? part.text : ""))
+          .join("")
+        return content ? [{ role: message.role, content }] : []
       })
+      const fallback = t("aiRequestFailed")
 
-      if (!response.ok || !response.body) {
-        const error = (await response.json().catch(() => null)) as { message?: string } | null
-        throw new Error(error?.message ?? t("aiRequestFailed"))
+      try {
+        const stream = await api.ai.chat.post(
+          { messages: history },
+          { fetch: { signal: abortSignal } },
+        )
+        yield* readChatStream(stream, setProvider, { fallback, emptyReply: t("aiEmptyReply") })
+      } catch (error) {
+        if (abortSignal.aborted) return
+        throw new Error(getRequestErrorMessage(error, fallback), { cause: error })
       }
+    },
+  }
+  const runtime = useLocalRuntime(adapter)
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let rest = ""
-
-      while (true) {
-        const { value: chunk, done } = await reader.read()
-
-        if (done) {
-          break
-        }
-
-        const parsed = parseSseChunk(rest + decoder.decode(chunk, { stream: true }))
-        rest = parsed.rest
-
-        for (const event of parsed.events) {
-          const data = JSON.parse(event.data) as {
-            content?: string
-            message?: string
-            provider?: string
-            model?: string
-          }
-
-          if (event.type === "meta" && data.provider && data.model) {
-            setProviderMeta({ provider: data.provider, model: data.model })
-          } else if (event.type === "delta" && data.content) {
-            setMessages((current) =>
-              current.map((item) =>
-                item.id === assistantId
-                  ? { ...item, content: item.content + data.content, loading: false }
-                  : item,
-              ),
+  return (
+    <AssistantRuntimeProvider runtime={runtime}>
+      <div className="flex h-full min-h-0 flex-col gap-4">
+        <PageHeader
+          title={t("aiAssistant")}
+          description={t("aiAssistantDescription")}
+          actions={<NewConversation />}
+          status={
+            provider && (
+              <Badge variant="light" leftSection={<Cpu size={14} />}>
+                {provider.provider} · {provider.model}
+              </Badge>
             )
           }
+        />
+        <Conversation />
+      </div>
+    </AssistantRuntimeProvider>
+  )
+}
 
-          if (event.type === "error") {
-            throw new Error(data.message ?? t("aiRequestFailed"))
-          }
-        }
+function NewConversation() {
+  const { t } = useTranslation()
+  const aui = useAui()
+
+  return (
+    <Button
+      variant="default"
+      leftSection={<Plus size={16} />}
+      onClick={() => {
+        aui.thread().cancelRun()
+        aui.threads().switchToNewThread()
+      }}
+    >
+      {t("aiNewChat")}
+    </Button>
+  )
+}
+
+function Conversation() {
+  const { t } = useTranslation()
+  const aui = useAui()
+  const composerInput = useRef<HTMLTextAreaElement>(null)
+  const stopActivated = useRef(false)
+  const restoreFocusOnStopRemoval = useCallback((button: HTMLButtonElement | null) => {
+    if (!button) return
+
+    return () => {
+      if (!stopActivated.current && button.ownerDocument.activeElement === button) {
+        composerInput.current?.focus({ preventScroll: true })
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : t("aiRequestFailed")
-      message.error(errorMessage)
-      setMessages((current) =>
-        current.map((item) =>
-          item.id === assistantId ? { ...item, content: errorMessage, loading: false } : item,
-        ),
-      )
-    } finally {
-      setLoading(false)
+      stopActivated.current = false
     }
+  }, [])
+  const suggestions = [t("aiSuggestionOps"), t("aiSuggestionPermission"), t("aiSuggestionData")]
+  const followUps = [
+    t("aiShowTrend"),
+    t("aiCompareAssets"),
+    t("aiCreateWorkOrder"),
+    t("aiExplainMore"),
+  ]
+
+  function focusComposerOnKeyboardActivation(event: MouseEvent<HTMLButtonElement>) {
+    if (event.detail === 0) composerInput.current?.focus({ preventScroll: true })
   }
 
   return (
-    <div className="flex h-full min-h-0 w-full flex-col gap-6">
-      <div className="ame-hero-panel">
-        <div>
-          <h1 className="ame-page-title mb-2 text-3xl font-semibold">{t("aiAssistant")}</h1>
-          <p className="ame-page-description text-sm">{t("aiAssistantDescription")}</p>
-        </div>
-        <Space wrap>
-          <Tag icon={<Cpu size={14} />} color="blue" className="px-3 py-1">
-            {providerMeta
-              ? `${providerMeta.provider} · ${providerMeta.model}`
-              : t("aiProviderReady")}
-          </Tag>
-          <StatusPill tone="green">Operational</StatusPill>
-        </Space>
-      </div>
-      <div className="ame-ai-shell min-h-0 flex-1 xl:grid-cols-[280px_minmax(0,1fr)_260px]">
-        <aside className="ame-ai-session-rail min-h-0 p-4">
-          <Button type="primary" block icon={<Plus size={15} />}>
-            New Session
-          </Button>
-          <div className="mt-4">
-            <div className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-[var(--ame-text-subtle)]">
-              Today
-            </div>
-            <div className="grid gap-1.5">
-              {[t("aiSuggestionOps"), t("aiSuggestionPermission"), t("aiSuggestionData")].map(
-                (item, index) => (
-                  <button
-                    type="button"
-                    key={item}
-                    className={`rounded-lg px-3 py-2 text-left text-sm transition ${
-                      index === 0
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-[var(--ame-text-muted)] hover:bg-[var(--ame-hover)]"
-                    }`}
-                    onClick={() => setInput(item)}
+    <ThreadPrimitive.Root
+      role="region"
+      aria-label={t("aiAssistant")}
+      className="ame-ai-shell flex min-h-88 flex-1 flex-col"
+    >
+      <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto px-4 py-5 md:px-6">
+        <div className="mx-auto max-w-3xl">
+          <ThreadPrimitive.Empty>
+            <Stack gap="sm" align="flex-start">
+              <Avatar color="brand" variant="light">
+                <Bot size={20} />
+              </Avatar>
+              <Text>{t("aiWelcome")}</Text>
+              <Group gap="xs">
+                {suggestions.map((prompt) => (
+                  <Button
+                    key={prompt}
+                    variant="default"
+                    onClick={() => aui.composer().setText(prompt)}
                   >
-                    <span className="block truncate font-medium">{item}</span>
-                    <span className="mt-1 block text-xs text-[var(--ame-text-subtle)]">
-                      {index === 0 ? "10:24 AM" : "Earlier"}
-                    </span>
-                  </button>
-                ),
-              )}
-            </div>
-          </div>
-          <div className="mt-6 border-t border-[var(--ame-border-soft)] pt-4">
-            <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-[var(--ame-text)]">
-              <Sparkles size={16} />
-              {t("aiSuggestions")}
-            </div>
-            <div className="text-xs leading-5 text-[var(--ame-text-subtle)]">
-              {t("aiProviderHint")}
-            </div>
-          </div>
-        </aside>
-
-        <main className="flex min-h-0 flex-col">
-          <div className="border-b border-[var(--ame-border-soft)] px-5 py-4">
-            <div className="font-semibold text-[var(--ame-text)]">Pump vibration analysis</div>
-            <div className="mt-1 text-xs text-[var(--ame-text-subtle)]">
-              Streaming workspace for operational diagnostics
-            </div>
-          </div>
-          <div className="min-h-0 flex-1 overflow-auto bg-[#fbfcfe] p-6">
-            <div className="mx-auto max-w-4xl">
-              <Bubble.List
-                autoScroll
-                items={items}
-                role={{
-                  assistant: {
-                    placement: "start",
-                    avatar: <Avatar className="bg-blue-600" icon={<Bot size={16} />} />,
-                  },
-                  user: {
-                    placement: "end",
-                    avatar: <Avatar icon={<User size={16} />} />,
-                  },
-                }}
-              />
-            </div>
-          </div>
-          <div className="border-t border-[var(--ame-border-soft)] p-4">
-            <div className="mx-auto max-w-4xl">
-              <div className="mb-3 flex flex-wrap gap-2">
-                {["Show trend chart", "Compare assets", "Create work order", "Explain more"].map(
-                  (item) => (
-                    <Button key={item} size="small" onClick={() => setInput(item)}>
-                      {item}
-                    </Button>
-                  ),
-                )}
-              </div>
-              <Sender
-                value={input}
-                loading={loading}
-                placeholder={t("aiInputPlaceholder")}
-                onChange={setInput}
-                onSubmit={send}
-                onCancel={() => setLoading(false)}
-              />
-            </div>
-          </div>
-        </main>
-
-        <aside className="ame-ai-context-rail min-h-0 p-4">
-          <ContextBlock
-            title="Context"
-            items={[
-              ["Asset", "PMP-1042"],
-              ["Time Range", "Last 7 days"],
-              ["Data Sources", "Connected"],
-            ]}
-          />
-          <div className="mt-4">
-            <div className="mb-3 text-sm font-semibold text-[var(--ame-text)]">Capabilities</div>
-            <Capability icon={<BrainCircuit size={16} />} title="Data Analysis" />
-            <Capability icon={<FileText size={16} />} title="Document Q&A" />
-            <Capability icon={<DatabaseZap size={16} />} title="Report Generation" />
-          </div>
-        </aside>
-      </div>
-    </div>
-  )
-}
-
-function ContextBlock({ items, title }: { items: [string, string][]; title: string }) {
-  return (
-    <div className="rounded-xl border border-[var(--ame-border-soft)] bg-white p-4">
-      <div className="mb-3 font-semibold text-[var(--ame-text)]">{title}</div>
-      <div className="grid gap-3">
-        {items.map(([label, value]) => (
-          <div key={label}>
-            <div className="text-xs text-[var(--ame-text-subtle)]">{label}</div>
-            <div className="mt-0.5 text-sm font-semibold text-[var(--ame-text)]">{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function Capability({ icon, title }: { icon: ReactNode; title: string }) {
-  return (
-    <div className="mb-2 flex gap-3 rounded-lg border border-[var(--ame-border-soft)] bg-white p-3">
-      <span className="mt-0.5 text-blue-600">{icon}</span>
-      <div>
-        <div className="text-sm font-semibold text-[var(--ame-text)]">{title}</div>
-        <div className="mt-0.5 text-xs leading-5 text-[var(--ame-text-subtle)]">
-          Analyze, summarize, and turn findings into actions.
+                    {prompt}
+                  </Button>
+                ))}
+              </Group>
+            </Stack>
+          </ThreadPrimitive.Empty>
+          <Stack gap="md">
+            <ThreadPrimitive.Messages>
+              {({ message }) => {
+                const { status } = message
+                if (
+                  status?.type === "incomplete" &&
+                  status.reason === "cancelled" &&
+                  message.content.length === 0
+                ) {
+                  return null
+                }
+                return <ChatMessage fromUser={message.role === "user"} />
+              }}
+            </ThreadPrimitive.Messages>
+          </Stack>
         </div>
+      </ThreadPrimitive.Viewport>
+      <div className="border-t border-(--ame-border-soft) bg-(--ame-surface) p-3 md:p-4">
+        <Group className="mx-auto mb-2 max-w-3xl" gap="xs">
+          {followUps.map((prompt) => (
+            <Button
+              key={prompt}
+              size="xs"
+              variant="light"
+              onClick={() => aui.composer().setText(prompt)}
+            >
+              {prompt}
+            </Button>
+          ))}
+        </Group>
+        <ComposerPrimitive.Root className="ame-border mx-auto flex max-w-3xl items-end gap-2 rounded-lg border p-2 focus-within:border-(--ame-accent)">
+          <ComposerPrimitive.Input
+            ref={composerInput}
+            aria-label={t("aiInputPlaceholder")}
+            placeholder={t("aiInputPlaceholder")}
+            rows={1}
+            className="min-h-9 min-w-0 flex-1 resize-none bg-transparent px-2 py-2 text-sm focus:outline-none"
+          />
+          <ThreadPrimitive.If running={false}>
+            <ComposerPrimitive.Send
+              aria-label={t("aiSend")}
+              onClick={focusComposerOnKeyboardActivation}
+              render={<ActionIcon size="lg" />}
+            >
+              <ArrowUp size={18} />
+            </ComposerPrimitive.Send>
+          </ThreadPrimitive.If>
+          <ThreadPrimitive.If running>
+            <ComposerPrimitive.Cancel
+              ref={restoreFocusOnStopRemoval}
+              aria-label={t("aiStop")}
+              onClick={(event) => {
+                stopActivated.current = true
+                focusComposerOnKeyboardActivation(event)
+              }}
+              render={<ActionIcon size="lg" variant="default" />}
+            >
+              <Square size={16} />
+            </ComposerPrimitive.Cancel>
+          </ThreadPrimitive.If>
+        </ComposerPrimitive.Root>
       </div>
-    </div>
+    </ThreadPrimitive.Root>
+  )
+}
+
+function ChatMessage({ fromUser }: { fromUser: boolean }) {
+  const { t } = useTranslation()
+
+  return (
+    <MessagePrimitive.Root
+      className={`flex items-start gap-2 ${fromUser ? "flex-row-reverse" : ""}`}
+    >
+      <Avatar size="sm" color={fromUser ? "gray" : "brand"} variant="light">
+        {fromUser ? <User size={16} /> : <Bot size={16} />}
+      </Avatar>
+      <div
+        className={`ame-border max-w-[85%] rounded-lg border px-3 py-2 text-sm wrap-anywhere whitespace-pre-wrap ${fromUser ? "bg-(--ame-surface-raised)" : "bg-(--ame-surface)"}`}
+      >
+        <MessagePrimitive.Parts />
+        <AuiIf
+          condition={(state) =>
+            state.message.status?.type === "running" && state.message.content.length === 0
+          }
+        >
+          <span className="inline-flex" role="status" aria-label={t("aiGenerating")}>
+            <Loader size="xs" type="dots" />
+          </span>
+        </AuiIf>
+        <MessagePrimitive.Error>
+          <ErrorPrimitive.Root className="text-sm text-(--mantine-color-error)" role="alert">
+            <ErrorPrimitive.Message />
+          </ErrorPrimitive.Root>
+        </MessagePrimitive.Error>
+      </div>
+    </MessagePrimitive.Root>
   )
 }

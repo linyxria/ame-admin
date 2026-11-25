@@ -1,25 +1,27 @@
+import {
+  Badge,
+  Button,
+  Group,
+  Modal,
+  NumberInput,
+  Select,
+  Stack,
+  Switch,
+  TextInput,
+} from "@mantine/core"
+import { isNotEmpty, useForm } from "@mantine/form"
+import { notifications } from "@mantine/notifications"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import {
-  App,
-  Button,
-  Form,
-  Input,
-  InputNumber,
-  Modal,
-  Popconfirm,
-  Select,
-  Space,
-  Switch,
-  Tag,
-  Tooltip,
-} from "antd"
 import { Pencil, Plus, RotateCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { DataTable } from "../components/data-table"
 import { PageHeader, SectionPanel, ToolbarSurface } from "../components/design-system"
+import { FormActions } from "../components/form-actions"
+import { IconAction } from "../components/icon-action"
 import { getMenuTitle } from "../lib/menu-title"
+import { showRequestError } from "../lib/request-notification"
 import {
   createMenuMutationOptions,
   deleteMenuMutationOptions,
@@ -40,18 +42,15 @@ export const Route = createFileRoute("/_admin/system/menus")({
 })
 
 type MenuForm = {
-  parentId?: string | null
+  parentId: string | null
   title: string
-  titleKey?: string | null
   path: string
-  icon?: string | null
-  sort: number
+  icon: string | null
+  sort: number | string
   visible: boolean
 }
 
 function MenusRoute() {
-  const [form] = Form.useForm<MenuForm>()
-  const { message } = App.useApp()
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [editing, setEditing] = useState<Menu | null>(null)
@@ -64,6 +63,14 @@ function MenusRoute() {
   const canCreate = menuActions.includes("create")
   const canUpdate = menuActions.includes("update")
   const canDelete = menuActions.includes("delete")
+
+  const form = useForm<MenuForm>({
+    initialValues: { parentId: null, title: "", path: "", icon: null, sort: 0, visible: true },
+    validate: {
+      title: isNotEmpty(t("enterMenuName")),
+      path: isNotEmpty(t("enterRoutePath")),
+    },
+  })
 
   const refresh = async () => {
     await Promise.all([
@@ -89,12 +96,12 @@ function MenusRoute() {
 
   const showModal = (menu?: Menu) => {
     setEditing(menu ?? null)
-    form.setFieldsValue(
+    form.clearErrors()
+    form.setValues(
       menu
         ? {
             parentId: menu.parentId,
             title: menu.title,
-            titleKey: menu.titleKey,
             path: menu.path,
             icon: menu.icon,
             sort: menu.sort,
@@ -103,7 +110,6 @@ function MenusRoute() {
         : {
             parentId: null,
             title: "",
-            titleKey: null,
             path: "",
             icon: null,
             sort: 0,
@@ -113,15 +119,14 @@ function MenusRoute() {
     setOpen(true)
   }
 
-  const submit = async () => {
-    const values = await form.validateFields()
+  const submit = form.onSubmit(async (values) => {
     const body = {
-      parentId: values.parentId ?? null,
+      parentId: values.parentId,
       title: values.title,
-      titleKey: values.titleKey ?? null,
+      titleKey: editing?.titleKey ?? null,
       path: values.path,
-      icon: values.icon ?? null,
-      sort: values.sort ?? 0,
+      icon: values.icon,
+      sort: Number(values.sort),
       visible: values.visible,
     }
 
@@ -131,39 +136,40 @@ function MenusRoute() {
       } else {
         await createMenu.mutateAsync(body)
       }
-      message.success(t("saveSuccess"))
+      notifications.show({ color: "green", message: t("saveSuccess") })
       setOpen(false)
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("saveFailed"))
+      showRequestError(error, t("saveFailed"))
     }
-  }
+  })
 
   const remove = async (id: string) => {
     try {
       await deleteMenu.mutateAsync(id)
-      message.success(t("deleteSuccess"))
+      notifications.show({ color: "green", message: t("deleteSuccess") })
     } catch (error) {
-      message.error(error instanceof Error ? error.message : t("deleteFailed"))
+      showRequestError(error, t("deleteFailed"))
     }
   }
 
+  const saving = createMenu.isPending || updateMenu.isPending
+  const close = () => {
+    if (!saving) setOpen(false)
+  }
+
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <PageHeader
         title={t("menuManagement")}
         description={t("menusDescription")}
         actions={
           <ToolbarSurface>
+            <IconAction label={t("refresh")} onClick={() => void refresh()}>
+              <RotateCw size={16} />
+            </IconAction>
             <Button
-              icon={<RotateCw size={16} />}
-              onClick={() => {
-                void refresh()
-              }}
-            />
-            <Button
-              type="primary"
               disabled={!canCreate}
-              icon={<Plus size={16} />}
+              leftSection={<Plus size={16} />}
               onClick={() => showModal()}
             >
               {t("createMenu")}
@@ -174,52 +180,51 @@ function MenusRoute() {
 
       <SectionPanel title={t("menuManagement")}>
         <DataTable<Menu>
-          rowKey="id"
-          loading={menusQuery.isLoading}
-          dataSource={menusQuery.data ?? []}
+          loading={menusQuery.isFetching}
+          error={menusQuery.error}
+          rows={menusQuery.data ?? []}
           columns={[
-            { title: t("menuName"), render: (_, record) => getMenuTitle(record, t) },
-            { title: t("route"), dataIndex: "path", render: (path) => <Tag>{path}</Tag> },
-            { title: t("icon"), dataIndex: "icon", render: (value) => value || "-" },
-            { title: t("sort"), dataIndex: "sort", width: 90 },
+            { key: "name", header: t("menuName"), cell: (menu) => getMenuTitle(menu, t) },
             {
-              title: t("sidebarVisible"),
-              dataIndex: "visible",
-              width: 100,
-              render: (visible) => (
-                <Tag color={visible ? "green" : "default"}>
-                  {visible ? t("visible") : t("hidden")}
-                </Tag>
+              key: "path",
+              header: t("route"),
+              cell: (menu) => <Badge variant="light">{menu.path}</Badge>,
+            },
+            { key: "icon", header: t("icon"), cell: (menu) => menu.icon || "–" },
+            { key: "sort", header: t("sort"), width: 90, cell: (menu) => menu.sort },
+            {
+              key: "visible",
+              header: t("sidebarVisible"),
+              width: 120,
+              cell: (menu) => (
+                <Badge variant="light" color={menu.visible ? "green" : "gray"}>
+                  {menu.visible ? t("visible") : t("hidden")}
+                </Badge>
               ),
             },
             {
-              title: t("operation"),
-              width: 150,
-              render: (_, record) => (
-                <Space>
-                  <Tooltip title={t("edit")}>
-                    <Button
-                      type="text"
-                      disabled={!canUpdate}
-                      icon={<Pencil size={16} />}
-                      onClick={() => showModal(record)}
-                    />
-                  </Tooltip>
-                  <Tooltip title={record.builtIn ? t("builtInMenuDeleteDisabled") : t("delete")}>
-                    <Popconfirm
-                      title={t("confirmDeleteMenu")}
-                      onConfirm={() => remove(record.id)}
-                      disabled={record.builtIn || !canDelete}
-                    >
-                      <Button
-                        type="text"
-                        danger
-                        disabled={record.builtIn || !canDelete}
-                        icon={<Trash2 size={16} />}
-                      />
-                    </Popconfirm>
-                  </Tooltip>
-                </Space>
+              key: "actions",
+              header: t("operation"),
+              width: 120,
+              cell: (menu) => (
+                <Group gap={4} wrap="nowrap">
+                  <IconAction
+                    label={t("edit")}
+                    disabled={!canUpdate}
+                    onClick={() => showModal(menu)}
+                  >
+                    <Pencil size={16} />
+                  </IconAction>
+                  <IconAction
+                    label={t(menu.builtIn ? "builtInMenuDeleteDisabled" : "delete")}
+                    confirmation={t("confirmDeleteMenu")}
+                    color="red"
+                    disabled={menu.builtIn || !canDelete || deleteMenu.isPending}
+                    onClick={() => void remove(menu.id)}
+                  >
+                    <Trash2 size={16} />
+                  </IconAction>
+                </Group>
               ),
             },
           ]}
@@ -228,71 +233,76 @@ function MenusRoute() {
 
       <Modal
         title={editing ? t("editMenu") : t("createMenu")}
-        open={open}
-        onOk={submit}
-        onCancel={() => setOpen(false)}
-        destroyOnHidden
-        forceRender
+        opened={open}
+        onClose={close}
+        closeButtonProps={{ "aria-label": t("close"), disabled: saving }}
       >
-        <Form form={form} layout="vertical" initialValues={{ sort: 0, visible: true }}>
-          <Form.Item name="parentId" label={t("parentMenu")}>
+        <form onSubmit={submit}>
+          <Stack>
             <Select
-              allowClear
-              options={(menusQuery.data ?? [])
+              label={t("parentMenu")}
+              clearable
+              clearButtonProps={{ "aria-label": t("clear") }}
+              data={(menusQuery.data ?? [])
                 .filter((item) => item.id !== editing?.id && !item.parentId)
                 .map((item) => ({ label: getMenuTitle(item, t), value: item.id }))}
+              {...form.getInputProps("parentId")}
             />
-          </Form.Item>
-          <Form.Item name="titleKey" hidden>
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="title"
-            label={t("menuName")}
-            rules={[{ required: true, message: t("enterMenuName") }]}
-          >
-            <Input />
-          </Form.Item>
-          <Form.Item
-            name="path"
-            label={t("routePath")}
-            rules={[{ required: true, message: t("enterRoutePath") }]}
-          >
-            <Input placeholder="/system/users" />
-          </Form.Item>
-          <Form.Item name="icon" label={t("icon")}>
+            <TextInput
+              label={t("menuName")}
+              withAsterisk
+              data-autofocus
+              {...form.getInputProps("title")}
+            />
+            <TextInput
+              label={t("routePath")}
+              placeholder="/system/users"
+              withAsterisk
+              spellCheck={false}
+              {...form.getInputProps("path")}
+            />
             <Select
-              allowClear
-              options={[
-                { label: "ai", value: "ai" },
-                { label: "analytics", value: "analytics" },
-                { label: "audit", value: "audit" },
-                { label: "bell", value: "bell" },
-                { label: "chart", value: "chart" },
-                { label: "chart3d", value: "chart3d" },
-                { label: "dashboard", value: "dashboard" },
-                { label: "demo", value: "demo" },
-                { label: "form", value: "form" },
-                { label: "globe", value: "globe" },
-                { label: "map", value: "map" },
-                { label: "menu", value: "menu" },
-                { label: "monitor", value: "monitor" },
-                { label: "settings", value: "settings" },
-                { label: "table", value: "table" },
-                { label: "team", value: "team" },
-                { label: "user", value: "user" },
-                { label: "workbench", value: "workbench" },
+              label={t("icon")}
+              clearable
+              clearButtonProps={{ "aria-label": t("clear") }}
+              data={[
+                "ai",
+                "analytics",
+                "audit",
+                "bell",
+                "chart",
+                "chart3d",
+                "dashboard",
+                "demo",
+                "form",
+                "globe",
+                "map",
+                "menu",
+                "monitor",
+                "settings",
+                "table",
+                "team",
+                "user",
+                "workbench",
               ]}
+              {...form.getInputProps("icon")}
             />
-          </Form.Item>
-          <Form.Item name="sort" label={t("sort")}>
-            <InputNumber className="w-full" min={0} />
-          </Form.Item>
-          <Form.Item name="visible" label={t("sidebarVisible")} valuePropName="checked">
-            <Switch checkedChildren={t("visible")} unCheckedChildren={t("hidden")} />
-          </Form.Item>
-        </Form>
+            <NumberInput
+              label={t("sort")}
+              min={0}
+              allowDecimal={false}
+              {...form.getInputProps("sort")}
+            />
+            <Switch
+              label={t("sidebarVisible")}
+              onLabel={t("visible")}
+              offLabel={t("hidden")}
+              {...form.getInputProps("visible", { type: "checkbox" })}
+            />
+            <FormActions onCancel={close} loading={saving} />
+          </Stack>
+        </form>
       </Modal>
-    </Space>
+    </Stack>
   )
 }

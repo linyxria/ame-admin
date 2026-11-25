@@ -1,5 +1,5 @@
+import { Badge, Card, Stack } from "@mantine/core"
 import { createFileRoute } from "@tanstack/react-router"
-import { Card, Space, Tag } from "antd"
 import "cesium/Build/Cesium/Widgets/widgets.css"
 import { useEffect, useRef } from "react"
 import { useTranslation } from "react-i18next"
@@ -94,12 +94,12 @@ function Map3dRoute() {
   }, [])
 
   return (
-    <Space orientation="vertical" size="large" className="w-full">
+    <Stack gap="lg">
       <div>
         <h1 className="ame-page-title mb-1.5 text-3xl font-semibold">{t("map3d")}</h1>
         <p className="ame-page-description text-sm">{t("map3dDescription")}</p>
       </div>
-      <Card className="ame-elevated-card" styles={{ body: { padding: 0 } }}>
+      <Card className="ame-elevated-card" p={0} withBorder>
         <div
           ref={containerRef}
           className="h-160 min-h-96 overflow-hidden rounded-md bg-slate-950"
@@ -107,11 +107,11 @@ function Map3dRoute() {
       </Card>
       <div className="flex flex-wrap gap-2">
         {operationSites.map((site) => (
-          <Tag key={site.id} color={site.status === "online" ? "cyan" : "gold"}>
+          <Badge variant="light" key={site.id} color={site.status === "online" ? "cyan" : "yellow"}>
             {site.name} · {site.throughput}%
-          </Tag>
+          </Badge>
         ))}
       </div>
-    </Space>
+    </Stack>
   )
 }

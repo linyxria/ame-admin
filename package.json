@@ -11,7 +11,7 @@
     "db:up": "pnpm --filter @ame-admin/server run db:up",
     "db:down": "pnpm --filter @ame-admin/server run db:down",
     "db:setup": "pnpm --filter @ame-admin/server run db:setup",
-    "test": "pnpm --filter @ame-admin/server run test",
+    "test": "pnpm --filter @ame-admin/server run test && pnpm --filter @ame-admin/web run test",
     "lint": "biome lint server web",
     "format": "biome format --write server web",
     "check": "biome check server web",
